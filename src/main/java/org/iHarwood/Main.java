@@ -1,170 +1,70 @@
 package org.iHarwood;
 
-import java.util.Calendar;
-import java.util.logging.Logger;
+import org.iHarwood.MoonPhaseModule.MoonPhase;
+import org.iHarwood.MoonPhaseModule.SunDistance;
+import org.iHarwood.MoonPhaseModule.VoyagerDistance;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-class MoonPhase {
-    private static final Logger logger = Logger.getLogger(MoonPhase.class.getName());
-
-    private static final String[] NEW_MOON = {
-            "       _..._     ",
-            "     .:::::::.   ",
-            "    :::::::::::  ",
-            "    :::::::::::  ",
-            "    `:::::::::'  ",
-            "      `':::''    "
-    };
-
-    private static final String[] WAXING_CRESCENT = {
-            "       _..._     ",
-            "     .::::. `.   ",
-            "    :::::::.  :  ",
-            "    ::::::::  :  ",
-            "    `::::::' .'  ",
-            "      `'::'-'    "
-    };
-
-    private static final String[] FIRST_QUARTER = {
-            "       _..._     ",
-            "     .::::  `.   ",
-            "    ::::::    :  ",
-            "    ::::::    :  ",
-            "    `:::::   .'  ",
-            "      `'::.-'    "
-    };
-
-    private static final String[] WAXING_GIBBOUS = {
-            "       _..._     ",
-            "     .::'   `.   ",
-            "    :::       :  ",
-            "    :::       :  ",
-            "    `::.     .'  ",
-            "      `':..-'    "
-    };
-
-    private static final String[] FULL_MOON = {
-            "       _..._     ",
-            "     .'     `.   ",
-            "    :         :  ",
-            "    :         :  ",
-            "    `.       .'  ",
-            "      `-...-'    "
-    };
-
-    private static final String[] WANING_GIBBOUS = {
-            "       _..._     ",
-            "     .'   `::.   ",
-            "    :       :::  ",
-            "    :       :::  ",
-            "    `.     .::'  ",
-            "      `-..:''    "
-    };
-
-    private static final String[] LAST_QUARTER = {
-            "       _..._     ",
-            "     .'  ::::.   ",
-            "    :    ::::::  ",
-            "    :    ::::::  ",
-            "    `.   :::::'  ",
-            "      `-.::''    "
-    };
-
-    private static final String[] WANING_CRESCENT = {
-            "       _..._     ",
-            "     .' .::::.   ",
-            "    :  ::::::::  ",
-            "    :  ::::::::  ",
-            "    `. '::::::'  ",
-            "      `-.::''    "
-    };
-
-    // Example usage: Map them to an array based on your indices
-    private static final String[][] PHASES = {
-            NEW_MOON,         // 0
-            WAXING_CRESCENT,  // 1
-            FIRST_QUARTER,    // 2
-            WAXING_GIBBOUS,   // 3
-            FULL_MOON,        // 4
-            WANING_GIBBOUS,   // 5
-            LAST_QUARTER,     // 6
-            WANING_CRESCENT   // 7
-    };
-    private static double ip; // Phase fraction (0 to 1)
-
-    public int julianDate(int d, int m, int y) {
-        int mm, yy;
-        int k1, k2, k3;
-        int j;
-
-        yy = y - ((12 - m) / 10);
-        mm = m + 9;
-        if (mm >= 12) {
-            mm = mm - 12;
-        }
-        k1 = (int)(365.25 * (yy + 4712));
-        k2 = (int)(30.6001 * mm + 0.5);
-        k3 = (int)(((yy / 100.0) + 49.0) * 0.75) - 38;
-        j = k1 + k2 + d + 59;
-        if (j > 2299160) {
-            j = j - k3; // For Gregorian calendar
-        }
-        return j;
-    }
-
-    public double moonAge(int d, int m, int y) {
-        int j = julianDate(d, m, y);
-        ip = (j + 4.867) / 29.53059;
-        ip = ip - Math.floor(ip);
-        double ag;
-        if (ip < 0.5) {
-            ag = ip * 29.53059 + 29.53059 / 2;
-        } else {
-            ag = ip * 29.53059 - 29.53059 / 2;
-        }
-        ag = Math.floor(ag) + 1;
-
-        return ag;
-    }
-
-    public String getPhaseName() {
-        String[] names = {
-                "New Moon",         // 0
-                "Waxing Crescent",  // 1
-                "First Quarter",    // 2
-                "Waxing Gibbous",   // 3
-                "Full Moon",        // 4
-                "Waning Gibbous",   // 5
-                "Last Quarter",     // 6
-                "Waning Crescent"   // 7
-        };
-        int index = (int) (ip * 8);
-        return names[index];
-    }
-
+public class Main {
     public static void main(String[] args) {
-        Calendar cal = Calendar.getInstance();
-        int day = cal.get(Calendar.DAY_OF_MONTH);
-        int month = cal.get(Calendar.MONTH) + 1; // January is 0
-        int year = cal.get(Calendar.YEAR);
-
-        // Print current date, day of week and time to the console
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter dayFmt = DateTimeFormatter.ofPattern("EEEE");
         DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
         System.out.println("Date: " + now.format(dateFmt) + " | Day: " + now.format(dayFmt) + " | Time: " + now.format(timeFmt));
 
-        MoonPhase mp = new MoonPhase();
-        mp.moonAge(day, month, year); // Sets ip
-        String phase = mp.getPhaseName();
+        // Compute approximate min/max over the next year (daily sampling)
+        double[] range = SunDistance.minMaxDistanceAUNow();
+        double min = range[0];
+        double max = range[1];
+        System.out.printf("Approx. minimum Earth-Sun distance (next 365 days): %.6f AU%n", min);
+        System.out.printf("Approx. maximum Earth-Sun distance (next 365 days): %.6f AU%n", max);
 
-        System.out.println("Current moon phase is " + phase + ".");
+        // Get Sun-Earth distance and print to console
+        double sunDistanceAu = SunDistance.distanceAUNow();
+        System.out.printf("Current Earth-Sun distance: %.6f AU%n", sunDistanceAu);
 
-        for (String row : PHASES[(int) (ip * 8.0)]) {
+        // Print relative ASCII bar (example: |--------------\*--------------|)
+        String bar = buildRelativeBar(sunDistanceAu, min, max, 30);
+        System.out.println("Relative distance: " + bar);
+
+        // Voyager distances (simple approximations)
+        double v1FromEarthAu = VoyagerDistance.distanceFromEarthV1AUNow();
+        double v2FromEarthAu = VoyagerDistance.distanceFromEarthV2AUNow();
+        System.out.printf("Voyager 1 distance from Earth: %.6f AU%n", v1FromEarthAu);
+        System.out.printf("Voyager 2 distance from Earth: %.6f AU%n", v2FromEarthAu);
+
+        // Moon phase
+        MoonPhase mp = MoonPhase.fromDate(LocalDate.now());
+        System.out.println("Current moon phase is " + mp.getPhaseName() + " (" + mp.getAgeDays() + " days).");
+        for (String row : mp.getAscii()) {
             System.out.println(row);
-            //logger.info(row);
         }
+    }
+
+    private static String buildRelativeBar(double current, double min, double max, int innerWidth) {
+        if (innerWidth < 1) innerWidth = 1;
+        StringBuilder sb = new StringBuilder();
+        sb.append("Min |");
+
+        // Handle degenerate case
+        int pos;
+        if (!Double.isFinite(min) || !Double.isFinite(max) || max <= min) {
+            pos = innerWidth / 2;
+        } else {
+            double frac = (current - min) / (max - min);
+            if (Double.isNaN(frac)) frac = 0.5;
+            frac = Math.max(0.0, Math.min(1.0, frac));
+            pos = (int) Math.round(frac * (innerWidth - 1));
+        }
+
+        for (int i = 0; i < innerWidth; i++) {
+            sb.append(i == pos ? '0' : '-');
+        }
+        sb.append("| Max");
+        return sb.toString();
     }
 }
