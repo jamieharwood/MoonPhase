@@ -3,6 +3,7 @@ package org.iHarwood;
 import org.iHarwood.MoonPhaseModule.MoonPhase;
 import org.iHarwood.MoonPhaseModule.SunDistance;
 import org.iHarwood.MoonPhaseModule.VoyagerDistance;
+import org.iHarwood.MoonPhaseModule.MarsDistance;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,14 +15,18 @@ public class Main {
         DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter dayFmt = DateTimeFormatter.ofPattern("EEEE");
         DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
+
         System.out.println("Date: " + now.format(dateFmt) + " | Day: " + now.format(dayFmt) + " | Time: " + now.format(timeFmt));
+
+        System.out.println("1 astronomical units = 92,955,807.273026 miles");
+        System.out.println("");
 
         // Compute approximate min/max over the next year (daily sampling)
         double[] range = SunDistance.minMaxDistanceAUNow();
         double min = range[0];
         double max = range[1];
-        System.out.printf("Approx. minimum Earth-Sun distance (next 365 days): %.6f AU%n", min);
-        System.out.printf("Approx. maximum Earth-Sun distance (next 365 days): %.6f AU%n", max);
+        //System.out.printf("Approx. minimum Earth-Sun distance (next 365 days): %.6f AU%n", min);
+        //System.out.printf("Approx. maximum Earth-Sun distance (next 365 days): %.6f AU%n", max);
 
         // Get Sun-Earth distance and print to console
         double sunDistanceAu = SunDistance.distanceAUNow();
@@ -29,7 +34,25 @@ public class Main {
 
         // Print relative ASCII bar (example: |--------------\*--------------|)
         String bar = buildRelativeBar(sunDistanceAu, min, max, 30);
-        System.out.println("Relative distance: " + bar);
+        //System.out.println("Relative Earth-Sun  distance: " + bar);
+        System.out.println(bar);
+        System.out.printf("%.6f        %.6f        %.6f\r\n\r\n", min, sunDistanceAu, max);
+
+        double[] marsRange = MarsDistance.minMaxDistanceAUNow();
+        double marsMin = marsRange[0];
+        double marsMax = marsRange[1];
+        //System.out.printf("Approx. minimum Earth-Mars distance (next 365 days): %.6f AU%n", marsMin);
+        //System.out.printf("Approx. maximum Earth-Mars distance (next 365 days): %.6f AU%n", marsMax);
+
+        // --- Earth-Mars distance and ASCII bar ---
+        double marsDistanceAu = MarsDistance.distanceAUNow();
+        System.out.printf("Current Earth-Mars distance: %.6f AU%n", marsDistanceAu);
+
+        // Print Mars relative ASCII bar
+        String marsBar = buildRelativeBar(marsDistanceAu, marsMin, marsMax, 30);
+        //System.out.println("Relative Earth-Mars distance: " + marsBar);
+        System.out.println(marsBar);
+        System.out.printf("%.6f        %.6f        %.6f\r\n\r\n", marsMin, marsDistanceAu, marsMax);
 
         // Voyager distances (simple approximations)
         double v1FromEarthAu = VoyagerDistance.distanceFromEarthV1AUNow();
