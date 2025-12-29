@@ -18,7 +18,10 @@ public final class MoonPhase {
             new String[] { "       _..._     ", "     .'  ::::.   ", "    :    ::::::  ", "    :    ::::::  ", "    `.   :::::'  ", "      `-.::''    " }, // Last quarter
             new String[] { "       _..._     ", "     .' .::::.   ", "    :  ::::::::  ", "    :  ::::::::  ", "    `. '::::::'  ", "      `-.::''    " }  // Waning crescent
     );
-
+    private static final String[] PHASE_NAMES = {
+            "nwmoon", "wancrebmoon", "fqmoon", "wgmoon",
+            "FullMoon", "wangmoon", "lqmoon", "wcmoon"
+    };
     private static final String[] NAMES = {
             "New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
             "Full Moon", "Waning Gibbous", "Last Quarter", "Waning Crescent"
@@ -33,7 +36,7 @@ public final class MoonPhase {
     }
 
     public static MoonPhase fromDate(LocalDate date) {
-        int jdn = julianDate(date.getDayOfMonth(), date.getMonthValue(), date.getYear());
+        int jdn = DateUtils.dateToJulianDayNumber(date.getDayOfMonth(), date.getMonthValue(), date.getYear());
 
         double phaseFraction = ((jdn + JULIAN_OFFSET) / SYNODIC_MONTH);
         phaseFraction = phaseFraction - Math.floor(phaseFraction);
@@ -58,23 +61,15 @@ public final class MoonPhase {
         return NAMES[idx];
     }
 
+    public String getPhaseIcon() {
+        int idx = (int) Math.floor(phaseFraction * 8.0);
+        idx = Math.min(Math.max(idx, 0), 7);
+        return PHASE_NAMES[idx];
+    }
+
     public String[] getAscii() {
         int idx = (int) Math.floor(phaseFraction * 8.0);
         idx = Math.min(Math.max(idx, 0), 7);
         return PHASES.get(idx);
-    }
-
-    // Fliegel–Van Flandern algorithm (keeps Gregorian cutoff)
-    private static int julianDate(int day, int month, int year) {
-        int a = (14 - month) / 12;
-        int y = year + 4800 - a;
-        int m = month + 12 * a - 3;
-        boolean gregorian = (year > 1582) || (year == 1582 && (month > 10 || (month == 10 && day >= 15)));
-
-        if (gregorian) {
-            return day + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045;
-        } else {
-            return day + (153 * m + 2) / 5 + 365 * y + y / 4 - 32083;
-        }
     }
 }

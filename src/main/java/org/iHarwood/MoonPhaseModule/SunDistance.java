@@ -20,33 +20,8 @@ public final class SunDistance {
     }
 
     public static double distanceAU(ZonedDateTime zdt) {
-        int year = zdt.getYear();
-        int month = zdt.getMonthValue();
-        int day = zdt.getDayOfMonth();
-        int hour = zdt.getHour();
-        int minute = zdt.getMinute();
-        int second = zdt.getSecond();
-
-        // Fliegel–Van Flandern integer Julian Day Number (JDN)
-        int a = (14 - month) / 12;
-        int y = year + 4800 - a;
-        int m = month + 12 * a - 3;
-        boolean gregorian = (year > 1582) || (year == 1582 && (month > 10 || (month == 10 && day >= 15)));
-
-        long jdn;
-        if (gregorian) {
-            jdn = day + (153 * m + 2) / 5 + 365L * y + y / 4 - y / 100 + y / 400 - 32045;
-        } else {
-            jdn = day + (153 * m + 2) / 5 + 365L * y + y / 4 - 32083;
-        }
-
-        // Fractional day: JD uses day fraction where 0.0 is midnight UTC and J2000.0 is 2000-01-01 12:00 TT.
-        // Use (hour - 12) so JD corresponds to astronomical convention (day starts at noon for JD integer).
-        double fracDay = (hour - 12) / 24.0 + minute / 1440.0 + second / 86400.0;
-        double jd = jdn + fracDay;
-
-        // Days since J2000.0
-        double d = jd - 2451545.0;
+        // Days since J2000.0 (centralized calculation to avoid duplication)
+        double d = DateUtils.daysSinceJ2000(zdt);
 
         // Mean anomaly in degrees, then to radians
         double Mdeg = (357.529 + 0.98560028 * d) % 360.0;
@@ -73,13 +48,4 @@ public final class SunDistance {
         }
         return new double[] { min, max };
     }
-
-    /*public static double[] minMaxDistanceAU(ZonedDateTime zdt) {
-        double[] range = new double[2];
-        for (int i = 0; i < 365; i++) {
-            range[0] = Math.min(range[0], distanceAU(zdt.plusDays(i)));
-            range[1] = Math.max(range[1], distanceAU(zdt.plusDays(i)));
-        }
-        return range;
-    }*/
 }

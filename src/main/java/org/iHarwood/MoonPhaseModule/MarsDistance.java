@@ -32,7 +32,7 @@ public final class MarsDistance {
     }
 
     public static double distanceAU(ZonedDateTime zdt) {
-        double d = daysSinceJ2000(zdt);
+        double d = DateUtils.daysSinceJ2000(zdt);
 
         // Earth's heliocentric radius (AU) from existing helper
         double rEarth = SunDistance.distanceAU(zdt);
@@ -72,31 +72,5 @@ public final class MarsDistance {
             if (d > max) max = d;
         }
         return new double[] { min, max };
-    }
-
-    // Compute days since J2000.0 (same approach as in SunDistance)
-    private static double daysSinceJ2000(ZonedDateTime zdt) {
-        int year = zdt.getYear();
-        int month = zdt.getMonthValue();
-        int day = zdt.getDayOfMonth();
-        int hour = zdt.getHour();
-        int minute = zdt.getMinute();
-        int second = zdt.getSecond();
-
-        int a = (14 - month) / 12;
-        int y = year + 4800 - a;
-        int m = month + 12 * a - 3;
-        boolean gregorian = (year > 1582) || (year == 1582 && (month > 10 || (month == 10 && day >= 15)));
-
-        long jdn;
-        if (gregorian) {
-            jdn = day + (153 * m + 2) / 5 + 365L * y + y / 4 - y / 100 + y / 400 - 32045;
-        } else {
-            jdn = day + (153 * m + 2) / 5 + 365L * y + y / 4 - 32083;
-        }
-
-        double fracDay = (hour - 12) / 24.0 + minute / 1440.0 + second / 86400.0;
-        double jd = jdn + fracDay;
-        return jd - 2451545.0;
     }
 }
