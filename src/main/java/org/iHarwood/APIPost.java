@@ -67,7 +67,7 @@ public final class APIPost {
 
         // Create the JSON request body using Gson
         Gson gson = new Gson();
-        String jsonBody = gson.toJson(new APIPostData(this.name, this.text, this.save, this.effect, this.icon.toString()));
+        String jsonBody = gson.toJson(new APIPostData(this.name, this.text, this.save, this.effect, this.icon));
 
         // Send the request
         try (OutputStream os = connection.getOutputStream()) {

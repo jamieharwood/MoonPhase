@@ -18,7 +18,7 @@ public final class MoonPhase {
             new String[] { "       _..._     ", "     .'  ::::.   ", "    :    ::::::  ", "    :    ::::::  ", "    `.   :::::'  ", "      `-.::''    " }, // Last quarter
             new String[] { "       _..._     ", "     .' .::::.   ", "    :  ::::::::  ", "    :  ::::::::  ", "    `. '::::::'  ", "      `-.::''    " }  // Waning crescent
     );
-    private static final String[] PHASE_NAMES = {
+    private static final String[] PHASE_ICON_NAME = {
             "nwmoon", "wancrebmoon", "fqmoon", "wgmoon",
             "FullMoon", "wangmoon", "lqmoon", "wcmoon"
     };
@@ -47,9 +47,9 @@ public final class MoonPhase {
         return new MoonPhase(phaseFraction, ageDays);
     }
 
-    public double getPhaseFraction() {
+    /*public double getPhaseFraction() {
         return phaseFraction;
-    }
+    }*/
 
     public double getAgeDays() {
         return ageDays;
@@ -64,7 +64,7 @@ public final class MoonPhase {
     public String getPhaseIcon() {
         int idx = (int) Math.floor(phaseFraction * 8.0);
         idx = Math.min(Math.max(idx, 0), 7);
-        return PHASE_NAMES[idx];
+        return PHASE_ICON_NAME[idx];
     }
 
     public String[] getAscii() {
