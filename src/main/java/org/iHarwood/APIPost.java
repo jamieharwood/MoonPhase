@@ -3,10 +3,13 @@ package org.iHarwood;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
 public final class APIPost {
     public enum IconType {
@@ -36,6 +39,12 @@ public final class APIPost {
     private final String icon;
     private String url;
 
+    private static final HttpClient client = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
     /**
      * Constructs an APIPost object with the specified parameters.
      *
@@ -58,24 +67,49 @@ public final class APIPost {
      * @return the HTTP response code
      * @throws IOException if an I/O error occurs
      */
-    public int sendPost() throws IOException {
-        URL endpoint = new URL(this.url);
-        HttpURLConnection connection = (HttpURLConnection) endpoint.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-
+    public int sendPost() throws IOException, InterruptedException {
         // Create the JSON request body using Gson
         Gson gson = new Gson();
         String jsonBody = gson.toJson(new APIPostData(this.name, this.text, this.save, this.effect, this.icon));
 
-        // Send the request
-        try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = jsonBody.getBytes(StandardCharsets.UTF_8);
-            os.write(input, 0, input.length);
+        URI targetUri = resolveUri(this.url);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(targetUri)
+                .timeout(Duration.ofMinutes(1))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.statusCode();
+    }
+
+    private URI resolveUri(String urlString) throws IOException {
+        try {
+            URI uri = URI.create(urlString);
+            if (uri.getHost() != null) {
+                return uri;
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Illegal URI, try to fix it
         }
 
-        return connection.getResponseCode();
+        // Fallback for hostnames with underscores (which URI class rejects)
+        try {
+            URL url = new URL(urlString);
+            String host = url.getHost();
+            if (host != null) {
+                InetAddress address = InetAddress.getByName(host);
+                String ip = address.getHostAddress();
+                // Reconstruct URL with IP address
+                URL newUrl = new URL(url.getProtocol(), ip, url.getPort(), url.getFile());
+                return newUrl.toURI();
+            }
+        } catch (Exception e) {
+            throw new IOException("Failed to resolve invalid URI: " + urlString, e);
+        }
+        throw new IOException("Invalid URI: " + urlString);
     }
 
     /**
@@ -109,4 +143,3 @@ public final class APIPost {
         this.url = url;
     }
 }
-

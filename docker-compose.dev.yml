@@ -1,0 +1,62 @@
+services:
+  moonphase-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moonphase-dev
+    image: jamieharwood/moonphase:1.0-SNAPSHOT-dev
+    network_mode: "host"
+
+    environment:
+      - SPRING_APPLICATION_NAME=MoonPhase-Dev
+      - MOON_PHASE_UPDATE_INTERVAL=60000  # Update every minute for testing
+      - LOGGING_LEVEL_ROOT=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=INFO
+      - TZ=UTC
+      - AWTRIXHOSTNAME=http://awtrix_2e6f60.local
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}  # Claude API key for moon phase verification
+
+    # Volume mounts for live access to logs
+    volumes:
+      - moonphase-logs:/app/logs
+      - moonphase-data:/app/data
+
+    # Keep container running
+    stdin_open: true
+    tty: true
+
+    # Resource allocation for development
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+        labels: "service=moonphase"
+
+    # Labels for organization
+    labels:
+      environment: "development"
+      application: "moonphase"
+      version: "1.0-SNAPSHOT"
+
+    # Restart policy
+    restart: unless-stopped
+
+  # Optional: Monitoring service (placeholder for future use)
+  # Could add Prometheus, Grafana, etc. here
+
+volumes:
+  moonphase-logs:
+    driver: local
+  moonphase-data:
+    driver: local

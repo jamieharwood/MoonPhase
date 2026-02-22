@@ -1,0 +1,34 @@
+services:
+  moonphase:
+    # Use the image from Docker Hub
+    image: jamieharwood/moonphase:1.0-SNAPSHOT
+    container_name: moonphase-app
+    restart: unless-stopped
+    # Use host networking to resolve .local domains
+    network_mode: "host"
+
+    # Environment variables for configuration
+    environment:
+      - SPRING_APPLICATION_NAME=MoonPhase
+      - MOON_PHASE_UPDATE_INTERVAL=3600000  # 1 hour in milliseconds
+      - LOGGING_LEVEL_ROOT=INFO
+      - TZ=UTC
+      - AWTRIXHOSTNAME=http://awtrix_2e6f60.local
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}  # Claude API key for moon phase verification
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,0 +1,51 @@
+# Production-optimized Dockerfile using Spring Boot layered jars
+# This Dockerfile uses Spring Boot 3.3.4's built-in layering for smaller final images
+
+FROM eclipse-temurin:21-jdk-jammy AS builder
+
+WORKDIR /app
+
+# Copy gradle files
+COPY gradlew .
+COPY gradle ./gradle
+COPY build.gradle.kts .
+COPY settings.gradle.kts .
+
+# Copy source code
+COPY src ./src
+
+# Make gradlew executable and build the application
+RUN chmod +x ./gradlew && \
+    ./gradlew clean bootJar --no-daemon
+
+# Extract JAR layers for optimal Docker image caching
+RUN java -Djarmode=layertools -jar build/libs/MoonPhase-1.0-SNAPSHOT.jar extract --destination /app/extracted
+
+# Runtime stage
+FROM eclipse-temurin:21-jre-jammy
+
+WORKDIR /app
+
+# Install timezone support
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends tzdata ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+
+# Copy extracted JAR layers in order (most stable to least stable)
+COPY --from=builder --chown=appuser:appuser /app/extracted/dependencies/ ./
+COPY --from=builder --chown=appuser:appuser /app/extracted/spring-boot-loader/ ./
+COPY --from=builder --chown=appuser:appuser /app/extracted/snapshot-dependencies/ ./
+COPY --from=builder --chown=appuser:appuser /app/extracted/application/ ./
+
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+    CMD java -cp /app org.springframework.boot.loader.launch.JarLauncher || exit 1
+
+# Run the application
+ENTRYPOINT ["java", "-cp", "/app", "org.springframework.boot.loader.launch.JarLauncher"]
+
