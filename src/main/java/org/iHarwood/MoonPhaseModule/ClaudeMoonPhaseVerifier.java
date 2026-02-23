@@ -22,7 +22,8 @@ import java.time.format.DateTimeFormatter;
 public final class ClaudeMoonPhaseVerifier {
     private static final Logger logger = LoggerFactory.getLogger(ClaudeMoonPhaseVerifier.class);
 
-    private static final String CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
+    private static final String DEFAULT_CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
+    private static final String API_URL_ENV_VAR = "CLAUDE_API_URL";
     private static final String DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6";
     private static final String MODEL_ENV_VAR = "CLAUDE_MODEL";
     private static final String API_KEY_ENV_VAR = "CLAUDE_API_KEY";
@@ -49,6 +50,7 @@ public final class ClaudeMoonPhaseVerifier {
     public static VerificationResult verify(LocalDate date, String calculatedPhase) {
         String apiKey = System.getenv(API_KEY_ENV_VAR);
         String model = System.getenv().getOrDefault(MODEL_ENV_VAR, DEFAULT_CLAUDE_MODEL);
+        String apiUrl = System.getenv().getOrDefault(API_URL_ENV_VAR, DEFAULT_CLAUDE_API_URL);
 
         if (apiKey == null || apiKey.isBlank()) {
             logger.warn("CLAUDE_API_KEY environment variable not set – skipping Claude verification");
@@ -79,7 +81,7 @@ public final class ClaudeMoonPhaseVerifier {
             String jsonBody = new Gson().toJson(requestBody);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(CLAUDE_API_URL))
+                    .uri(URI.create(apiUrl))
                     .timeout(Duration.ofSeconds(30))
                     .header("Content-Type", "application/json")
                     .header("x-api-key", apiKey)

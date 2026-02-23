@@ -34,11 +34,20 @@ public class Main {
     private final String baseHostname = System.getenv().getOrDefault(HOSTNAME_ENV_VAR, DEFAULT_HOSTNAME);
     private final String hostname = baseHostname.concat("/api/custom?name=");
 
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
+
     @Value("${app.latitude:${LATITUDE:51.4769}}")
     private double latitude;
 
     @PostConstruct
     public void init() {
+        if (latitude < -90 || latitude > 90) {
+            logger.warn("Invalid latitude {} – must be between -90 and 90. Falling back to 51.4769 (Greenwich).", latitude);
+            latitude = 51.4769;
+        }
         logger.info("Application started - running initial update");
         checkAwtrixConnectivity();
         update();
@@ -47,15 +56,12 @@ public class Main {
     private void checkAwtrixConnectivity() {
         String statsUrl = baseHostname + "/api/stats";
         try {
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(5))
-                    .build();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(statsUrl))
                     .timeout(Duration.ofSeconds(5))
                     .GET()
                     .build();
-            int status = client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+            int status = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
             logger.info("Awtrix reachable at {} (HTTP {})", baseHostname, status);
         } catch (Exception e) {
             logger.warn("Awtrix device not reachable at {} – pushes will fail until it comes online ({})", baseHostname, e.getMessage());
@@ -190,19 +196,37 @@ public class Main {
         sendAwtrix("CurrentDayLength", String.format("%.1f", currentDayHours) + "hrs", APIPost.IconType.DAYLENGTH.toString());
     }
 
+    private static final int AWTRIX_MAX_ATTEMPTS = 3;
+    private static final long AWTRIX_RETRY_DELAY_MS = 2000;
+
     private void sendAwtrix(String appName, String text, String icon) {
         String localHostname = hostname.concat(appName);
-
         logger.info("Awtrix host API call:{}", localHostname);
 
         APIPost apiPost = new APIPost(appName, text, localHostname, "1", "", icon);
-        try {
-            int responseCode = apiPost.sendPost();
-            logger.info("Awtrix response ({}): {}", appName, responseCode);
-        } catch (IOException | InterruptedException e) {
-            logger.warn("Warning: Failed to send to Awtrix ({}) [{}]: {}", appName, e.getClass().getSimpleName(), e.getMessage());
-            if (e instanceof InterruptedException) {
+
+        for (int attempt = 1; attempt <= AWTRIX_MAX_ATTEMPTS; attempt++) {
+            try {
+                int responseCode = apiPost.sendPost();
+                logger.info("Awtrix response ({}): {}", appName, responseCode);
+                return;
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                logger.warn("Awtrix send interrupted ({})", appName);
+                return;
+            } catch (IOException e) {
+                if (attempt < AWTRIX_MAX_ATTEMPTS) {
+                    logger.warn("Awtrix send failed ({}) attempt {}/{} – retrying in {}ms: {}",
+                            appName, attempt, AWTRIX_MAX_ATTEMPTS, AWTRIX_RETRY_DELAY_MS, e.getMessage());
+                    try {
+                        Thread.sleep(AWTRIX_RETRY_DELAY_MS);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                } else {
+                    logger.warn("Awtrix send failed ({}) after {} attempts: {}", appName, AWTRIX_MAX_ATTEMPTS, e.getMessage());
+                }
             }
         }
     }

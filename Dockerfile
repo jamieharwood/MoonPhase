@@ -33,5 +33,9 @@ RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
 
+# Health check - verify the process is still running
+HEALTHCHECK --interval=5m --timeout=10s --start-period=30s --retries=3 \
+    CMD pgrep -f "app.jar" > /dev/null || exit 1
+
 # Run the application with the required JVM arguments
 ENTRYPOINT ["java", "--enable-native-access=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.util=ALL-UNNAMED", "-XX:+EnableDynamicAgentLoading", "-jar", "app.jar"]

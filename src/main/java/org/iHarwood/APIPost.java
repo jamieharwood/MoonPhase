@@ -40,6 +40,8 @@ public final class APIPost {
     private final String icon;
     private String url;
 
+    private static final Gson GSON = new Gson();
+
     private static final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .followRedirects(HttpClient.Redirect.NORMAL)
@@ -70,8 +72,7 @@ public final class APIPost {
      */
     public int sendPost() throws IOException, InterruptedException {
         // Create the JSON request body using Gson
-        Gson gson = new Gson();
-        String jsonBody = gson.toJson(new APIPostData(this.name, this.text, this.save, this.effect, this.icon));
+        String jsonBody = GSON.toJson(new APIPostData(this.name, this.text, this.save, this.effect, this.icon));
 
         URI targetUri = resolveUri(this.url);
 

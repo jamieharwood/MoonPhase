@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit;
  */
 public final class EquinoxCalculator {
 
-    public EquinoxCalculator() { /* no instances */ }
+    private EquinoxCalculator() {}
 
     // --- Vernal (March) Equinox ---
     public static LocalDate nextVernalEquinox() {

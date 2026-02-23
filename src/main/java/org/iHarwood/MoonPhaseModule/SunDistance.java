@@ -15,6 +15,13 @@ import java.time.ZoneId;
 public final class SunDistance {
     private SunDistance() {}
 
+    // Orbital constants for Earth's elliptical orbit
+    private static final double EARTH_ORBIT_MEAN_AU       = 1.00014;
+    private static final double EARTH_ORBIT_ECCENTRICITY  = 0.01671;
+    private static final double EARTH_ORBIT_CORRECTION    = 0.00014;
+    private static final double EARTH_MEAN_ANOMALY_J2000  = 357.529;
+    private static final double EARTH_MEAN_MOTION_DEG_DAY = 0.98560028;
+
     public static double distanceAUNow() {
         return distanceAU(ZonedDateTime.now(ZoneId.systemDefault()));
     }
@@ -24,12 +31,12 @@ public final class SunDistance {
         double d = DateUtils.daysSinceJ2000(zdt);
 
         // Mean anomaly in degrees, then to radians
-        double Mdeg = (357.529 + 0.98560028 * d) % 360.0;
+        double Mdeg = (EARTH_MEAN_ANOMALY_J2000 + EARTH_MEAN_MOTION_DEG_DAY * d) % 360.0;
         if (Mdeg < 0) Mdeg += 360.0;
         double M = Math.toRadians(Mdeg);
 
         // Approximate radius (AU)
-        double r = 1.00014 - 0.01671 * Math.cos(M) - 0.00014 * Math.cos(2 * M);
+        double r = EARTH_ORBIT_MEAN_AU - EARTH_ORBIT_ECCENTRICITY * Math.cos(M) - EARTH_ORBIT_CORRECTION * Math.cos(2 * M);
         return r;
     }
 
