@@ -23,7 +23,7 @@ public final class ClaudeMoonPhaseVerifier {
     private static final Logger logger = LoggerFactory.getLogger(ClaudeMoonPhaseVerifier.class);
 
     private static final String CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
-    private static final String CLAUDE_MODEL = "claude-sonnet-4-20250514";
+    private static final String CLAUDE_MODEL = "claude-sonnet-4-6";
     private static final String API_KEY_ENV_VAR = "CLAUDE_API_KEY";
 
     private static final HttpClient client = HttpClient.newBuilder()
