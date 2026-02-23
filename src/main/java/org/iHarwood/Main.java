@@ -9,6 +9,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +31,8 @@ public class Main {
     private static final DateTimeFormatter SHORT_DATE_FMT = DateTimeFormatter.ofPattern("dd-MM-yy");
     private final String HOSTNAME_ENV_VAR = "AWTRIXHOSTNAME";
     private final String DEFAULT_HOSTNAME = "http://moonclock.local";
-    private final String hostname = System.getenv().getOrDefault(HOSTNAME_ENV_VAR, DEFAULT_HOSTNAME).concat("/api/custom?name=");
+    private final String baseHostname = System.getenv().getOrDefault(HOSTNAME_ENV_VAR, DEFAULT_HOSTNAME);
+    private final String hostname = baseHostname.concat("/api/custom?name=");
 
     @Value("${app.latitude:${LATITUDE:51.4769}}")
     private double latitude;
@@ -34,7 +40,26 @@ public class Main {
     @PostConstruct
     public void init() {
         logger.info("Application started - running initial update");
+        checkAwtrixConnectivity();
         update();
+    }
+
+    private void checkAwtrixConnectivity() {
+        String statsUrl = baseHostname + "/api/stats";
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(5))
+                    .build();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(statsUrl))
+                    .timeout(Duration.ofSeconds(5))
+                    .GET()
+                    .build();
+            int status = client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+            logger.info("Awtrix reachable at {} (HTTP {})", baseHostname, status);
+        } catch (Exception e) {
+            logger.warn("Awtrix device not reachable at {} – pushes will fail until it comes online ({})", baseHostname, e.getMessage());
+        }
     }
 
     @Scheduled(cron = "${app.cron:${CRON_SCHEDULE:0 1 0,12 * * *}}")
