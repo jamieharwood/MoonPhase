@@ -96,20 +96,19 @@ public final class MoonPhase {
     }
 
     public String getPhaseName() {
-        int idx = (int) Math.floor((phaseFraction + 0.0625) * 8.0);
-        idx = Math.min(Math.max(idx, 0), 7);
-        return NAMES[idx];
+        return NAMES[phaseIndex()];
     }
 
     public String getPhaseIcon() {
-        int idx = (int) Math.floor((phaseFraction + 0.0625) * 8.0);
-        idx = Math.min(Math.max(idx, 0), 7);
-        return PHASE_ICON_NAME[idx];
+        return PHASE_ICON_NAME[phaseIndex()];
     }
 
     public String[] getAscii() {
+        return PHASES.get(phaseIndex());
+    }
+
+    private int phaseIndex() {
         int idx = (int) Math.floor((phaseFraction + 0.0625) * 8.0);
-        idx = Math.min(Math.max(idx, 0), 7);
-        return PHASES.get(idx);
+        return Math.min(Math.max(idx, 0), 7);
     }
 }
