@@ -9,6 +9,10 @@ import java.time.ZonedDateTime;
 public final class DateUtils {
     private DateUtils() {}
 
+    // Earth orbital elements at J2000.0 — shared by SunDistance and MarsDistance
+    public static final double EARTH_MEAN_ANOMALY_J2000_DEG  = 357.529;
+    public static final double EARTH_MEAN_MOTION_DEG_PER_DAY = 0.98560028;
+
     /**
      * Calculate days since J2000.0 (2000-01-01 12:00:00 TT).
      * Uses Fliegel-Van Flandern integer Julian Day Number algorithm.

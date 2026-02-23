@@ -1,6 +1,7 @@
 // java
 package org.iHarwood.MoonPhaseModule;
 
+import java.time.Year;
 import java.time.ZonedDateTime;
 import java.time.ZoneId;
 
@@ -38,7 +39,7 @@ public final class MarsDistance {
         double rEarth = SunDistance.distanceAU(zdt);
 
         // Earth's mean anomaly (deg) — same linear formula used in SunDistance
-        double mEarthDeg = (357.529 + 0.98560028 * d) % 360.0;
+        double mEarthDeg = (DateUtils.EARTH_MEAN_ANOMALY_J2000_DEG + DateUtils.EARTH_MEAN_MOTION_DEG_PER_DAY * d) % 360.0;
         if (mEarthDeg < 0) mEarthDeg += 360.0;
         double longEarthDeg = mEarthDeg + W_EARTH_DEG;
 
@@ -64,9 +65,10 @@ public final class MarsDistance {
 
     public static double[] minMaxDistanceAU(ZonedDateTime zdt) {
         ZonedDateTime start = zdt.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        int daysInYear = Year.of(start.getYear()).length();
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
-        for (int i = 0; i < 365; i++) {
+        for (int i = 0; i < daysInYear; i++) {
             double d = distanceAU(start.plusDays(i));
             if (d < min) min = d;
             if (d > max) max = d;

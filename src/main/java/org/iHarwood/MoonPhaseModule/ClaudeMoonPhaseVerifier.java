@@ -28,6 +28,8 @@ public final class ClaudeMoonPhaseVerifier {
     private static final String MODEL_ENV_VAR = "CLAUDE_MODEL";
     private static final String API_KEY_ENV_VAR = "CLAUDE_API_KEY";
 
+    private static final Gson GSON = new Gson();
+
     private static final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .connectTimeout(Duration.ofSeconds(15))
@@ -78,7 +80,7 @@ public final class ClaudeMoonPhaseVerifier {
             requestBody.addProperty("max_tokens", 50);
             requestBody.add("messages", messages);
 
-            String jsonBody = new Gson().toJson(requestBody);
+            String jsonBody = GSON.toJson(requestBody);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(apiUrl))
@@ -119,7 +121,10 @@ public final class ClaudeMoonPhaseVerifier {
         JsonArray content = root.getAsJsonArray("content");
         if (content != null && !content.isEmpty()) {
             JsonObject first = content.get(0).getAsJsonObject();
-            return first.get("text").getAsString().trim();
+            var textElement = first.get("text");
+            if (textElement != null && !textElement.isJsonNull()) {
+                return textElement.getAsString().trim();
+            }
         }
         return "Unknown";
     }

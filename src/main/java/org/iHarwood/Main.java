@@ -1,6 +1,7 @@
 package org.iHarwood;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.iHarwood.MoonPhaseModule.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,15 @@ public class Main {
 
     @Value("${app.latitude:${LATITUDE:51.4769}}")
     private double latitude;
+
+    // Awtrix error rate tracking
+    private int awtrixSuccessCount = 0;
+    private int awtrixFailureCount = 0;
+
+    @PreDestroy
+    public void shutdown() {
+        logger.info("Application shutting down – Awtrix stats: {} succeeded, {} failed", awtrixSuccessCount, awtrixFailureCount);
+    }
 
     @PostConstruct
     public void init() {
@@ -85,6 +95,7 @@ public class Main {
         getEquinox();
         getMoonPhase();
 
+        logger.info("Awtrix update summary: {} succeeded, {} failed", awtrixSuccessCount, awtrixFailureCount);
         logger.info("=== Scheduled task completed ===");
     }
 
@@ -145,10 +156,10 @@ public class Main {
         String nextWinter = EquinoxCalculator.nextWinterSolstice().format(SHORT_DATE_FMT);
 
         logger.info("Next summer solstice: {}", nextSummer);
-        sendAwtrix("summersolstice", String.format("%s", EquinoxCalculator.daysUntilSummerSolstice()).concat("d"), APIPost.IconType.SUMMER.toString());
+        sendAwtrix("summersolstice", EquinoxCalculator.daysUntilSummerSolstice() + "d", APIPost.IconType.SUMMER.toString());
 
         logger.info("Next winter solstice: {}", nextWinter);
-        sendAwtrix("wintersolstice", String.format("%s", EquinoxCalculator.daysUntilWinterSolstice()).concat("d"), APIPost.IconType.WINTER.toString());
+        sendAwtrix("wintersolstice", EquinoxCalculator.daysUntilWinterSolstice() + "d", APIPost.IconType.WINTER.toString());
     }
 
     private void getEarthMars(int barWidth) {
@@ -209,10 +220,12 @@ public class Main {
             try {
                 int responseCode = apiPost.sendPost();
                 logger.info("Awtrix response ({}): {}", appName, responseCode);
+                awtrixSuccessCount++;
                 return;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 logger.warn("Awtrix send interrupted ({})", appName);
+                awtrixFailureCount++;
                 return;
             } catch (IOException e) {
                 if (attempt < AWTRIX_MAX_ATTEMPTS) {
@@ -222,10 +235,12 @@ public class Main {
                         Thread.sleep(AWTRIX_RETRY_DELAY_MS);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
+                        awtrixFailureCount++;
                         return;
                     }
                 } else {
                     logger.warn("Awtrix send failed ({}) after {} attempts: {}", appName, AWTRIX_MAX_ATTEMPTS, e.getMessage());
+                    awtrixFailureCount++;
                 }
             }
         }
