@@ -100,8 +100,12 @@ public class Main {
             }
         }
 
+        int daysUntilFull = mp.getDaysUntilFullMoon();
+        logger.info("Days until next full moon: {}", daysUntilFull);
+
         sendAwtrix("moonphase", mp.getPhaseName(), mp.getPhaseIcon());
         sendAwtrix("moonillumination", mp.getIlluminationPercent() + "%", mp.getPhaseIcon());
+        sendAwtrix("fullmoon", daysUntilFull + "d", "FullMoon");
     }
 
     private void getEquinox() {

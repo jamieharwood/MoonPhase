@@ -83,6 +83,14 @@ public final class MoonPhase {
         return (int) Math.round((1 - Math.cos(2 * Math.PI * phaseFraction)) / 2 * 100);
     }
 
+    /**
+     * Returns the number of days until the next full moon (0 = today is full moon).
+     */
+    public int getDaysUntilFullMoon() {
+        double fraction = ((0.5 - phaseFraction + 1.0) % 1.0);
+        return (int) Math.round(fraction * SYNODIC_MONTH);
+    }
+
     public double getAgeDays() {
         return Math.round(ageDays);
     }
