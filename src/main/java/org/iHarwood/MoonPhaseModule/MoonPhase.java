@@ -3,6 +3,7 @@ package org.iHarwood.MoonPhaseModule;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public final class MoonPhase {
     private static final double SYNODIC_MONTH = 29.53059;
@@ -63,18 +64,17 @@ public final class MoonPhase {
      * Used when Claude AI corrects the calculated phase.
      *
      * @param phaseName one of the standard phase names (e.g. "Full Moon", "Waning Gibbous")
-     * @return a MoonPhase with the matching phase index, or null if the name is not recognised
+     * @return an Optional containing the matching MoonPhase, or empty if the name is not recognised
      */
-    public static MoonPhase fromPhaseName(String phaseName) {
+    public static Optional<MoonPhase> fromPhaseName(String phaseName) {
         for (int i = 0; i < NAMES.length; i++) {
             if (NAMES[i].equalsIgnoreCase(phaseName.trim())) {
-                // Set phaseFraction to the centre of this phase's bin
                 double phaseFraction = (i / 8.0);
                 double ageDays = phaseFraction * SYNODIC_MONTH;
-                return new MoonPhase(phaseFraction, ageDays);
+                return Optional.of(new MoonPhase(phaseFraction, ageDays));
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

@@ -77,7 +77,11 @@ public class Main {
                     .GET()
                     .build();
             int status = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
-            logger.info("Awtrix reachable at {} (HTTP {})", baseHostname, status);
+            if (status >= 200 && status < 300) {
+                logger.info("Awtrix reachable at {} (HTTP {})", baseHostname, status);
+            } else {
+                logger.warn("Awtrix at {} responded with unexpected status {} – pushes may fail", baseHostname, status);
+            }
         } catch (Exception e) {
             logger.warn("Awtrix device not reachable at {} – pushes will fail until it comes online ({})", baseHostname, e.getMessage());
         }
@@ -135,9 +139,9 @@ public class Main {
             logger.warn("✗ Claude AI disagrees! Calculated: {} | Claude says: {} ({})",
                     verification.calculatedPhase(), verification.claudePhase(), verification.details());
             // Correct the moon phase using Claude's answer
-            MoonPhase corrected = MoonPhase.fromPhaseName(verification.claudePhase());
-            if (corrected != null) {
-                mp = corrected;
+            var corrected = MoonPhase.fromPhaseName(verification.claudePhase());
+            if (corrected.isPresent()) {
+                mp = corrected.get();
                 logger.info("Moon phase corrected to: {} (from Claude AI)", mp.getPhaseName());
                 Arrays.asList(mp.getAscii()).forEach(row -> logger.info("{}", row));
             } else {
@@ -256,6 +260,7 @@ public class Main {
         // Handle degenerate case
         int pos;
         if (!Double.isFinite(min) || !Double.isFinite(max) || max <= min) {
+            logger.warn("buildRelativeBar: invalid range min={} max={} – defaulting to centre", min, max);
             pos = innerWidth / 2;
         } else {
             double frac = (current - min) / (max - min);

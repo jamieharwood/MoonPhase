@@ -131,10 +131,12 @@ public final class ClaudeMoonPhaseVerifier {
         JsonObject root = JsonParser.parseString(responseJson).getAsJsonObject();
         JsonArray content = root.getAsJsonArray("content");
         if (content != null && !content.isEmpty()) {
-            JsonObject first = content.get(0).getAsJsonObject();
-            var textElement = first.get("text");
-            if (textElement != null && !textElement.isJsonNull()) {
-                return textElement.getAsString().trim();
+            var element = content.get(0);
+            if (element != null && element.isJsonObject()) {
+                var textElement = element.getAsJsonObject().get("text");
+                if (textElement != null && !textElement.isJsonNull()) {
+                    return textElement.getAsString().trim();
+                }
             }
         }
         return "Unknown";

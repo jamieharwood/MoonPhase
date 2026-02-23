@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -42,7 +43,7 @@ public final class APIPost {
 
     private static final Gson GSON = new Gson();
 
-    private static final HttpClient client = HttpClient.newBuilder()
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .followRedirects(HttpClient.Redirect.NORMAL)
             .connectTimeout(Duration.ofSeconds(10))
@@ -83,7 +84,7 @@ public final class APIPost {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         return response.statusCode();
     }
 
@@ -108,7 +109,7 @@ public final class APIPost {
                 URL newUrl = new URL(url.getProtocol(), ip, url.getPort(), url.getFile());
                 return newUrl.toURI();
             }
-        } catch (Exception e) {
+        } catch (IOException | URISyntaxException e) {
             throw new IOException("Failed to resolve invalid URI: " + urlString, e);
         }
         throw new IOException("Invalid URI: " + urlString);
