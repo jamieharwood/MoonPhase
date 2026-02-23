@@ -19,7 +19,8 @@ public final class APIPost {
         DAYLENGTH("DAYLENGTH"),
         SUMMER("SUMMER"),
         WINTER("WINTER"),
-        MARS("MARS");
+        MARS("MARS"),
+        VOYAGER("VOYAGER");
 
         private final String value;
 

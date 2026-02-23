@@ -135,6 +135,9 @@ public class Main {
 
         logger.info("Voyager 1 distance from Earth: {} AU", String.format("%.6f", v1FromEarthAu));
         logger.info("Voyager 2 distance from Earth: {} AU", String.format("%.6f", v2FromEarthAu));
+
+        sendAwtrix("voyager1", String.format("%.0f", v1FromEarthAu) + "au", APIPost.IconType.VOYAGER.toString());
+        sendAwtrix("voyager2", String.format("%.0f", v2FromEarthAu) + "au", APIPost.IconType.VOYAGER.toString());
     }
 
     private void getDayLength(int barWidth) {
