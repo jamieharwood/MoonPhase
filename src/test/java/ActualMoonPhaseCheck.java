@@ -15,7 +15,7 @@ public class ActualMoonPhaseCheck {
 
         System.out.println("=== Checking Current Algorithm ===");
         MoonPhase current = MoonPhase.fromDate(LocalDate.of(2026, 1, 6));
-        System.out.println("Current calculation: " + current.getPhaseName() + " (" + (int)current.getAgeDays() + " days)");
+        System.out.println("Current calculation: " + current.getPhaseName() + " (" + current.getAgeDays() + " days)");
         System.out.println("Expected (moonphases.co.uk): Waning Gibbous");
 
         // If Waning Gibbous on Jan 6, and the cycle is 29.53 days:

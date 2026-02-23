@@ -8,7 +8,7 @@ public class CurrentMoonPhaseTest {
         MoonPhase mp = MoonPhase.fromDate(LocalDate.of(2026, 1, 6));
 
         System.out.println("Phase: " + mp.getPhaseName());
-        System.out.println("Age: " + (int)mp.getAgeDays() + " days");
+        System.out.println("Age: " + mp.getAgeDays() + " days");
         System.out.println("Icon: " + mp.getPhaseIcon());
         System.out.println("\nASCII Art:");
 
@@ -20,7 +20,7 @@ public class CurrentMoonPhaseTest {
         System.out.println("New Moon was on: December 30, 2025");
         System.out.println("Days since new moon: 7 days");
         System.out.println("Expected phase: Waxing Crescent (approaching First Quarter)");
-        System.out.println("Calculated phase: " + mp.getPhaseName() + " (" + (int)mp.getAgeDays() + " days)");
+        System.out.println("Calculated phase: " + mp.getPhaseName() + " (" + mp.getAgeDays() + " days)");
         System.out.println("\n✓ Moon phase calculation is now CORRECT!");
     }
 }

@@ -30,7 +30,7 @@ public class MoonPhaseDebugTest {
 
     private static void testDate(LocalDate date, String expectedPhase, int expectedAge) {
         MoonPhase mp = MoonPhase.fromDate(date);
-        System.out.printf("%s: %s (%.1f days) - Expected: %s (~%d days)\n",
+        System.out.printf("%s: %s (%d days) - Expected: %s (~%d days)\n",
             date, mp.getPhaseName(), mp.getAgeDays(), expectedPhase, expectedAge);
     }
 }

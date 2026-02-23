@@ -29,7 +29,7 @@ public class MoonPhaseVerificationTest {
     private static void testDate(LocalDate date, String expectedPhase, int expectedAge) {
         MoonPhase mp = MoonPhase.fromDate(date);
         String status = mp.getPhaseName().startsWith(expectedPhase.split(" ")[0]) ? "✓" : "✗";
-        System.out.printf("%s %s: %s (%.0f days) - Expected: %s (~%d days)\n",
+        System.out.printf("%s %s: %s (%d days) - Expected: %s (~%d days)\n",
             status, date, mp.getPhaseName(), mp.getAgeDays(), expectedPhase, expectedAge);
     }
 }

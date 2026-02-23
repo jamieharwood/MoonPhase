@@ -9,7 +9,7 @@ public class FinalMoonPhaseTest {
         System.out.println("TODAY - January 6, 2026:");
         MoonPhase today = MoonPhase.fromDate(LocalDate.now());
         System.out.println("  Phase: " + today.getPhaseName());
-        System.out.println("  Age: " + (int)today.getAgeDays() + " days");
+        System.out.println("  Age: " + today.getAgeDays() + " days");
         System.out.println("  Icon: " + today.getPhaseIcon());
         System.out.println("  ✓ CORRECT! (7 days after Dec 30 new moon = Waxing Crescent)\n");
 
@@ -42,7 +42,7 @@ public class FinalMoonPhaseTest {
         );
 
         MoonPhase mp = MoonPhase.fromDate(date);
-        int age = (int)mp.getAgeDays();
+        int age = mp.getAgeDays();
         String phase = mp.getPhaseName();
 
         boolean ageMatch = Math.abs(age - expectedAge) <= 1; // Allow 1 day tolerance

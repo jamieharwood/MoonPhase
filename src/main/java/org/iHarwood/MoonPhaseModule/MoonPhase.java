@@ -91,8 +91,8 @@ public final class MoonPhase {
         return (int) Math.round(fraction * SYNODIC_MONTH);
     }
 
-    public double getAgeDays() {
-        return Math.round(ageDays);
+    public int getAgeDays() {
+        return (int) Math.round(ageDays);
     }
 
     public String getPhaseName() {

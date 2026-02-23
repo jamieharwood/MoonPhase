@@ -31,7 +31,7 @@ public class OptimizationTest {
         // Test 5: Moon phase
         System.out.println("\nTest 5: Moon Phase Calculation");
         MoonPhase mp = MoonPhase.fromDate(LocalDate.now());
-        System.out.printf("Current phase: %s (%d days old)\n", mp.getPhaseName(), (int)mp.getAgeDays());
+        System.out.printf("Current phase: %s (%d days old)\n", mp.getPhaseName(), mp.getAgeDays());
         System.out.println("✓ Uses shared DateUtils");
 
         System.out.println("\n=== All Tests Passed ===");
