@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import org.iHarwood.MoonPhaseModule.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,9 @@ public class Main {
     private final String HOSTNAME_ENV_VAR = "AWTRIXHOSTNAME";
     private final String DEFAULT_HOSTNAME = "http://moonclock.local";
     private final String hostname = System.getenv().getOrDefault(HOSTNAME_ENV_VAR, DEFAULT_HOSTNAME).concat("/api/custom?name=");
+
+    @Value("${app.latitude:${LATITUDE:51.4769}}")
+    private double latitude;
 
     @PostConstruct
     public void init() {
@@ -142,8 +146,6 @@ public class Main {
 
     private void getDayLength(int barWidth) {
         // --- Daylight length (hours) ---
-        // Default latitude (Greenwich)
-        double latitude = 51.4769;
         double[] dayRange = DayLight.minMaxDayLengthAUNow(latitude);
         double dayMin = dayRange[0];
         double dayMax = dayRange[1];
