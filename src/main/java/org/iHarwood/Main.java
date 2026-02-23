@@ -76,7 +76,7 @@ public class Main {
     private void getMoonPhase() {
         // Moon phase
         MoonPhase mp = MoonPhase.fromDate(LocalDate.now());
-        logger.info("Current moon phase is {} ({} days).", mp.getPhaseName(), mp.getAgeDays());
+        logger.info("Current moon phase is {} ({} days, {}% illuminated).", mp.getPhaseName(), mp.getAgeDays(), mp.getIlluminationPercent());
         Arrays.asList(mp.getAscii()).forEach(row -> logger.info("{}", row));
 
         // Double-check with Claude API
@@ -101,6 +101,7 @@ public class Main {
         }
 
         sendAwtrix("moonphase", mp.getPhaseName(), mp.getPhaseIcon());
+        sendAwtrix("moonillumination", mp.getIlluminationPercent() + "%", mp.getPhaseIcon());
     }
 
     private void getEquinox() {
@@ -140,8 +141,8 @@ public class Main {
         logger.info("Voyager 1 distance from Earth: {} AU", String.format("%.6f", v1FromEarthAu));
         logger.info("Voyager 2 distance from Earth: {} AU", String.format("%.6f", v2FromEarthAu));
 
-        sendAwtrix("voyager1", String.format("%.0f", v1FromEarthAu) + "au", APIPost.IconType.VOYAGER.toString());
-        sendAwtrix("voyager2", String.format("%.0f", v2FromEarthAu) + "au", APIPost.IconType.VOYAGER.toString());
+        sendAwtrix("voyager1", String.format("V1:%.0f", v1FromEarthAu) + "au", APIPost.IconType.VOYAGER.toString());
+        sendAwtrix("voyager2", String.format("V2:%.0f", v2FromEarthAu) + "au", APIPost.IconType.VOYAGER.toString());
     }
 
     private void getDayLength(int barWidth) {

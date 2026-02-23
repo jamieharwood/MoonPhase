@@ -76,6 +76,13 @@ public final class MoonPhase {
         return null;
     }
 
+    /**
+     * Returns the percentage of the moon's disc that is illuminated (0-100).
+     */
+    public int getIlluminationPercent() {
+        return (int) Math.round((1 - Math.cos(2 * Math.PI * phaseFraction)) / 2 * 100);
+    }
+
     public double getAgeDays() {
         return Math.round(ageDays);
     }
