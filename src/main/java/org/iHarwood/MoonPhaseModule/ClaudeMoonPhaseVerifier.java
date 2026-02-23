@@ -30,6 +30,7 @@ public final class ClaudeMoonPhaseVerifier {
     private static final String API_KEY_ENV_VAR = "CLAUDE_API_KEY";
 
     private static final Gson GSON = new Gson();
+    private static final int HTTP_OK = 200;
 
     private static final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
@@ -94,7 +95,7 @@ public final class ClaudeMoonPhaseVerifier {
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() != 200) {
+            if (response.statusCode() != HTTP_OK) {
                 logger.warn("Claude API returned status {}: {}", response.statusCode(), response.body());
                 return new VerificationResult("Error", calculatedPhase, false,
                         "Claude API error: HTTP " + response.statusCode());

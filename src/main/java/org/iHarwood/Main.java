@@ -31,8 +31,10 @@ public class Main {
     private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("EEEE");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final DateTimeFormatter SHORT_DATE_FMT = DateTimeFormatter.ofPattern("dd-MM-yy");
-    private final String HOSTNAME_ENV_VAR = "AWTRIXHOSTNAME";
-    private final String DEFAULT_HOSTNAME = "http://moonclock.local";
+    private static final String HOSTNAME_ENV_VAR = "AWTRIXHOSTNAME";
+    private static final String DEFAULT_HOSTNAME = "http://moonclock.local";
+    private static final int BAR_WIDTH = 30;
+    private static final String AU_IN_MILES = "92,955,807.273026 miles";
     private final String baseHostname = System.getenv().getOrDefault(HOSTNAME_ENV_VAR, DEFAULT_HOSTNAME);
     private final String hostname = baseHostname.concat("/api/custom?name=");
 
@@ -84,16 +86,14 @@ public class Main {
     @Scheduled(cron = "${app.cron:${CRON_SCHEDULE:0 1 0,12 * * *}}")
     public void update() {
         logger.info("=== Scheduled task starting ===");
-        int barWidth = 30;
-
         LocalDateTime now = LocalDateTime.now();
 
         logger.info("Date: {} | Day: {} | Time: {}", now.format(DATE_FMT), now.format(DAY_FMT), now.format(TIME_FMT));
-        logger.info("1 astronomical units = 92,955,807.273026 miles");
+        logger.info("1 astronomical unit = {}", AU_IN_MILES);
 
-        getSunEarth(barWidth);
-        getEarthMars(barWidth);
-        getDayLength(barWidth);
+        getSunEarth();
+        getEarthMars();
+        getDayLength();
         getVoyagerDistance();
         getEquinox();
         getMoonPhase();
@@ -102,7 +102,7 @@ public class Main {
         logger.info("=== Scheduled task completed ===");
     }
 
-    private void getSunEarth(int barWidth) {
+    private void getSunEarth() {
         // Compute approximate min/max over the next year (daily sampling)
         double[] range = SunDistance.minMaxDistanceAUNow();
         double min = range[0];
@@ -113,7 +113,7 @@ public class Main {
         logger.info("Current Earth-Sun distance: {} AU", String.format("%.6f", sunDistanceAu));
 
         // Print relative ASCII bar
-        String bar = buildRelativeBar(sunDistanceAu, min, max, barWidth);
+        String bar = buildRelativeBar(sunDistanceAu, min, max, BAR_WIDTH);
         logger.info("{}", bar);
         logger.info("{}        {}        {}", String.format("%.6f", min), String.format("%.6f", sunDistanceAu), String.format("%.6f", max));
     }
@@ -165,7 +165,7 @@ public class Main {
         sendAwtrix("wintersolstice", EquinoxCalculator.daysUntilWinterSolstice() + "d", APIPost.IconType.WINTER.toString());
     }
 
-    private void getEarthMars(int barWidth) {
+    private void getEarthMars() {
         double[] marsRange = MarsDistance.minMaxDistanceAUNow();
         double marsMin = marsRange[0];
         double marsMax = marsRange[1];
@@ -175,11 +175,11 @@ public class Main {
         logger.info("Current Earth-Mars distance: {} AU", String.format("%.6f", marsDistanceAu));
 
         // Print Mars relative ASCII bar
-        String marsBar = buildRelativeBar(marsDistanceAu, marsMin, marsMax, barWidth);
+        String marsBar = buildRelativeBar(marsDistanceAu, marsMin, marsMax, BAR_WIDTH);
         logger.info("{}", marsBar);
         logger.info("{}        {}        {}", String.format("%.6f", marsMin), String.format("%.6f", marsDistanceAu), String.format("%.6f", marsMax));
 
-        sendAwtrix("marsDistanceAu", String.format("%.1f", marsDistanceAu) + "au", APIPost.IconType.MARS.toString());
+        sendAwtrix("marsDistanceAu", String.format("%.1fau", marsDistanceAu), APIPost.IconType.MARS.toString());
     }
 
     private void getVoyagerDistance() {
@@ -190,11 +190,11 @@ public class Main {
         logger.info("Voyager 1 distance from Earth: {} AU", String.format("%.6f", v1FromEarthAu));
         logger.info("Voyager 2 distance from Earth: {} AU", String.format("%.6f", v2FromEarthAu));
 
-        sendAwtrix("voyager1", String.format("V1:%.0f", v1FromEarthAu) + "au", APIPost.IconType.VOYAGER.toString());
-        sendAwtrix("voyager2", String.format("V2:%.0f", v2FromEarthAu) + "au", APIPost.IconType.VOYAGER.toString());
+        sendAwtrix("voyager1", String.format("V1:%.0fau", v1FromEarthAu), APIPost.IconType.VOYAGER.toString());
+        sendAwtrix("voyager2", String.format("V2:%.0fau", v2FromEarthAu), APIPost.IconType.VOYAGER.toString());
     }
 
-    private void getDayLength(int barWidth) {
+    private void getDayLength() {
         // --- Daylight length (hours) ---
         double[] dayRange = DayLight.minMaxDayLengthAUNow(latitude);
         double dayMin = dayRange[0];
@@ -202,11 +202,11 @@ public class Main {
         double currentDayHours = DayLight.dayLengthHours(LocalDate.now(), latitude);
 
         logger.info("Daylight length (hours) at latitude {}", latitude);
-        String dayBar = buildRelativeBar(currentDayHours, dayMin, dayMax, barWidth);
+        String dayBar = buildRelativeBar(currentDayHours, dayMin, dayMax, BAR_WIDTH);
         logger.info("{}", dayBar);
         logger.info("{}        {}        {}", String.format("%.2f", dayMin), String.format("%.2f", currentDayHours), String.format("%.2f", dayMax));
 
-        sendAwtrix("CurrentDayLength", String.format("%.1f", currentDayHours) + "hrs", APIPost.IconType.DAYLENGTH.toString());
+        sendAwtrix("CurrentDayLength", String.format("%.1fhrs", currentDayHours), APIPost.IconType.DAYLENGTH.toString());
     }
 
     private static final int AWTRIX_MAX_ATTEMPTS = 3;
