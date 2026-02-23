@@ -23,7 +23,8 @@ public final class ClaudeMoonPhaseVerifier {
     private static final Logger logger = LoggerFactory.getLogger(ClaudeMoonPhaseVerifier.class);
 
     private static final String CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
-    private static final String CLAUDE_MODEL = "claude-sonnet-4-6";
+    private static final String DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6";
+    private static final String MODEL_ENV_VAR = "CLAUDE_MODEL";
     private static final String API_KEY_ENV_VAR = "CLAUDE_API_KEY";
 
     private static final HttpClient client = HttpClient.newBuilder()
@@ -47,6 +48,7 @@ public final class ClaudeMoonPhaseVerifier {
      */
     public static VerificationResult verify(LocalDate date, String calculatedPhase) {
         String apiKey = System.getenv(API_KEY_ENV_VAR);
+        String model = System.getenv().getOrDefault(MODEL_ENV_VAR, DEFAULT_CLAUDE_MODEL);
 
         if (apiKey == null || apiKey.isBlank()) {
             logger.warn("CLAUDE_API_KEY environment variable not set – skipping Claude verification");
@@ -70,7 +72,7 @@ public final class ClaudeMoonPhaseVerifier {
             messages.add(userMessage);
 
             JsonObject requestBody = new JsonObject();
-            requestBody.addProperty("model", CLAUDE_MODEL);
+            requestBody.addProperty("model", model);
             requestBody.addProperty("max_tokens", 50);
             requestBody.add("messages", messages);
 
