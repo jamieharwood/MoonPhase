@@ -1,6 +1,7 @@
 package org.iHarwood.MoonPhaseModule;
 
 import java.time.LocalDate;
+import java.time.Year;
 
 public final class DayLight {
 
@@ -13,7 +14,8 @@ public final class DayLight {
         int n = date.getDayOfYear();
         double lat = Math.toRadians(latitudeDeg);
         // Approximate solar declination (radians)
-        double decl = Math.toRadians(AXIAL_TILT_DEG) * Math.sin(2.0 * Math.PI * (284 + n) / 365.0);
+        double daysInYear = Year.of(date.getYear()).length();
+        double decl = Math.toRadians(AXIAL_TILT_DEG) * Math.sin(2.0 * Math.PI * (284 + n) / daysInYear);
         double x = -Math.tan(lat) * Math.tan(decl);
         if (x >= 1.0) return 0.0;   // polar night
         if (x <= -1.0) return 24.0; // polar day

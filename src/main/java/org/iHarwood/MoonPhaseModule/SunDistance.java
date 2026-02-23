@@ -30,8 +30,7 @@ public final class SunDistance {
         double d = DateUtils.daysSinceJ2000(zdt);
 
         // Mean anomaly in degrees, then to radians
-        double Mdeg = (DateUtils.EARTH_MEAN_ANOMALY_J2000_DEG + DateUtils.EARTH_MEAN_MOTION_DEG_PER_DAY * d) % 360.0;
-        if (Mdeg < 0) Mdeg += 360.0;
+        double Mdeg = DateUtils.normalizeAngle(DateUtils.EARTH_MEAN_ANOMALY_J2000_DEG + DateUtils.EARTH_MEAN_MOTION_DEG_PER_DAY * d);
         double M = Math.toRadians(Mdeg);
 
         // Approximate radius (AU)

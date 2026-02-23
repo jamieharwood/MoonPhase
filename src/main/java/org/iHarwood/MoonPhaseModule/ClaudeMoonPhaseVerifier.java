@@ -106,10 +106,19 @@ public final class ClaudeMoonPhaseVerifier {
             return new VerificationResult(claudePhase, calculatedPhase, matches,
                     matches ? "Claude confirms the calculated phase" : "Mismatch detected");
 
-        } catch (Exception e) {
-            logger.warn("Claude verification failed: {}", e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warn("Claude verification interrupted: {}", e.getMessage());
             return new VerificationResult("Error", calculatedPhase, false,
-                    "Exception: " + e.getMessage());
+                    "Interrupted: " + e.getMessage());
+        } catch (IOException e) {
+            logger.warn("Claude verification failed (I/O): {}", e.getMessage());
+            return new VerificationResult("Error", calculatedPhase, false,
+                    "IOException: " + e.getMessage());
+        } catch (com.google.gson.JsonParseException e) {
+            logger.warn("Claude verification failed (JSON parse): {}", e.getMessage());
+            return new VerificationResult("Error", calculatedPhase, false,
+                    "JSON parse error: " + e.getMessage());
         }
     }
 

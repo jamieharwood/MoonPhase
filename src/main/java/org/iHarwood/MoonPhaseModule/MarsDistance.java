@@ -39,13 +39,11 @@ public final class MarsDistance {
         double rEarth = SunDistance.distanceAU(zdt);
 
         // Earth's mean anomaly (deg) — same linear formula used in SunDistance
-        double mEarthDeg = (DateUtils.EARTH_MEAN_ANOMALY_J2000_DEG + DateUtils.EARTH_MEAN_MOTION_DEG_PER_DAY * d) % 360.0;
-        if (mEarthDeg < 0) mEarthDeg += 360.0;
+        double mEarthDeg = DateUtils.normalizeAngle(DateUtils.EARTH_MEAN_ANOMALY_J2000_DEG + DateUtils.EARTH_MEAN_MOTION_DEG_PER_DAY * d);
         double longEarthDeg = mEarthDeg + W_EARTH_DEG;
 
         // Mars mean anomaly and approximate radius
-        double mMarsDeg = (M0_MARS_DEG + N_MARS_DEG_PER_DAY * d) % 360.0;
-        if (mMarsDeg < 0) mMarsDeg += 360.0;
+        double mMarsDeg = DateUtils.normalizeAngle(M0_MARS_DEG + N_MARS_DEG_PER_DAY * d);
         // approximate Mars radius using first-order radial approximation r ≈ a * (1 - e * cos(M))
         double rMars = A_MARS_AU * (1.0 - E_MARS * Math.cos(Math.toRadians(mMarsDeg)));
         double longMarsDeg = mMarsDeg + W_MARS_DEG;

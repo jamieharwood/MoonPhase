@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 @Component
@@ -40,23 +41,25 @@ public class Main {
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
+    private static final double DEFAULT_LATITUDE = 51.4769;
+
     @Value("${app.latitude:${LATITUDE:51.4769}}")
     private double latitude;
 
     // Awtrix error rate tracking
-    private int awtrixSuccessCount = 0;
-    private int awtrixFailureCount = 0;
+    private final AtomicInteger awtrixSuccessCount = new AtomicInteger(0);
+    private final AtomicInteger awtrixFailureCount = new AtomicInteger(0);
 
     @PreDestroy
     public void shutdown() {
-        logger.info("Application shutting down – Awtrix stats: {} succeeded, {} failed", awtrixSuccessCount, awtrixFailureCount);
+        logger.info("Application shutting down – Awtrix stats: {} succeeded, {} failed", awtrixSuccessCount.get(), awtrixFailureCount.get());
     }
 
     @PostConstruct
     public void init() {
         if (latitude < -90 || latitude > 90) {
-            logger.warn("Invalid latitude {} – must be between -90 and 90. Falling back to 51.4769 (Greenwich).", latitude);
-            latitude = 51.4769;
+            logger.warn("Invalid latitude {} – must be between -90 and 90. Falling back to {} (Greenwich).", latitude, DEFAULT_LATITUDE);
+            latitude = DEFAULT_LATITUDE;
         }
         logger.info("Application started - running initial update");
         checkAwtrixConnectivity();
@@ -95,7 +98,7 @@ public class Main {
         getEquinox();
         getMoonPhase();
 
-        logger.info("Awtrix update summary: {} succeeded, {} failed", awtrixSuccessCount, awtrixFailureCount);
+        logger.info("Awtrix update summary: {} succeeded, {} failed", awtrixSuccessCount.get(), awtrixFailureCount.get());
         logger.info("=== Scheduled task completed ===");
     }
 
@@ -198,7 +201,6 @@ public class Main {
         double dayMax = dayRange[1];
         double currentDayHours = DayLight.dayLengthHours(LocalDate.now(), latitude);
 
-        //System.out.println();
         logger.info("Daylight length (hours) at latitude {}", latitude);
         String dayBar = buildRelativeBar(currentDayHours, dayMin, dayMax, barWidth);
         logger.info("{}", dayBar);
@@ -220,12 +222,12 @@ public class Main {
             try {
                 int responseCode = apiPost.sendPost();
                 logger.info("Awtrix response ({}): {}", appName, responseCode);
-                awtrixSuccessCount++;
+                awtrixSuccessCount.incrementAndGet();
                 return;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 logger.warn("Awtrix send interrupted ({})", appName);
-                awtrixFailureCount++;
+                awtrixFailureCount.incrementAndGet();
                 return;
             } catch (IOException e) {
                 if (attempt < AWTRIX_MAX_ATTEMPTS) {
@@ -235,12 +237,12 @@ public class Main {
                         Thread.sleep(AWTRIX_RETRY_DELAY_MS);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
-                        awtrixFailureCount++;
+                        awtrixFailureCount.incrementAndGet();
                         return;
                     }
                 } else {
                     logger.warn("Awtrix send failed ({}) after {} attempts: {}", appName, AWTRIX_MAX_ATTEMPTS, e.getMessage());
-                    awtrixFailureCount++;
+                    awtrixFailureCount.incrementAndGet();
                 }
             }
         }
