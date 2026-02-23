@@ -6,7 +6,7 @@ import java.util.List;
 
 public final class MoonPhase {
     private static final double SYNODIC_MONTH = 29.53059;
-    // Known new moon: January 2, 2026 (JDN 2461033)
+    // Known new moon: January 2, 2026 (JDN 2461043)
     // Verified against astronomical data and https://moonphases.co.uk/
     private static final int KNOWN_NEW_MOON_JDN = 2461043;
 
