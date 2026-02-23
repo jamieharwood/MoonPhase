@@ -37,7 +37,7 @@ public class Main {
         update();
     }
 
-    @Scheduled(cron = "0 1 0,12 * * *")
+    @Scheduled(cron = "${app.cron:${CRON_SCHEDULE:0 1 0,12 * * *}}")
     public void update() {
         logger.info("=== Scheduled task starting ===");
         int barWidth = 30;
