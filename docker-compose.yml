@@ -1,10 +1,7 @@
 services:
   moonphase:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: jamieharwood/moonphase:latest
     container_name: moonphase-app
-    image: jamieharwood/moonphase:1.0-SNAPSHOT
     restart: unless-stopped
     network_mode: "host"
 
