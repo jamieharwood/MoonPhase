@@ -21,7 +21,14 @@ public final class APIPost {
         SUMMER("SUMMER"),
         WINTER("WINTER"),
         MARS("MARS"),
-        VOYAGER("VOYAGER");
+        VOYAGER("VOYAGER"),
+        JUPITER("JUPITER"),
+        SATURN("SATURN"),
+        EARTH("EARTH"),
+        MOON("MOON"),
+        LIGHT("LIGHT"),
+        NEWHORIZONS("NEWHORIZONS"),
+        PERIHELION("PERIHELION");
 
         private final String value;
 

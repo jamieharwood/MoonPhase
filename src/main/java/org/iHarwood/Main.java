@@ -97,9 +97,16 @@ public class Main {
 
         getSunEarth();
         getEarthMars();
+        getEarthJupiter();
+        getEarthSaturn();
         getDayLength();
         getVoyagerDistance();
+        getNewHorizonsDistance();
         getEquinox();
+        getPerihelionAphelion();
+        getEarthSpeed();
+        getMoonDistance();
+        getLightTravelTimes();
         getMoonPhase();
 
         logger.info("Awtrix update summary: {} succeeded, {} failed", awtrixSuccessCount.get(), awtrixFailureCount.get());
@@ -211,6 +218,90 @@ public class Main {
         logger.info("{}        {}        {}", String.format("%.2f", dayMin), String.format("%.2f", currentDayHours), String.format("%.2f", dayMax));
 
         sendAwtrix("CurrentDayLength", String.format("%.1fhrs", currentDayHours), APIPost.IconType.DAYLENGTH.toString());
+    }
+
+    private void getEarthJupiter() {
+        double[] jupiterRange = JupiterDistance.minMaxDistanceAUNow();
+        double jupiterMin = jupiterRange[0];
+        double jupiterMax = jupiterRange[1];
+
+        double jupiterDistanceAu = JupiterDistance.distanceAUNow();
+        logger.info("Current Earth-Jupiter distance: {} AU", String.format("%.6f", jupiterDistanceAu));
+
+        String jupiterBar = buildRelativeBar(jupiterDistanceAu, jupiterMin, jupiterMax, BAR_WIDTH);
+        logger.info("{}", jupiterBar);
+        logger.info("{}        {}        {}", String.format("%.6f", jupiterMin), String.format("%.6f", jupiterDistanceAu), String.format("%.6f", jupiterMax));
+
+        sendAwtrix("jupiterDistanceAu", String.format("%.1fau", jupiterDistanceAu), APIPost.IconType.JUPITER.toString());
+    }
+
+    private void getEarthSaturn() {
+        double[] saturnRange = SaturnDistance.minMaxDistanceAUNow();
+        double saturnMin = saturnRange[0];
+        double saturnMax = saturnRange[1];
+
+        double saturnDistanceAu = SaturnDistance.distanceAUNow();
+        logger.info("Current Earth-Saturn distance: {} AU", String.format("%.6f", saturnDistanceAu));
+
+        String saturnBar = buildRelativeBar(saturnDistanceAu, saturnMin, saturnMax, BAR_WIDTH);
+        logger.info("{}", saturnBar);
+        logger.info("{}        {}        {}", String.format("%.6f", saturnMin), String.format("%.6f", saturnDistanceAu), String.format("%.6f", saturnMax));
+
+        sendAwtrix("saturnDistanceAu", String.format("%.1fau", saturnDistanceAu), APIPost.IconType.SATURN.toString());
+    }
+
+    private void getNewHorizonsDistance() {
+        double nhFromEarthAu = NewHorizonsDistance.distanceFromEarthAUNow();
+        logger.info("New Horizons distance from Earth: {} AU ({} km/s)", String.format("%.6f", nhFromEarthAu), NewHorizonsDistance.speedKmPerSec());
+
+        sendAwtrix("newhorizons", String.format("NH:%.0fau", nhFromEarthAu), APIPost.IconType.NEWHORIZONS.toString());
+    }
+
+    private void getPerihelionAphelion() {
+        long daysToPerihelion = PerihelionAphelion.daysUntilPerihelion();
+        long daysToAphelion = PerihelionAphelion.daysUntilAphelion();
+
+        logger.info("Days until next perihelion (closest to Sun): {}", daysToPerihelion);
+        logger.info("Days until next aphelion (farthest from Sun): {}", daysToAphelion);
+
+        sendAwtrix("perihelion", daysToPerihelion + "d", APIPost.IconType.PERIHELION.toString());
+        sendAwtrix("aphelion", daysToAphelion + "d", APIPost.IconType.PERIHELION.toString());
+    }
+
+    private void getEarthSpeed() {
+        double speedKmS = EarthSpeed.speedKmPerSecNow();
+        double speedKmH = EarthSpeed.speedKmPerHourNow();
+
+        logger.info("Earth's orbital speed: {} km/s ({} km/h)",
+                String.format("%.2f", speedKmS), String.format("%,.0f", speedKmH));
+
+        sendAwtrix("earthSpeed", String.format("%.1fkm/s", speedKmS), APIPost.IconType.EARTH.toString());
+    }
+
+    private void getMoonDistance() {
+        double moonDistKm = MoonDistance.distanceKmNow();
+        double[] moonRange = MoonDistance.minMaxDistanceKmNow();
+
+        logger.info("Current Moon distance: {}", MoonDistance.formatDistanceKm(moonDistKm));
+        String moonBar = buildRelativeBar(moonDistKm, moonRange[0], moonRange[1], BAR_WIDTH);
+        logger.info("{}", moonBar);
+        logger.info("{}        {}        {}", MoonDistance.formatDistanceKm(moonRange[0]),
+                MoonDistance.formatDistanceKm(moonDistKm), MoonDistance.formatDistanceKm(moonRange[1]));
+
+        sendAwtrix("moonDistance", String.format("%,.0fkm", moonDistKm), APIPost.IconType.MOON.toString());
+    }
+
+    private void getLightTravelTimes() {
+        logger.info("--- Light Travel Times ---");
+        logger.info("Sun → Earth:    {}", LightTravelTime.sunToEarthNow());
+        logger.info("Earth → Mars:   {}", LightTravelTime.earthToMarsNow());
+        logger.info("Earth → Jupiter: {}", LightTravelTime.earthToJupiterNow());
+        logger.info("Earth → Saturn: {}", LightTravelTime.earthToSaturnNow());
+        logger.info("Earth → Voyager 1: {}", LightTravelTime.earthToVoyager1Now());
+        logger.info("Earth → Voyager 2: {}", LightTravelTime.earthToVoyager2Now());
+
+        sendAwtrix("lightMars", "Lt:" + LightTravelTime.earthToMarsNow(), APIPost.IconType.LIGHT.toString());
+        sendAwtrix("lightJupiter", "Lt:" + LightTravelTime.earthToJupiterNow(), APIPost.IconType.LIGHT.toString());
     }
 
     private static final int AWTRIX_MAX_ATTEMPTS = 3;
