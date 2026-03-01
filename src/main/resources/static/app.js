@@ -70,6 +70,7 @@
     setText('earth-speed-s',  fmtKmPerSec(data.earthSpeedKmPerSec));
     setText('earth-speed-h',  fmtKmPerHour(data.earthSpeedKmPerHour));
     setText('earth-daylight', fmtHours(data.daylightHours));
+    setText('earth-tilt',     typeof data.earthAxialTiltDegrees === 'number' ? data.earthAxialTiltDegrees.toFixed(3) + '°' : '—');
 
     // Light travel times
     setText('light-sun',     data.lightTimeSunToEarth    || '—');

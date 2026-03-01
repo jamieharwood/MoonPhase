@@ -69,6 +69,7 @@ public class Main {
     private double snapshotEarthSpeedKmPerSec;
     private double snapshotEarthSpeedKmPerHour;
     private double snapshotDaylightHours;
+    private double snapshotEarthAxialTiltDegrees;
     private String snapshotLightTimeSunToEarth;
     private String snapshotLightTimeSunToMercury;
     private String snapshotLightTimeSunToVenus;
@@ -171,6 +172,7 @@ public class Main {
                     snapshotEarthSpeedKmPerSec,
                     snapshotEarthSpeedKmPerHour,
                     snapshotDaylightHours,
+                    snapshotEarthAxialTiltDegrees,
                     snapshotLightTimeSunToEarth,
                     snapshotLightTimeSunToMercury,
                     snapshotLightTimeSunToVenus,
@@ -368,8 +370,12 @@ public class Main {
         snapshotEarthSpeedKmPerSec = speedKmS;
         snapshotEarthSpeedKmPerHour = speedKmH;
 
+        double tilt = EarthAxialTilt.tiltDegreesNow();
+        snapshotEarthAxialTiltDegrees = tilt;
+
         logger.info("Earth's orbital speed: {} km/s ({} km/h)",
                 String.format("%.2f", speedKmS), String.format("%,.0f", speedKmH));
+        logger.info("Earth's axial tilt: {}°", String.format("%.3f", tilt));
 
         sendAwtrix("earthSpeed", String.format("%.1fkm/s", speedKmS), APIPost.IconType.EARTH.toString());
     }

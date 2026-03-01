@@ -34,6 +34,9 @@ public record AstronomicalSnapshot(
         // Daylight
         double daylightHours,
 
+        // Earth axial tilt
+        double earthAxialTiltDegrees,
+
         // Light travel times (formatted strings)
         String lightTimeSunToEarth,
         String lightTimeSunToMercury,
