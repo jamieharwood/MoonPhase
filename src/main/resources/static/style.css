@@ -210,6 +210,37 @@ header {
   font-variant-numeric: tabular-nums;
 }
 
+/* ===== QR Card ===== */
+.qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.qr-link {
+  display: block;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+
+.qr-link:hover {
+  box-shadow: 0 0 16px var(--text-glow);
+}
+
+.qr-image {
+  display: block;
+  width: 160px;
+  height: 160px;
+}
+
+.qr-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
 /* ===== Footer ===== */
 footer {
   text-align: center;
