@@ -85,6 +85,14 @@
     setText('light-v1',      data.lightTimeSunToVoyager1 || '—');
     setText('light-v2',      data.lightTimeSunToVoyager2 || '—');
 
+    // LEO
+    setText('leo-iss',      data.issAltitudeKm      > 0 ? Math.round(data.issAltitudeKm)      + ' km' : '—');
+    setText('leo-tiangong', data.tiangongAltitudeKm  > 0 ? Math.round(data.tiangongAltitudeKm)  + ' km' : '—');
+    setText('leo-hubble',   data.hubbleAltitudeKm    > 0 ? Math.round(data.hubbleAltitudeKm)    + ' km' : '—');
+    setText('leo-starlink', data.starlinkSatelliteCount > 0 ? data.starlinkSatelliteCount.toLocaleString() : '—');
+    setText('leo-kuiper',   data.kuiperSatelliteCount   > 0 ? data.kuiperSatelliteCount.toLocaleString()   : '—');
+    setText('leo-total',    data.totalSatellitesInOrbit > 0 ? data.totalSatellitesInOrbit.toLocaleString() : '—');
+
     // Events
     setText('event-summer',     fmtDays(data.daysUntilSummerSolstice));
     setText('event-winter',     fmtDays(data.daysUntilWinterSolstice));

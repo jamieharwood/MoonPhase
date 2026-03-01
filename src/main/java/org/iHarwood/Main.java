@@ -81,6 +81,12 @@ public class Main {
     private String snapshotLightTimeSunToPluto;
     private String snapshotLightTimeSunToVoyager1;
     private String snapshotLightTimeSunToVoyager2;
+    private double snapshotIssAltitudeKm;
+    private double snapshotTiangongAltitudeKm;
+    private double snapshotHubbleAltitudeKm;
+    private int snapshotStarlinkSatelliteCount;
+    private int snapshotKuiperSatelliteCount;
+    private int snapshotTotalSatellitesInOrbit;
     private long snapshotDaysUntilSummerSolstice;
     private long snapshotDaysUntilWinterSolstice;
     private long snapshotDaysUntilPerihelion;
@@ -146,6 +152,7 @@ public class Main {
         getEarthSpeed();
         getMoonDistance();
         getLightTravelTimes();
+        getLeoData();
         getMoonPhase();
 
         logger.info("Awtrix update summary: {} succeeded, {} failed", awtrixSuccessCount.get(), awtrixFailureCount.get());
@@ -184,6 +191,12 @@ public class Main {
                     snapshotLightTimeSunToPluto,
                     snapshotLightTimeSunToVoyager1,
                     snapshotLightTimeSunToVoyager2,
+                    snapshotIssAltitudeKm,
+                    snapshotTiangongAltitudeKm,
+                    snapshotHubbleAltitudeKm,
+                    snapshotStarlinkSatelliteCount,
+                    snapshotKuiperSatelliteCount,
+                    snapshotTotalSatellitesInOrbit,
                     snapshotDaysUntilSummerSolstice,
                     snapshotDaysUntilWinterSolstice,
                     snapshotDaysUntilPerihelion,
@@ -392,6 +405,16 @@ public class Main {
                 MoonDistance.formatDistanceKm(moonDistKm), MoonDistance.formatDistanceKm(moonRange[1]));
 
         sendAwtrix("moonDistance", String.format("%,.0fkm", moonDistKm), APIPost.IconType.MOON.toString());
+    }
+
+    private void getLeoData() {
+        logger.info("--- LEO Data ---");
+        snapshotIssAltitudeKm         = LeoDataFetcher.fetchIssAltitudeKm();
+        snapshotTiangongAltitudeKm    = LeoDataFetcher.fetchTiangongAltitudeKm();
+        snapshotHubbleAltitudeKm      = LeoDataFetcher.fetchHubbleAltitudeKm();
+        snapshotStarlinkSatelliteCount = LeoDataFetcher.fetchStarlinkCount();
+        snapshotKuiperSatelliteCount   = LeoDataFetcher.fetchKuiperCount();
+        snapshotTotalSatellitesInOrbit = LeoDataFetcher.fetchTotalSatelliteCount();
     }
 
     private void getLightTravelTimes() {

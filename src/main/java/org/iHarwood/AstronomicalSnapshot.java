@@ -50,6 +50,14 @@ public record AstronomicalSnapshot(
         String lightTimeSunToVoyager1,
         String lightTimeSunToVoyager2,
 
+        // LEO (Low Earth Orbit)
+        double issAltitudeKm,
+        double tiangongAltitudeKm,
+        double hubbleAltitudeKm,
+        int starlinkSatelliteCount,
+        int kuiperSatelliteCount,
+        int totalSatellitesInOrbit,
+
         // Upcoming events (days)
         long daysUntilSummerSolstice,
         long daysUntilWinterSolstice,
