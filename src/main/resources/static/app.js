@@ -91,6 +91,43 @@
     // Flash all cards
     ['card-moon', 'card-solar', 'card-probes', 'card-earth', 'card-light', 'card-events']
       .forEach(flashCard);
+
+    // Re-enable refresh button if a manual refresh was pending
+    if (refreshPending) setRefreshPending(false);
+  }
+
+  // ── Refresh button ────────────────────────────────────────────────────────
+  var refreshBtn = document.getElementById('refresh-btn');
+  var refreshPending = false;
+
+  function setRefreshPending(pending) {
+    refreshPending = pending;
+    if (!refreshBtn) return;
+    refreshBtn.disabled = pending;
+    if (pending) {
+      refreshBtn.classList.add('spinning');
+    } else {
+      refreshBtn.classList.remove('spinning');
+    }
+  }
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function () {
+      if (refreshPending) return;
+      setRefreshPending(true);
+      fetch('/api/refresh', { method: 'POST' })
+        .then(function (res) {
+          if (!res.ok) {
+            console.warn('[Refresh] Server returned', res.status);
+            setRefreshPending(false);
+          }
+          // Button re-enabled when the SSE update arrives via applySnapshot
+        })
+        .catch(function (err) {
+          console.warn('[Refresh] Request failed:', err.message);
+          setRefreshPending(false);
+        });
+    });
   }
 
   // ── SSE dot helpers ───────────────────────────────────────────────────────

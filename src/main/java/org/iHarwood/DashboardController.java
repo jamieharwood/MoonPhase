@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -25,11 +26,14 @@ public class DashboardController {
 
     private final AstronomicalDataService dataService;
     private final Optional<HistoryService> historyService;
+    private final Main main;
 
     public DashboardController(AstronomicalDataService dataService,
-                               Optional<HistoryService> historyService) {
+                               Optional<HistoryService> historyService,
+                               Main main) {
         this.dataService = dataService;
         this.historyService = historyService;
+        this.main = main;
     }
 
     @GetMapping("/")
@@ -45,6 +49,13 @@ public class DashboardController {
             return ResponseEntity.status(503).build();
         }
         return ResponseEntity.ok(snapshot);
+    }
+
+    @PostMapping(value = "/api/refresh")
+    @ResponseBody
+    public ResponseEntity<Void> refresh() {
+        new Thread(main::update, "manual-refresh").start();
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping(value = "/api/events", produces = TEXT_EVENT_STREAM_VALUE)

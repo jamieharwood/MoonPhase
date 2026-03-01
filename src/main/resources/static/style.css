@@ -72,6 +72,40 @@ header {
   color: var(--text-secondary);
 }
 
+/* ===== Refresh Button ===== */
+.refresh-btn {
+  background: transparent;
+  border: 1px solid var(--accent-green);
+  color: var(--accent-green);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 136, 0.1);
+  box-shadow: 0 0 10px var(--accent-green);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refresh-btn.spinning .refresh-icon {
+  display: inline-block;
+  animation: spin-refresh 1s linear infinite;
+}
+
+@keyframes spin-refresh {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ===== Install Button ===== */
 .install-btn {
   background: transparent;
