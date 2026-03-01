@@ -14,6 +14,9 @@ services:
       - AWTRIXHOSTNAME=http://moonclock.local # Hostname for Awtrix
       - CLAUDE_API_KEY=${CLAUDE_API_KEY}  # Claude API key for moon phase verification
       - SERVER_PORT=8080  # Change this if port 8080 is already in use
+      # MongoDB historical data — uncomment both lines and add the mongodb service below to enable graphing
+      # - APP_HISTORY_ENABLED=true
+      # - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/moonphase
 
     # Resource limits
     deploy:
@@ -35,3 +38,16 @@ services:
     # Keep container running
     stdin_open: true
     tty: true
+
+# Optional MongoDB service for historical data and graphing.
+# Uncomment this block and the APP_HISTORY_ENABLED lines above to enable.
+#  mongodb:
+#    image: mongo:7
+#    container_name: moonphase-mongo
+#    restart: unless-stopped
+#    network_mode: "host"
+#    volumes:
+#      - mongo-data:/data/db
+#
+# volumes:
+#   mongo-data:

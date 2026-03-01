@@ -4,8 +4,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
@@ -19,9 +24,12 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 public class DashboardController {
 
     private final AstronomicalDataService dataService;
+    private final Optional<HistoryService> historyService;
 
-    public DashboardController(AstronomicalDataService dataService) {
+    public DashboardController(AstronomicalDataService dataService,
+                               Optional<HistoryService> historyService) {
         this.dataService = dataService;
+        this.historyService = historyService;
     }
 
     @GetMapping("/")
@@ -43,5 +51,19 @@ public class DashboardController {
     @ResponseBody
     public SseEmitter subscribe() {
         return dataService.subscribe();
+    }
+
+    @GetMapping(value = "/api/history", produces = APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> history(
+            @RequestParam(defaultValue = "daylightHours") String metric,
+            @RequestParam(defaultValue = "60") int limit) {
+        if (!historyService.isPresent()) {
+            return ResponseEntity.status(503).build();
+        }
+        if (!HistoryService.ALLOWED_METRICS.contains(metric)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(historyService.get().getHistory(metric, limit));
     }
 }

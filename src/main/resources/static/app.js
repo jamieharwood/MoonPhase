@@ -136,6 +136,8 @@
       try {
         var data = JSON.parse(e.data);
         applySnapshot(data);
+        // Refresh chart with the latest persisted data point
+        if (metricSelect) loadHistory(metricSelect.value);
         console.log('[SSE] Snapshot received.');
       } catch (err) {
         console.warn('[SSE] Failed to parse event data:', err.message);
@@ -152,6 +154,70 @@
       console.warn('[SSE] Connection lost — browser will auto-reconnect.');
       // EventSource reconnects automatically; update dot when it reopens
     };
+  }
+
+  // ── History chart ─────────────────────────────────────────────────────────
+  var historyChart = null;
+
+  function initChart() {
+    var ctx = document.getElementById('history-chart');
+    if (!ctx) return;
+    historyChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: [], datasets: [{ label: '', data: [],
+        borderColor: '#00d4ff',
+        backgroundColor: 'rgba(0, 212, 255, 0.08)',
+        fill: true, tension: 0.3, pointRadius: 2,
+        pointBackgroundColor: '#00d4ff'
+      }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 400 },
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            ticks: { color: '#7aa8cc', maxTicksLimit: 10, maxRotation: 30 },
+            grid: { color: 'rgba(13, 42, 74, 0.8)' }
+          },
+          y: {
+            ticks: { color: '#7aa8cc' },
+            grid: { color: 'rgba(13, 42, 74, 0.8)' }
+          }
+        }
+      }
+    });
+  }
+
+  function loadHistory(metric) {
+    var msg = document.getElementById('history-msg');
+    fetch('/api/history?metric=' + encodeURIComponent(metric) + '&limit=60')
+      .then(function (res) {
+        if (res.status === 503) {
+          if (msg) msg.textContent = 'Historical data unavailable — MongoDB not configured.';
+          return null;
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (!data) return;
+        if (!historyChart) return;
+        if (data.length === 0) {
+          if (msg) msg.textContent = 'No data yet — history will appear after the next scheduled update.';
+          historyChart.data.labels = [];
+          historyChart.data.datasets[0].data = [];
+          historyChart.update();
+          return;
+        }
+        if (msg) msg.textContent = data.length + ' data point' + (data.length !== 1 ? 's' : '');
+        historyChart.data.labels = data.map(function (d) { return d.timestamp; });
+        historyChart.data.datasets[0].data = data.map(function (d) { return d.value; });
+        historyChart.update();
+      })
+      .catch(function (err) {
+        if (msg) msg.textContent = 'Could not load history: ' + err.message;
+      });
   }
 
   // ── Service Worker registration ───────────────────────────────────────────
@@ -193,5 +259,14 @@
   // ── Init ──────────────────────────────────────────────────────────────────
   loadInitialData();
   connectSSE();
+  initChart();
+  loadHistory('daylightHours');
+
+  var metricSelect = document.getElementById('metric-select');
+  if (metricSelect) {
+    metricSelect.addEventListener('change', function () {
+      loadHistory(this.value);
+    });
+  }
 
 }());

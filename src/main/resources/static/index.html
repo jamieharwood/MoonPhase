@@ -117,6 +117,35 @@
       </table>
     </section>
 
+    <!-- Historical Graph -->
+    <section class="card history-card" id="card-history">
+      <div class="history-header">
+        <h2>&#128202; Historical Data</h2>
+        <select id="metric-select" class="metric-select">
+          <option value="daylightHours" selected>Daylight Hours</option>
+          <option value="moonIlluminationPercent">Moon Illumination (%)</option>
+          <option value="sunDistanceAu">Sun Distance (AU)</option>
+          <option value="marsDistanceAu">Mars Distance (AU)</option>
+          <option value="jupiterDistanceAu">Jupiter Distance (AU)</option>
+          <option value="saturnDistanceAu">Saturn Distance (AU)</option>
+          <option value="moonDistanceKm">Moon Distance (km)</option>
+          <option value="earthSpeedKmPerSec">Earth Speed (km/s)</option>
+          <option value="voyager1DistanceAu">Voyager 1 (AU)</option>
+          <option value="voyager2DistanceAu">Voyager 2 (AU)</option>
+          <option value="newHorizonsDistanceAu">New Horizons (AU)</option>
+          <option value="daysUntilFullMoon">Days Until Full Moon</option>
+          <option value="daysUntilSummerSolstice">Days Until Summer Solstice</option>
+          <option value="daysUntilWinterSolstice">Days Until Winter Solstice</option>
+          <option value="daysUntilPerihelion">Days Until Perihelion</option>
+          <option value="daysUntilAphelion">Days Until Aphelion</option>
+        </select>
+      </div>
+      <div class="history-chart-wrap">
+        <canvas id="history-chart"></canvas>
+      </div>
+      <p id="history-msg" class="history-msg"></p>
+    </section>
+
     <!-- Docker Hub -->
     <section class="card qr-card" id="card-qr">
       <h2>&#128043; Docker Hub</h2>
@@ -132,6 +161,7 @@
     Data refreshed twice daily at 00:01 and 12:01 UTC &nbsp;&mdash;&nbsp; MoonPhaseAI
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

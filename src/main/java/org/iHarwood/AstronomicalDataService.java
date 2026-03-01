@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -26,9 +27,15 @@ public class AstronomicalDataService {
     private volatile AstronomicalSnapshot latestSnapshot = null;
     private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Optional<HistoryService> historyService;
+
+    public AstronomicalDataService(Optional<HistoryService> historyService) {
+        this.historyService = historyService;
+    }
 
     public void publishSnapshot(AstronomicalSnapshot snapshot) {
         this.latestSnapshot = snapshot;
+        historyService.ifPresent(svc -> svc.save(snapshot));
         broadcastToEmitters(snapshot);
     }
 
