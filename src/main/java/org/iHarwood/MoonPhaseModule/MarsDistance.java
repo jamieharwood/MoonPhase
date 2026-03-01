@@ -32,6 +32,12 @@ public final class MarsDistance {
         return distanceAU(ZonedDateTime.now(ZoneId.systemDefault()));
     }
 
+    public static double heliocentricDistanceAUNow() {
+        double d = DateUtils.daysSinceJ2000(ZonedDateTime.now(ZoneId.systemDefault()));
+        double mDeg = DateUtils.normalizeAngle(M0_MARS_DEG + N_MARS_DEG_PER_DAY * d);
+        return A_MARS_AU * (1.0 - E_MARS * Math.cos(Math.toRadians(mDeg)));
+    }
+
     public static double distanceAU(ZonedDateTime zdt) {
         double d = DateUtils.daysSinceJ2000(zdt);
 

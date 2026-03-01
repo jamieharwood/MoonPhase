@@ -72,17 +72,17 @@
     setText('earth-daylight', fmtHours(data.daylightHours));
 
     // Light travel times
-    setText('light-sun',     data.lightTimeSunToEarth      || '—');
-    setText('light-mercury', data.lightTimeEarthToMercury  || '—');
-    setText('light-venus',   data.lightTimeEarthToVenus    || '—');
-    setText('light-mars',    data.lightTimeEarthToMars     || '—');
-    setText('light-jupiter', data.lightTimeEarthToJupiter  || '—');
-    setText('light-saturn',  data.lightTimeEarthToSaturn   || '—');
-    setText('light-uranus',  data.lightTimeEarthToUranus   || '—');
-    setText('light-neptune', data.lightTimeEarthToNeptune  || '—');
-    setText('light-pluto',   data.lightTimeEarthToPluto    || '—');
-    setText('light-v1',      data.lightTimeEarthToVoyager1 || '—');
-    setText('light-v2',      data.lightTimeEarthToVoyager2 || '—');
+    setText('light-sun',     data.lightTimeSunToEarth    || '—');
+    setText('light-mercury', data.lightTimeSunToMercury  || '—');
+    setText('light-venus',   data.lightTimeSunToVenus    || '—');
+    setText('light-mars',    data.lightTimeSunToMars     || '—');
+    setText('light-jupiter', data.lightTimeSunToJupiter  || '—');
+    setText('light-saturn',  data.lightTimeSunToSaturn   || '—');
+    setText('light-uranus',  data.lightTimeSunToUranus   || '—');
+    setText('light-neptune', data.lightTimeSunToNeptune  || '—');
+    setText('light-pluto',   data.lightTimeSunToPluto    || '—');
+    setText('light-v1',      data.lightTimeSunToVoyager1 || '—');
+    setText('light-v2',      data.lightTimeSunToVoyager2 || '—');
 
     // Events
     setText('event-summer',     fmtDays(data.daysUntilSummerSolstice));

@@ -27,6 +27,12 @@ public final class JupiterDistance {
         return distanceAU(ZonedDateTime.now(ZoneId.systemDefault()));
     }
 
+    public static double heliocentricDistanceAUNow() {
+        double d = DateUtils.daysSinceJ2000(ZonedDateTime.now(ZoneId.systemDefault()));
+        double mDeg = DateUtils.normalizeAngle(M0_JUPITER_DEG + N_JUPITER_DEG_PER_DAY * d);
+        return A_JUPITER_AU * (1.0 - E_JUPITER * Math.cos(Math.toRadians(mDeg)));
+    }
+
     public static double distanceAU(ZonedDateTime zdt) {
         double d = DateUtils.daysSinceJ2000(zdt);
 

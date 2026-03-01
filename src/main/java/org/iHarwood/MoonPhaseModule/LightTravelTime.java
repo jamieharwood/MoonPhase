@@ -77,34 +77,54 @@ public final class LightTravelTime {
         return formatTravelTime(VoyagerDistance.distanceFromEarthV1AUNow());
     }
 
-    /** Light travel time from Earth to Voyager 2 right now. */
-    public static String earthToVoyager2Now() {
-        return formatTravelTime(VoyagerDistance.distanceFromEarthV2AUNow());
+    /** Light travel time from Sun to Mercury right now. */
+    public static String sunToMercuryNow() {
+        return formatTravelTime(MercuryDistance.heliocentricDistanceAUNow());
     }
 
-    /** Light travel time from Earth to Mercury right now. */
-    public static String earthToMercuryNow() {
-        return formatTravelTime(MercuryDistance.distanceAUNow());
+    /** Light travel time from Sun to Venus right now. */
+    public static String sunToVenusNow() {
+        return formatTravelTime(VenusDistance.heliocentricDistanceAUNow());
     }
 
-    /** Light travel time from Earth to Venus right now. */
-    public static String earthToVenusNow() {
-        return formatTravelTime(VenusDistance.distanceAUNow());
+    /** Light travel time from Sun to Mars right now. */
+    public static String sunToMarsNow() {
+        return formatTravelTime(MarsDistance.heliocentricDistanceAUNow());
     }
 
-    /** Light travel time from Earth to Uranus right now. */
-    public static String earthToUranusNow() {
-        return formatTravelTime(UranusDistance.distanceAUNow());
+    /** Light travel time from Sun to Jupiter right now. */
+    public static String sunToJupiterNow() {
+        return formatTravelTime(JupiterDistance.heliocentricDistanceAUNow());
     }
 
-    /** Light travel time from Earth to Neptune right now. */
-    public static String earthToNeptuneNow() {
-        return formatTravelTime(NeptuneDistance.distanceAUNow());
+    /** Light travel time from Sun to Saturn right now. */
+    public static String sunToSaturnNow() {
+        return formatTravelTime(SaturnDistance.heliocentricDistanceAUNow());
     }
 
-    /** Light travel time from Earth to Pluto right now. */
-    public static String earthToPlutoNow() {
-        return formatTravelTime(PlutoDistance.distanceAUNow());
+    /** Light travel time from Sun to Uranus right now. */
+    public static String sunToUranusNow() {
+        return formatTravelTime(UranusDistance.heliocentricDistanceAUNow());
+    }
+
+    /** Light travel time from Sun to Neptune right now. */
+    public static String sunToNeptuneNow() {
+        return formatTravelTime(NeptuneDistance.heliocentricDistanceAUNow());
+    }
+
+    /** Light travel time from Sun to Pluto right now. */
+    public static String sunToPlutoNow() {
+        return formatTravelTime(PlutoDistance.heliocentricDistanceAUNow());
+    }
+
+    /** Light travel time from Sun to Voyager 1 right now. */
+    public static String sunToVoyager1Now() {
+        return formatTravelTime(VoyagerDistance.heliocentricDistanceV1AUNow());
+    }
+
+    /** Light travel time from Sun to Voyager 2 right now. */
+    public static String sunToVoyager2Now() {
+        return formatTravelTime(VoyagerDistance.heliocentricDistanceV2AUNow());
     }
 }
 

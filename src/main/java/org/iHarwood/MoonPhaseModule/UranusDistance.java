@@ -20,6 +20,12 @@ public final class UranusDistance {
         return distanceAU(ZonedDateTime.now(ZoneId.systemDefault()));
     }
 
+    public static double heliocentricDistanceAUNow() {
+        double d = DateUtils.daysSinceJ2000(ZonedDateTime.now(ZoneId.systemDefault()));
+        double mDeg = DateUtils.normalizeAngle(M0_URANUS_DEG + N_URANUS_DEG_PER_DAY * d);
+        return A_URANUS_AU * (1.0 - E_URANUS * Math.cos(Math.toRadians(mDeg)));
+    }
+
     public static double distanceAU(ZonedDateTime zdt) {
         double d = DateUtils.daysSinceJ2000(zdt);
 
