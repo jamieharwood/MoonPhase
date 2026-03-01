@@ -11,7 +11,7 @@ services:
       - MOON_PHASE_UPDATE_INTERVAL=3600000  # 1 hour in milliseconds
       - LOGGING_LEVEL_ROOT=INFO
       - TZ=UTC  # Set timezone (change as needed)
-      - AWTRIXHOSTNAME=http://moonclock.local # Hostname for Awtrix
+      - AWTRIXHOSTNAME=http://moonclock.bluelarma.com # Hostname for Awtrix
       - CLAUDE_API_KEY=${CLAUDE_API_KEY}  # Claude API key for moon phase verification
       - SERVER_PORT=8081  # Change this if port 8081 is already in use
       # MongoDB historical data
