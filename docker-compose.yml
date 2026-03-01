@@ -3,7 +3,6 @@ services:
     image: jamieharwood/moonphase:latest
     container_name: moonphase-app
     restart: unless-stopped
-    network_mode: "host"
 
     # Environment variables for configuration
     environment:
@@ -13,10 +12,13 @@ services:
       - TZ=UTC  # Set timezone (change as needed)
       - AWTRIXHOSTNAME=http://moonclock.bluelarma.com # Hostname for Awtrix
       - CLAUDE_API_KEY=${CLAUDE_API_KEY}  # Claude API key for moon phase verification
-      - SERVER_PORT=8081  # Change this if port 8081 is already in use
+      - SERVER_PORT=8081
       # MongoDB historical data
       - APP_HISTORY_ENABLED=true
-      - SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/moonphase
+      - SPRING_DATA_MONGODB_URI=mongodb://moonphase-mongo:27017/moonphase
+
+    ports:
+      - "8081:8081"
 
     # Resource limits
     deploy:
@@ -38,6 +40,9 @@ services:
     # Keep container running
     stdin_open: true
     tty: true
+
+    depends_on:
+      - mongodb
 
   mongodb:
     image: mongo:8
