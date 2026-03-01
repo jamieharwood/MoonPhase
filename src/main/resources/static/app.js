@@ -154,6 +154,42 @@
     };
   }
 
+  // ── Service Worker registration ───────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(function () { console.log('[SW] Registered.'); })
+      .catch(function (err) { console.warn('[SW] Registration failed:', err.message); });
+  }
+
+  // ── PWA install prompt ────────────────────────────────────────────────────
+  var deferredInstallPrompt = null;
+  var installBtn = document.getElementById('install-btn');
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (installBtn) installBtn.hidden = false;
+    console.log('[PWA] Install prompt ready.');
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', function () {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then(function (result) {
+        console.log('[PWA] User choice:', result.outcome);
+        deferredInstallPrompt = null;
+        installBtn.hidden = true;
+      });
+    });
+  }
+
+  window.addEventListener('appinstalled', function () {
+    console.log('[PWA] App installed.');
+    if (installBtn) installBtn.hidden = true;
+    deferredInstallPrompt = null;
+  });
+
   // ── Init ──────────────────────────────────────────────────────────────────
   loadInitialData();
   connectSSE();

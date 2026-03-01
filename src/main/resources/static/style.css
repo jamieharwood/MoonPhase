@@ -72,6 +72,25 @@ header {
   color: var(--text-secondary);
 }
 
+/* ===== Install Button ===== */
+.install-btn {
+  background: transparent;
+  border: 1px solid var(--text-glow);
+  color: var(--text-glow);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.install-btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 10px var(--text-glow);
+}
+
 /* ===== SSE Status Dot ===== */
 .sse-dot {
   width: 10px;
