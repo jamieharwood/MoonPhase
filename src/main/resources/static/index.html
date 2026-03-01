@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoonPhaseAI — Live Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <span class="header-title">&#9790; MoonPhaseAI</span>
+      <span class="header-subtitle">Live Astronomical Dashboard</span>
+    </div>
+    <div class="header-right">
+      <span id="last-updated" class="last-updated">Waiting for data...</span>
+      <span id="sse-dot" class="sse-dot connecting" title="SSE connection status"></span>
+    </div>
+  </header>
+
+  <main class="card-grid">
+
+    <!-- Moon Phase -->
+    <section class="card moon-card" id="card-moon">
+      <h2>&#127769; Moon Phase</h2>
+      <div class="moon-phase-name" id="moon-phase-name">—</div>
+      <pre class="moon-ascii" id="moon-ascii"></pre>
+      <div class="moon-stats">
+        <div class="stat">
+          <span class="stat-label">Illumination</span>
+          <span class="stat-value" id="moon-illumination">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Age</span>
+          <span class="stat-value" id="moon-age">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Full Moon In</span>
+          <span class="stat-value" id="moon-full-in">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Distance</span>
+          <span class="stat-value" id="moon-distance">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Solar System Distances -->
+    <section class="card" id="card-solar">
+      <h2>&#9728;&#65039; Solar System Distances</h2>
+      <table class="data-table">
+        <tbody>
+          <tr><td>Sun &#8594; Earth</td><td id="dist-sun" class="val">—</td></tr>
+          <tr><td>Earth &#8594; Mars</td><td id="dist-mars" class="val">—</td></tr>
+          <tr><td>Earth &#8594; Jupiter</td><td id="dist-jupiter" class="val">—</td></tr>
+          <tr><td>Earth &#8594; Saturn</td><td id="dist-saturn" class="val">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Deep Space Probes -->
+    <section class="card" id="card-probes">
+      <h2>&#128640; Deep Space Probes</h2>
+      <table class="data-table">
+        <tbody>
+          <tr><td>Voyager 1</td><td id="probe-v1" class="val">—</td></tr>
+          <tr><td>Voyager 2</td><td id="probe-v2" class="val">—</td></tr>
+          <tr><td>New Horizons</td><td id="probe-nh" class="val">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Earth -->
+    <section class="card" id="card-earth">
+      <h2>&#127759; Earth</h2>
+      <table class="data-table">
+        <tbody>
+          <tr><td>Orbital Speed</td><td id="earth-speed-s" class="val">—</td></tr>
+          <tr><td>Speed (km/h)</td><td id="earth-speed-h" class="val">—</td></tr>
+          <tr><td>Daylight Hours</td><td id="earth-daylight" class="val">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Light Travel Times -->
+    <section class="card" id="card-light">
+      <h2>&#9889; Light Travel Times</h2>
+      <table class="data-table">
+        <tbody>
+          <tr><td>Sun &#8594; Earth</td><td id="light-sun" class="val">—</td></tr>
+          <tr><td>Earth &#8594; Mars</td><td id="light-mars" class="val">—</td></tr>
+          <tr><td>Earth &#8594; Jupiter</td><td id="light-jupiter" class="val">—</td></tr>
+          <tr><td>Earth &#8594; Saturn</td><td id="light-saturn" class="val">—</td></tr>
+          <tr><td>Earth &#8594; Voyager 1</td><td id="light-v1" class="val">—</td></tr>
+          <tr><td>Earth &#8594; Voyager 2</td><td id="light-v2" class="val">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Upcoming Events -->
+    <section class="card" id="card-events">
+      <h2>&#128197; Upcoming Events</h2>
+      <table class="data-table">
+        <tbody>
+          <tr><td>Summer Solstice</td><td id="event-summer" class="val">—</td></tr>
+          <tr><td>Winter Solstice</td><td id="event-winter" class="val">—</td></tr>
+          <tr><td>Perihelion</td><td id="event-perihelion" class="val">—</td></tr>
+          <tr><td>Aphelion</td><td id="event-aphelion" class="val">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <footer>
+    Data refreshed twice daily at 00:01 and 12:01 UTC &nbsp;&mdash;&nbsp; MoonPhaseAI
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

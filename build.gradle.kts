@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.google.code.gson:gson:2.13.2")
     
     testImplementation("org.springframework.boot:spring-boot-starter-test")

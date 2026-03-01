@@ -1,0 +1,228 @@
+/* ===== CSS Custom Properties ===== */
+:root {
+  --bg-deep:       #030a1a;
+  --bg-card:       #071526;
+  --bg-card-hover: #0a1e36;
+  --border:        #0d2a4a;
+  --text-primary:  #c8dff0;
+  --text-secondary:#7aa8cc;
+  --text-glow:     #00d4ff;
+  --moon-color:    #f0e68c;
+  --accent-green:  #00ff88;
+  --accent-amber:  #ffaa00;
+  --accent-red:    #ff4444;
+  --font-mono:     'Courier New', Courier, monospace;
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ===== Header ===== */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: rgba(3, 10, 26, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--text-glow);
+  text-shadow: 0 0 12px var(--text-glow);
+  letter-spacing: 0.05em;
+}
+
+.header-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.last-updated {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* ===== SSE Status Dot ===== */
+.sse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sse-dot.connected    { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+.sse-dot.disconnected { background: var(--accent-red);   box-shadow: 0 0 6px var(--accent-red); }
+.sse-dot.connecting   {
+  background: var(--accent-amber);
+  box-shadow: 0 0 6px var(--accent-amber);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* ===== Card Grid ===== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ===== Cards ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  transition: border-color 0.3s;
+}
+
+.card:hover {
+  background: var(--bg-card-hover);
+}
+
+.card.updated {
+  animation: flash-border 2s ease-out forwards;
+}
+
+@keyframes flash-border {
+  0%   { border-color: var(--text-glow); box-shadow: 0 0 16px var(--text-glow); }
+  100% { border-color: var(--border);    box-shadow: none; }
+}
+
+/* Moon card takes up two rows to fit ASCII art */
+.moon-card {
+  grid-row: span 2;
+}
+
+.card h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-glow);
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+/* ===== Moon Card ===== */
+.moon-phase-name {
+  font-size: 1.3rem;
+  color: var(--moon-color);
+  text-shadow: 0 0 10px rgba(240, 230, 140, 0.5);
+  margin-bottom: 0.75rem;
+}
+
+.moon-ascii {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--moon-color);
+  opacity: 0.85;
+  margin-bottom: 1rem;
+  white-space: pre;
+}
+
+.moon-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.stat-value {
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+/* ===== Data Table ===== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table td {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(13, 42, 74, 0.5);
+  font-size: 0.85rem;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table td:first-child {
+  color: var(--text-secondary);
+  padding-right: 1rem;
+  white-space: nowrap;
+}
+
+.data-table td.val {
+  color: var(--text-primary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== Footer ===== */
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .card-grid { padding: 0.75rem; gap: 0.75rem; }
+  .moon-card { grid-row: span 1; }
+}
