@@ -24,7 +24,7 @@ The application performs the following calculations on a configurable schedule (
 - **New Horizons**: Estimated distance from Earth in AU.
 
 ### Light Travel Times
-- Calculated for: Sun→Earth, Earth→Mars, Earth→Jupiter, Earth→Saturn, Earth→Voyager 1, Earth→Voyager 2.
+- Calculated for: Sun→Earth, Earth→Mercury, Earth→Venus, Earth→Mars, Earth→Jupiter, Earth→Saturn, Earth→Uranus, Earth→Neptune, Earth→Pluto, Earth→Voyager 1, Earth→Voyager 2.
 
 ### Earth
 - Current orbital speed in km/s and km/h.
