@@ -47,6 +47,18 @@ MoonPhaseAI includes an optional live web dashboard that displays all computed m
 
 The dashboard is **enabled by default** and accessible at `http://localhost:8080/` (or the configured port).
 
+### Installing as an app
+
+The dashboard is a Progressive Web App (PWA). Once the page has loaded:
+
+- **Chrome / Edge (desktop):** an **⇩ Install App** button appears in the header — click it to install as a standalone desktop app.
+- **Chrome (Android):** the install button appears in the header, or use the browser's "Add to Home Screen" option.
+- **Safari (iOS/macOS):** tap Share → "Add to Home Screen" — uses the dedicated 180×180 touch icon.
+
+The installed app uses a network-first service worker so live data is never stale. All static assets are cached for offline resilience.
+
+> **Note:** The PWA install prompt requires the site to be served over **HTTPS**. On `localhost` it works without TLS for local testing. For production, place the container behind a reverse proxy (e.g. nginx + Let's Encrypt).
+
 ### Disabling the dashboard (headless mode)
 
 To run without a web server (e.g. on a resource-constrained device), set the following environment variable:
