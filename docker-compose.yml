@@ -13,7 +13,7 @@ services:
       - TZ=UTC  # Set timezone (change as needed)
       - AWTRIXHOSTNAME=http://moonclock.local # Hostname for Awtrix
       - CLAUDE_API_KEY=${CLAUDE_API_KEY}  # Claude API key for moon phase verification
-      - SERVER_PORT=8080  # Change this if port 8080 is already in use
+      - SERVER_PORT=8081  # Change this if port 8081 is already in use
       # MongoDB historical data
       - APP_HISTORY_ENABLED=true
       - SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/moonphase
@@ -40,7 +40,7 @@ services:
     tty: true
 
   mongodb:
-    image: mongo:7
+    image: mongo:8
     container_name: moonphase-mongo
     restart: unless-stopped
     network_mode: "host"
