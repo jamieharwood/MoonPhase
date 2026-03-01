@@ -45,7 +45,17 @@ MoonPhaseAI includes an optional live web dashboard that displays all computed m
 
 ![MoonPhaseAI Dashboard](dashboard.png)
 
-The dashboard is **enabled by default** and accessible at `http://localhost:8080/` (or the configured port).
+The dashboard is **enabled by default** and accessible at `http://localhost:8081/` (or the configured port).
+
+### Manual Refresh
+
+A **↻ Refresh** button in the dashboard header triggers an immediate recalculation of all values without waiting for the next scheduled run. The dashboard updates automatically via SSE when the calculation completes.
+
+### Historical Graph
+
+The dashboard includes a full-width historical data panel powered by MongoDB and Chart.js. It plots any recorded metric over time (up to 60 data points by default) and can be switched between metrics using the dropdown. A data point is saved to MongoDB on every scheduled or manual refresh.
+
+To enable history, MongoDB must be running and the following environment variables must be set (see Configuration below). If MongoDB is unavailable the dashboard still works — the graph panel is simply hidden.
 
 ### Installing as an app
 
@@ -80,8 +90,10 @@ All configuration is via environment variables:
 | `CRON_SCHEDULE` | `0 1 0,12 * * *` | Spring cron expression for the update schedule |
 | `CLAUDE_API_KEY` | _(none)_ | Anthropic API key for moon phase verification (optional) |
 | `CLAUDE_MODEL` | `claude-sonnet-4-6` | Claude model ID to use for moon phase verification |
-| `SERVER_PORT` | `8080` | Port the web dashboard listens on |
+| `SERVER_PORT` | `8081` | Port the web dashboard listens on |
 | `SPRING_MAIN_WEB-APPLICATION-TYPE` | `servlet` | Set to `none` to disable the web dashboard |
+| `APP_HISTORY_ENABLED` | `false` | Set to `true` to enable MongoDB history storage |
+| `SPRING_DATA_MONGODB_URI` | _(none)_ | MongoDB connection URI, e.g. `mongodb://localhost:27017/moonphase` |
 
 ---
 
@@ -100,6 +112,14 @@ Then start the container:
 ```bash
 docker compose up -d
 ```
+
+The included `docker-compose.yml` starts both the application and a MongoDB container. MongoDB is exposed on port **27017** so you can connect with [MongoDB Compass](https://www.mongodb.com/products/compass) or any other client using:
+
+```
+mongodb://<host-ip>:27017
+```
+
+The historical data is stored in the `moonphase` database, `snapshots` collection.
 
 To change the dashboard port, edit `SERVER_PORT` in `docker-compose.yml`:
 
