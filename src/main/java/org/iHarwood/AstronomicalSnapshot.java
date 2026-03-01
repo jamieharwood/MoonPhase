@@ -36,9 +36,14 @@ public record AstronomicalSnapshot(
 
         // Light travel times (formatted strings)
         String lightTimeSunToEarth,
+        String lightTimeEarthToMercury,
+        String lightTimeEarthToVenus,
         String lightTimeEarthToMars,
         String lightTimeEarthToJupiter,
         String lightTimeEarthToSaturn,
+        String lightTimeEarthToUranus,
+        String lightTimeEarthToNeptune,
+        String lightTimeEarthToPluto,
         String lightTimeEarthToVoyager1,
         String lightTimeEarthToVoyager2,
 

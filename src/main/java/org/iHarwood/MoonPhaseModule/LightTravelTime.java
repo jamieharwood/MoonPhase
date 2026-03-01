@@ -81,5 +81,30 @@ public final class LightTravelTime {
     public static String earthToVoyager2Now() {
         return formatTravelTime(VoyagerDistance.distanceFromEarthV2AUNow());
     }
+
+    /** Light travel time from Earth to Mercury right now. */
+    public static String earthToMercuryNow() {
+        return formatTravelTime(MercuryDistance.distanceAUNow());
+    }
+
+    /** Light travel time from Earth to Venus right now. */
+    public static String earthToVenusNow() {
+        return formatTravelTime(VenusDistance.distanceAUNow());
+    }
+
+    /** Light travel time from Earth to Uranus right now. */
+    public static String earthToUranusNow() {
+        return formatTravelTime(UranusDistance.distanceAUNow());
+    }
+
+    /** Light travel time from Earth to Neptune right now. */
+    public static String earthToNeptuneNow() {
+        return formatTravelTime(NeptuneDistance.distanceAUNow());
+    }
+
+    /** Light travel time from Earth to Pluto right now. */
+    public static String earthToPlutoNow() {
+        return formatTravelTime(PlutoDistance.distanceAUNow());
+    }
 }
 

@@ -70,9 +70,14 @@ public class Main {
     private double snapshotEarthSpeedKmPerHour;
     private double snapshotDaylightHours;
     private String snapshotLightTimeSunToEarth;
+    private String snapshotLightTimeEarthToMercury;
+    private String snapshotLightTimeEarthToVenus;
     private String snapshotLightTimeEarthToMars;
     private String snapshotLightTimeEarthToJupiter;
     private String snapshotLightTimeEarthToSaturn;
+    private String snapshotLightTimeEarthToUranus;
+    private String snapshotLightTimeEarthToNeptune;
+    private String snapshotLightTimeEarthToPluto;
     private String snapshotLightTimeEarthToVoyager1;
     private String snapshotLightTimeEarthToVoyager2;
     private long snapshotDaysUntilSummerSolstice;
@@ -167,9 +172,14 @@ public class Main {
                     snapshotEarthSpeedKmPerHour,
                     snapshotDaylightHours,
                     snapshotLightTimeSunToEarth,
+                    snapshotLightTimeEarthToMercury,
+                    snapshotLightTimeEarthToVenus,
                     snapshotLightTimeEarthToMars,
                     snapshotLightTimeEarthToJupiter,
                     snapshotLightTimeEarthToSaturn,
+                    snapshotLightTimeEarthToUranus,
+                    snapshotLightTimeEarthToNeptune,
+                    snapshotLightTimeEarthToPluto,
                     snapshotLightTimeEarthToVoyager1,
                     snapshotLightTimeEarthToVoyager2,
                     snapshotDaysUntilSummerSolstice,
@@ -380,17 +390,27 @@ public class Main {
 
     private void getLightTravelTimes() {
         snapshotLightTimeSunToEarth = LightTravelTime.sunToEarthNow();
+        snapshotLightTimeEarthToMercury = LightTravelTime.earthToMercuryNow();
+        snapshotLightTimeEarthToVenus = LightTravelTime.earthToVenusNow();
         snapshotLightTimeEarthToMars = LightTravelTime.earthToMarsNow();
         snapshotLightTimeEarthToJupiter = LightTravelTime.earthToJupiterNow();
         snapshotLightTimeEarthToSaturn = LightTravelTime.earthToSaturnNow();
+        snapshotLightTimeEarthToUranus = LightTravelTime.earthToUranusNow();
+        snapshotLightTimeEarthToNeptune = LightTravelTime.earthToNeptuneNow();
+        snapshotLightTimeEarthToPluto = LightTravelTime.earthToPlutoNow();
         snapshotLightTimeEarthToVoyager1 = LightTravelTime.earthToVoyager1Now();
         snapshotLightTimeEarthToVoyager2 = LightTravelTime.earthToVoyager2Now();
 
         logger.info("--- Light Travel Times ---");
-        logger.info("Sun → Earth:    {}", snapshotLightTimeSunToEarth);
-        logger.info("Earth → Mars:   {}", snapshotLightTimeEarthToMars);
-        logger.info("Earth → Jupiter: {}", snapshotLightTimeEarthToJupiter);
-        logger.info("Earth → Saturn: {}", snapshotLightTimeEarthToSaturn);
+        logger.info("Sun → Earth:      {}", snapshotLightTimeSunToEarth);
+        logger.info("Earth → Mercury:  {}", snapshotLightTimeEarthToMercury);
+        logger.info("Earth → Venus:    {}", snapshotLightTimeEarthToVenus);
+        logger.info("Earth → Mars:     {}", snapshotLightTimeEarthToMars);
+        logger.info("Earth → Jupiter:  {}", snapshotLightTimeEarthToJupiter);
+        logger.info("Earth → Saturn:   {}", snapshotLightTimeEarthToSaturn);
+        logger.info("Earth → Uranus:   {}", snapshotLightTimeEarthToUranus);
+        logger.info("Earth → Neptune:  {}", snapshotLightTimeEarthToNeptune);
+        logger.info("Earth → Pluto:    {}", snapshotLightTimeEarthToPluto);
         logger.info("Earth → Voyager 1: {}", snapshotLightTimeEarthToVoyager1);
         logger.info("Earth → Voyager 2: {}", snapshotLightTimeEarthToVoyager2);
 

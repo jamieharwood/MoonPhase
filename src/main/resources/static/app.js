@@ -72,10 +72,15 @@
     setText('earth-daylight', fmtHours(data.daylightHours));
 
     // Light travel times
-    setText('light-sun',     data.lightTimeSunToEarth    || '—');
-    setText('light-mars',    data.lightTimeEarthToMars   || '—');
-    setText('light-jupiter', data.lightTimeEarthToJupiter|| '—');
-    setText('light-saturn',  data.lightTimeEarthToSaturn || '—');
+    setText('light-sun',     data.lightTimeSunToEarth      || '—');
+    setText('light-mercury', data.lightTimeEarthToMercury  || '—');
+    setText('light-venus',   data.lightTimeEarthToVenus    || '—');
+    setText('light-mars',    data.lightTimeEarthToMars     || '—');
+    setText('light-jupiter', data.lightTimeEarthToJupiter  || '—');
+    setText('light-saturn',  data.lightTimeEarthToSaturn   || '—');
+    setText('light-uranus',  data.lightTimeEarthToUranus   || '—');
+    setText('light-neptune', data.lightTimeEarthToNeptune  || '—');
+    setText('light-pluto',   data.lightTimeEarthToPluto    || '—');
     setText('light-v1',      data.lightTimeEarthToVoyager1 || '—');
     setText('light-v2',      data.lightTimeEarthToVoyager2 || '—');
 
