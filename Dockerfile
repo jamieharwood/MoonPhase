@@ -33,9 +33,9 @@ RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
 
-# Health check - verify the process is still running
+# Health check - use Spring Boot actuator if available, fall back to process check
 HEALTHCHECK --interval=5m --timeout=10s --start-period=30s --retries=3 \
-    CMD pgrep -f "app.jar" > /dev/null || exit 1
+    CMD wget -q --spider http://localhost:8080/actuator/health 2>/dev/null || pgrep -f "app.jar" > /dev/null || exit 1
 
 # Run the application with the required JVM arguments
 ENTRYPOINT ["java", "--enable-native-access=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.util=ALL-UNNAMED", "-XX:+EnableDynamicAgentLoading", "-jar", "app.jar"]

@@ -51,6 +51,10 @@ public class DashboardController {
         return ResponseEntity.ok(snapshot);
     }
 
+    /**
+     * Manual refresh - update() is already synchronized via updateLock,
+     * so concurrent calls are safe (they will queue up, not race).
+     */
     @PostMapping(value = "/api/refresh")
     @ResponseBody
     public ResponseEntity<Void> refresh() {

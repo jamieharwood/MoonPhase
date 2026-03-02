@@ -11,7 +11,7 @@ public class OptimizationTest {
 
         // Test 2: DayLight optimization
         System.out.println("\nTest 2: DayLight Analytical Calculation");
-        double[] dayLightRange = DayLight.minMaxDayLengthAUNow(51.4769);
+        double[] dayLightRange = DayLight.minMaxDayLengthHoursNow(51.4769);
         System.out.printf("Min daylight: %.2f hours\n", dayLightRange[0]);
         System.out.printf("Max daylight: %.2f hours\n", dayLightRange[1]);
         System.out.println("✓ Analytical calculation works (no 365-day loop)");
@@ -24,7 +24,7 @@ public class OptimizationTest {
 
         // Test 4: Mars distance
         System.out.println("\nTest 4: Mars Distance Calculation");
-        double marsDist = MarsDistance.distanceAUNow();
+        double marsDist = Planets.MARS.distanceAUNow();
         System.out.printf("Earth-Mars distance: %.6f AU\n", marsDist);
         System.out.println("✓ Uses shared DateUtils");
 
