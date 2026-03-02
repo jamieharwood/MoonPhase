@@ -5,8 +5,6 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -105,20 +103,22 @@ public final class APIPost {
             // Illegal URI, try to fix it
         }
 
-        // Fallback for hostnames with underscores (which URI class rejects)
-        try {
-            URL url = new URL(urlString);
-            String host = url.getHost();
-            if (host != null) {
-                InetAddress address = InetAddress.getByName(host);
-                String ip = address.getHostAddress();
-                // Reconstruct URL with IP address
-                URL newUrl = new URL(url.getProtocol(), ip, url.getPort(), url.getFile());
-                return newUrl.toURI();
+            // Fallback for hostnames with underscores (which URI class rejects):
+            // Parse manually and resolve the host to an IP address.
+            try {
+                java.net.URL url = new java.net.URL(urlString);
+                String host = url.getHost();
+                if (host != null) {
+                    InetAddress address = InetAddress.getByName(host);
+                    String ip = address.getHostAddress();
+                    int port = url.getPort();
+                    String portPart = (port == -1) ? "" : ":" + port;
+                    String resolved = url.getProtocol() + "://" + ip + portPart + url.getFile();
+                    return URI.create(resolved);
+                }
+            } catch (IOException e) {
+                throw new IOException("Failed to resolve invalid URI: " + urlString, e);
             }
-        } catch (IOException | URISyntaxException e) {
-            throw new IOException("Failed to resolve invalid URI: " + urlString, e);
-        }
         throw new IOException("Invalid URI: " + urlString);
     }
 

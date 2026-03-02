@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.ToDoubleFunction;
 
 /**
  * Persists snapshots to MongoDB and serves historical data for the graph panel.
@@ -27,25 +28,31 @@ public class HistoryService {
             DateTimeFormatter.ofPattern("dd MMM HH:mm").withZone(ZoneOffset.UTC);
     private static final int DEFAULT_LIMIT = 60;
 
-    static final Set<String> ALLOWED_METRICS = Set.of(
-            "daylightHours",
-            "moonIlluminationPercent",
-            "sunDistanceAu",
-            "marsDistanceAu",
-            "jupiterDistanceAu",
-            "saturnDistanceAu",
-            "moonDistanceKm",
-            "earthSpeedKmPerSec",
-            "earthSpeedKmPerHour",
-            "voyager1DistanceAu",
-            "voyager2DistanceAu",
-            "newHorizonsDistanceAu",
-            "daysUntilFullMoon",
-            "daysUntilSummerSolstice",
-            "daysUntilWinterSolstice",
-            "daysUntilPerihelion",
-            "daysUntilAphelion"
+    /**
+     * Metric extractors keyed by metric name. Adding a new metric only requires
+     * a single new entry here instead of updating both ALLOWED_METRICS and the switch.
+     */
+    private static final Map<String, ToDoubleFunction<SnapshotDocument>> METRIC_EXTRACTORS = Map.ofEntries(
+            Map.entry("daylightHours",           SnapshotDocument::getDaylightHours),
+            Map.entry("moonIlluminationPercent",  d -> d.getMoonIlluminationPercent()),
+            Map.entry("sunDistanceAu",            SnapshotDocument::getSunDistanceAu),
+            Map.entry("marsDistanceAu",           SnapshotDocument::getMarsDistanceAu),
+            Map.entry("jupiterDistanceAu",        SnapshotDocument::getJupiterDistanceAu),
+            Map.entry("saturnDistanceAu",         SnapshotDocument::getSaturnDistanceAu),
+            Map.entry("moonDistanceKm",           SnapshotDocument::getMoonDistanceKm),
+            Map.entry("earthSpeedKmPerSec",       SnapshotDocument::getEarthSpeedKmPerSec),
+            Map.entry("earthSpeedKmPerHour",      SnapshotDocument::getEarthSpeedKmPerHour),
+            Map.entry("voyager1DistanceAu",       SnapshotDocument::getVoyager1DistanceAu),
+            Map.entry("voyager2DistanceAu",       SnapshotDocument::getVoyager2DistanceAu),
+            Map.entry("newHorizonsDistanceAu",    SnapshotDocument::getNewHorizonsDistanceAu),
+            Map.entry("daysUntilFullMoon",        d -> d.getDaysUntilFullMoon()),
+            Map.entry("daysUntilSummerSolstice",  d -> d.getDaysUntilSummerSolstice()),
+            Map.entry("daysUntilWinterSolstice",  d -> d.getDaysUntilWinterSolstice()),
+            Map.entry("daysUntilPerihelion",      d -> d.getDaysUntilPerihelion()),
+            Map.entry("daysUntilAphelion",        d -> d.getDaysUntilAphelion())
     );
+
+    static final Set<String> ALLOWED_METRICS = METRIC_EXTRACTORS.keySet();
 
     private final SnapshotRepository repository;
 
@@ -88,25 +95,10 @@ public class HistoryService {
     }
 
     private double extractMetric(SnapshotDocument doc, String metric) {
-        return switch (metric) {
-            case "daylightHours"           -> doc.getDaylightHours();
-            case "moonIlluminationPercent" -> doc.getMoonIlluminationPercent();
-            case "sunDistanceAu"           -> doc.getSunDistanceAu();
-            case "marsDistanceAu"          -> doc.getMarsDistanceAu();
-            case "jupiterDistanceAu"       -> doc.getJupiterDistanceAu();
-            case "saturnDistanceAu"        -> doc.getSaturnDistanceAu();
-            case "moonDistanceKm"          -> doc.getMoonDistanceKm();
-            case "earthSpeedKmPerSec"      -> doc.getEarthSpeedKmPerSec();
-            case "earthSpeedKmPerHour"     -> doc.getEarthSpeedKmPerHour();
-            case "voyager1DistanceAu"      -> doc.getVoyager1DistanceAu();
-            case "voyager2DistanceAu"      -> doc.getVoyager2DistanceAu();
-            case "newHorizonsDistanceAu"   -> doc.getNewHorizonsDistanceAu();
-            case "daysUntilFullMoon"       -> doc.getDaysUntilFullMoon();
-            case "daysUntilSummerSolstice" -> doc.getDaysUntilSummerSolstice();
-            case "daysUntilWinterSolstice" -> doc.getDaysUntilWinterSolstice();
-            case "daysUntilPerihelion"     -> doc.getDaysUntilPerihelion();
-            case "daysUntilAphelion"       -> doc.getDaysUntilAphelion();
-            default -> throw new IllegalArgumentException("Unknown metric: " + metric);
-        };
+        ToDoubleFunction<SnapshotDocument> extractor = METRIC_EXTRACTORS.get(metric);
+        if (extractor == null) {
+            throw new IllegalArgumentException("Unknown metric: " + metric);
+        }
+        return extractor.applyAsDouble(doc);
     }
 }
