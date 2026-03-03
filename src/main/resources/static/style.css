@@ -96,7 +96,7 @@ header {
   cursor: not-allowed;
 }
 
-.refresh-btn.spinning .refresh-icon {
+#refresh-btn.spinning .refresh-icon {
   display: inline-block;
   animation: spin-refresh 1s linear infinite;
 }
@@ -105,6 +105,71 @@ header {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+
+/* ===== Hamburger Menu ===== */
+.hamburger-menu {
+  position: relative;
+}
+
+.menu-btn {
+  background: transparent;
+  border: 1px solid var(--accent-green);
+  color: var(--accent-green);
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.menu-btn:hover {
+  background: rgba(0, 255, 136, 0.1);
+  box-shadow: 0 0 10px var(--accent-green);
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-green);
+  border-radius: 6px;
+  min-width: 170px;
+  z-index: 200;
+  padding: 4px 0;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  padding: 0.55rem 1.1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.menu-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refresh-item { color: var(--accent-green); }
+.refresh-item:hover:not(:disabled) { background: rgba(0, 255, 136, 0.08); }
+
+.reset-item { color: var(--accent-red); }
+.reset-item:hover:not(:disabled) { background: rgba(255, 68, 68, 0.08); }
+
+.populate-item { color: var(--accent-amber); }
+.populate-item:hover:not(:disabled) { background: rgba(255, 170, 0, 0.08); }
 
 /* ===== Install Button ===== */
 .install-btn {
@@ -123,6 +188,54 @@ header {
 .install-btn:hover {
   background: rgba(0, 212, 255, 0.1);
   box-shadow: 0 0 10px var(--text-glow);
+}
+
+/* ===== Reset Data Button ===== */
+.reset-btn {
+  background: transparent;
+  border: 1px solid #ff4444;
+  color: #ff4444;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.reset-btn:hover:not(:disabled) {
+  background: rgba(255, 68, 68, 0.1);
+  box-shadow: 0 0 10px #ff4444;
+}
+
+.reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Populate Past Button ===== */
+.populate-btn {
+  background: transparent;
+  border: 1px solid #ffaa00;
+  color: #ffaa00;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.populate-btn:hover:not(:disabled) {
+  background: rgba(255, 170, 0, 0.1);
+  box-shadow: 0 0 10px #ffaa00;
+}
+
+.populate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ===== SSE Status Dot ===== */
@@ -346,7 +459,10 @@ header {
 
 /* ===== Footer ===== */
 footer {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
   padding: 1.5rem;
   font-size: 0.75rem;
   color: var(--text-secondary);

@@ -108,6 +108,33 @@
 
   }
 
+  // ── Hamburger menu ────────────────────────────────────────────────────────
+  var menuBtn = document.getElementById('menu-btn');
+  var menuDropdown = document.getElementById('menu-dropdown');
+
+  if (menuBtn && menuDropdown) {
+    menuBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = menuDropdown.hidden;
+      menuDropdown.hidden = !open;
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+
+    // Close when any item inside is clicked
+    menuDropdown.addEventListener('click', function () {
+      menuDropdown.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+    });
+
+    // Close when clicking anywhere outside the menu
+    document.addEventListener('click', function () {
+      if (!menuDropdown.hidden) {
+        menuDropdown.hidden = true;
+        menuBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
   // ── Refresh button ────────────────────────────────────────────────────────
   var refreshBtn = document.getElementById('refresh-btn');
   var refreshPending = false;
@@ -136,6 +163,43 @@
           console.warn('[Refresh] Request failed:', err.message);
           setRefreshPending(false);
         });
+    });
+  }
+
+  // ── Reset Data button ─────────────────────────────────────────────────────
+  var resetBtn = document.getElementById('reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      if (!confirm('Delete all historical snapshots? This cannot be undone.')) return;
+      resetBtn.disabled = true;
+      fetch('/api/history', { method: 'DELETE' })
+        .then(function (r) {
+          if (r.ok) { window.location.reload(); }
+          else { alert('Reset failed (status ' + r.status + ')'); resetBtn.disabled = false; }
+        })
+        .catch(function () { alert('Reset failed — server unreachable.'); resetBtn.disabled = false; });
+    });
+  }
+
+  // ── Populate Past button ──────────────────────────────────────────────────
+  var populateBtn = document.getElementById('populate-btn');
+  if (populateBtn) {
+    populateBtn.addEventListener('click', function () {
+      var input = prompt('Populate how many past days? (1\u2013365)', '30');
+      if (input === null) return;
+      var days = parseInt(input, 10);
+      if (isNaN(days) || days < 1 || days > 365) {
+        alert('Please enter a number between 1 and 365.');
+        return;
+      }
+      populateBtn.disabled = true;
+      populateBtn.textContent = '\u23f3 Populating\u2026';
+      fetch('/api/history/populate?days=' + days, { method: 'POST' })
+        .then(function (r) {
+          if (r.ok) { window.location.reload(); }
+          else { alert('Populate failed (status ' + r.status + ')'); populateBtn.disabled = false; populateBtn.textContent = '\ud83d\udcc5 Populate Past'; }
+        })
+        .catch(function () { alert('Populate failed \u2014 server unreachable.'); populateBtn.disabled = false; populateBtn.textContent = '\ud83d\udcc5 Populate Past'; });
     });
   }
 
@@ -237,7 +301,7 @@
 
   function loadHistory(metric) {
     var msg = document.getElementById('history-msg');
-    fetch('/api/history?metric=' + encodeURIComponent(metric) + '&limit=60')
+    fetch('/api/history?metric=' + encodeURIComponent(metric) + '&limit=500')
       .then(function (res) {
         if (res.status === 503) {
           if (msg) msg.textContent = 'Historical data unavailable — MongoDB not configured.';

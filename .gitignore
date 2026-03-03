@@ -42,6 +42,10 @@ bin/
 env
 .env
 
+### SSL Certificates ###
+nginx/certbot/conf/
+nginx/certbot/www/
+
 ### Build artifacts ###
 *.class
 *.jar

@@ -29,6 +29,16 @@ The application performs the following calculations on a configurable schedule (
 ### Earth
 - Current orbital speed in km/s and km/h.
 - Daylight hours for a configurable latitude (default: 51.4769° N, Greenwich).
+- Current axial tilt in degrees (IAU obliquity formula, currently ~23.436°).
+
+### LEO (Low Earth Orbit)
+Live data fetched from [CelesTrak](https://celestrak.org/) on every scheduled run:
+- **ISS altitude**: Derived from live TLE data via Kepler's third law.
+- **Tiangong altitude**: Derived from live TLE data (Tianhe core module).
+- **Hubble altitude**: Derived from live TLE data.
+- **Starlink satellites**: Count of active Starlink TLE entries.
+- **Amazon Kuiper satellites**: Count of active Kuiper TLE entries.
+- **Total in orbit**: Count of all active satellites with current GP element sets.
 
 ### Upcoming Events
 - Days until next Summer Solstice, Winter Solstice, Perihelion, and Aphelion.
@@ -54,6 +64,17 @@ A **↻ Refresh** button in the dashboard header triggers an immediate recalcula
 ### Historical Graph
 
 The dashboard includes a full-width historical data panel powered by MongoDB and Chart.js. It plots any recorded metric over time (up to 60 data points by default) and can be switched between metrics using the dropdown. A data point is saved to MongoDB on every scheduled or manual refresh.
+
+The dropdown covers all computed numeric metrics, organised by category:
+
+| Category | Metrics |
+|---|---|
+| Moon | Illumination (%), Age (days), Distance (km), Days Until Full Moon |
+| Solar System | Sun, Mars, Jupiter, Saturn distances (AU) |
+| Deep Space Probes | Voyager 1, Voyager 2, New Horizons (AU) |
+| Earth | Orbital speed (km/s and km/h), Axial Tilt (°) |
+| LEO | ISS, Tiangong, Hubble altitudes (km); Starlink, Kuiper, Total satellite counts |
+| Upcoming Events | Days until Summer Solstice, Winter Solstice, Perihelion, Aphelion |
 
 To enable history, MongoDB must be running and the following environment variables must be set (see Configuration below). If MongoDB is unavailable the dashboard still works — the graph panel is simply hidden.
 

@@ -3,9 +3,13 @@ package org.iHarwood;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -66,6 +70,30 @@ public class DashboardController {
     @ResponseBody
     public SseEmitter subscribe() {
         return dataService.subscribe();
+    }
+
+    @PostMapping("/api/history/populate")
+    @ResponseBody
+    public ResponseEntity<Void> populateHistory(
+            @RequestParam(defaultValue = "30") int days) {
+        if (!historyService.isPresent()) {
+            return ResponseEntity.status(503).build();
+        }
+        int clampedDays = Math.min(Math.max(days, 1), 365);
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        for (int i = clampedDays; i >= 1; i--) {
+            ZonedDateTime target = now.minusDays(i).withHour(12).withMinute(0).withSecond(0).withNano(0);
+            AstronomicalSnapshot snapshot = main.calculateSnapshotForDate(target);
+            historyService.get().saveAt(snapshot, target.toInstant());
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/api/history")
+    @ResponseBody
+    public ResponseEntity<Void> clearHistory() {
+        historyService.ifPresent(HistoryService::clearAll);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping(value = "/api/history", produces = APPLICATION_JSON_VALUE)

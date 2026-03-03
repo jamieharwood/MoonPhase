@@ -30,11 +30,25 @@ public class SnapshotDocument {
     private double voyager1DistanceAu;
     private double voyager2DistanceAu;
     private double newHorizonsDistanceAu;
+    private int moonAgeDays;
     private int daysUntilFullMoon;
     private long daysUntilSummerSolstice;
     private long daysUntilWinterSolstice;
     private long daysUntilPerihelion;
     private long daysUntilAphelion;
+    private double earthAxialTiltDegrees;
+    private double issAltitudeKm;
+    private double tiangongAltitudeKm;
+    private double hubbleAltitudeKm;
+    private int starlinkSatelliteCount;
+    private int kuiperSatelliteCount;
+    private int totalSatellitesInOrbit;
+
+    public static SnapshotDocument from(AstronomicalSnapshot s, Instant timestamp) {
+        SnapshotDocument doc = from(s);
+        doc.timestamp = timestamp;
+        return doc;
+    }
 
     public static SnapshotDocument from(AstronomicalSnapshot s) {
         SnapshotDocument doc = new SnapshotDocument();
@@ -51,11 +65,19 @@ public class SnapshotDocument {
         doc.voyager1DistanceAu = s.voyager1DistanceAu();
         doc.voyager2DistanceAu = s.voyager2DistanceAu();
         doc.newHorizonsDistanceAu = s.newHorizonsDistanceAu();
+        doc.moonAgeDays = s.moonAgeDays();
         doc.daysUntilFullMoon = s.daysUntilFullMoon();
         doc.daysUntilSummerSolstice = s.daysUntilSummerSolstice();
         doc.daysUntilWinterSolstice = s.daysUntilWinterSolstice();
         doc.daysUntilPerihelion = s.daysUntilPerihelion();
         doc.daysUntilAphelion = s.daysUntilAphelion();
+        doc.earthAxialTiltDegrees = s.earthAxialTiltDegrees();
+        doc.issAltitudeKm = s.issAltitudeKm();
+        doc.tiangongAltitudeKm = s.tiangongAltitudeKm();
+        doc.hubbleAltitudeKm = s.hubbleAltitudeKm();
+        doc.starlinkSatelliteCount = s.starlinkSatelliteCount();
+        doc.kuiperSatelliteCount = s.kuiperSatelliteCount();
+        doc.totalSatellitesInOrbit = s.totalSatellitesInOrbit();
         return doc;
     }
 
@@ -72,9 +94,17 @@ public class SnapshotDocument {
     public double getVoyager1DistanceAu() { return voyager1DistanceAu; }
     public double getVoyager2DistanceAu() { return voyager2DistanceAu; }
     public double getNewHorizonsDistanceAu() { return newHorizonsDistanceAu; }
+    public int getMoonAgeDays() { return moonAgeDays; }
     public int getDaysUntilFullMoon() { return daysUntilFullMoon; }
     public long getDaysUntilSummerSolstice() { return daysUntilSummerSolstice; }
     public long getDaysUntilWinterSolstice() { return daysUntilWinterSolstice; }
     public long getDaysUntilPerihelion() { return daysUntilPerihelion; }
     public long getDaysUntilAphelion() { return daysUntilAphelion; }
+    public double getEarthAxialTiltDegrees() { return earthAxialTiltDegrees; }
+    public double getIssAltitudeKm() { return issAltitudeKm; }
+    public double getTiangongAltitudeKm() { return tiangongAltitudeKm; }
+    public double getHubbleAltitudeKm() { return hubbleAltitudeKm; }
+    public int getStarlinkSatelliteCount() { return starlinkSatelliteCount; }
+    public int getKuiperSatelliteCount() { return kuiperSatelliteCount; }
+    public int getTotalSatellitesInOrbit() { return totalSatellitesInOrbit; }
 }

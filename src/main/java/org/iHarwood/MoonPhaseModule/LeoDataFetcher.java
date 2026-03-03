@@ -38,9 +38,9 @@ public final class LeoDataFetcher {
     private static final int HUBBLE_NORAD   = 20580;  // Hubble Space Telescope
 
     // CelesTrak endpoints
-    private static final String TLE_URL          = "https://celestrak.org/GTEL/GP.php?CATNR=%d&FORMAT=TLE";
-    private static final String GROUP_URL         = "https://celestrak.org/GTEL/GP.php?GROUP=%s&FORMAT=TLE";
-    private static final String SATCAT_ACTIVE_URL = "https://celestrak.org/satcat/query.csv?STATUS=%2B&CURRENT=Y";
+    private static final String TLE_URL          = "https://celestrak.org/NORAD/elements/gp.php?CATNR=%d&FORMAT=TLE";
+    private static final String GROUP_URL         = "https://celestrak.org/NORAD/elements/gp.php?GROUP=%s&FORMAT=TLE";
+    private static final String ACTIVE_TLE_URL = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=TLE";
 
     // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -72,11 +72,12 @@ public final class LeoDataFetcher {
     /** Total number of tracked active satellites in orbit, or -1 if unavailable. */
     public static int fetchTotalSatelliteCount() {
         try {
-            String body = fetch(SATCAT_ACTIVE_URL, 30);
+            String body = fetch(ACTIVE_TLE_URL, 60);
             if (body == null) return -1;
-            // CSV has a header row; each subsequent row is one object
+            // TLE format: 3 lines per satellite (name, line 1, line 2)
+            // Count lines starting with "2 " to get the satellite count
             long count = body.lines()
-                    .filter(l -> !l.isBlank() && !l.startsWith("OBJECT_NAME"))
+                    .filter(l -> l.startsWith("2 "))
                     .count();
             logger.info("Total active satellites tracked: {}", count);
             return (int) count;

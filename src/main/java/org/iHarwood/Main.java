@@ -15,6 +15,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -112,6 +113,77 @@ public class Main {
         synchronized (updateLock) {
             doUpdate();
         }
+    }
+
+    /**
+     * Calculates an astronomical snapshot for a specific historical date/time.
+     * Uses parameterised module methods instead of the *Now() convenience wrappers.
+     * LEO fields (ISS, Tiangong, Hubble, satellite counts) are set to 0 because live
+     * TLE data cannot be reconstructed for past dates.
+     */
+    public AstronomicalSnapshot calculateSnapshotForDate(ZonedDateTime target) {
+        LocalDate targetDate = target.toLocalDate();
+        AstronomicalSnapshot.Builder sb = AstronomicalSnapshot.builder();
+
+        // Sun / Earth distance
+        double sunDistAu = SunDistance.distanceAU(target);
+        sb.sunDistanceAu(sunDistAu);
+
+        // Planet distances
+        sb.marsDistanceAu(Planets.MARS.distanceAU(target));
+        sb.jupiterDistanceAu(Planets.JUPITER.distanceAU(target));
+        sb.saturnDistanceAu(Planets.SATURN.distanceAU(target));
+
+        // Daylight
+        sb.daylightHours(DayLight.dayLengthHours(targetDate, latitude));
+
+        // Deep-space probes
+        sb.voyager1DistanceAu(VoyagerDistance.distanceFromEarthV1AU(target));
+        sb.voyager2DistanceAu(VoyagerDistance.distanceFromEarthV2AU(target));
+        sb.newHorizonsDistanceAu(NewHorizonsDistance.distanceFromEarthAU(target));
+
+        // Upcoming events (relative to target date)
+        sb.daysUntilSummerSolstice(EquinoxCalculator.daysUntilSummerSolstice(targetDate));
+        sb.daysUntilWinterSolstice(EquinoxCalculator.daysUntilWinterSolstice(targetDate));
+        sb.daysUntilPerihelion(PerihelionAphelion.daysUntilPerihelion(targetDate));
+        sb.daysUntilAphelion(PerihelionAphelion.daysUntilAphelion(targetDate));
+
+        // Earth speed and axial tilt
+        sb.earthSpeedKmPerSec(EarthSpeed.speedKmPerSec(target));
+        sb.earthSpeedKmPerHour(EarthSpeed.speedKmPerHour(target));
+        sb.earthAxialTiltDegrees(EarthAxialTilt.tiltDegrees(target));
+
+        // Moon distance
+        sb.moonDistanceKm(MoonDistance.distanceKm(target));
+
+        // Light travel times (using historical distances)
+        sb.lightTimeSunToEarth(LightTravelTime.formatTravelTime(sunDistAu));
+        sb.lightTimeSunToMercury(LightTravelTime.formatTravelTime(Planets.MERCURY.heliocentricDistanceAU(target)));
+        sb.lightTimeSunToVenus(LightTravelTime.formatTravelTime(Planets.VENUS.heliocentricDistanceAU(target)));
+        sb.lightTimeSunToMars(LightTravelTime.formatTravelTime(Planets.MARS.heliocentricDistanceAU(target)));
+        sb.lightTimeSunToJupiter(LightTravelTime.formatTravelTime(Planets.JUPITER.heliocentricDistanceAU(target)));
+        sb.lightTimeSunToSaturn(LightTravelTime.formatTravelTime(Planets.SATURN.heliocentricDistanceAU(target)));
+        sb.lightTimeSunToUranus(LightTravelTime.formatTravelTime(Planets.URANUS.heliocentricDistanceAU(target)));
+        sb.lightTimeSunToNeptune(LightTravelTime.formatTravelTime(Planets.NEPTUNE.heliocentricDistanceAU(target)));
+        sb.lightTimeSunToPluto(LightTravelTime.formatTravelTime(Planets.PLUTO.heliocentricDistanceAU(target)));
+        sb.lightTimeSunToVoyager1(LightTravelTime.formatTravelTime(VoyagerDistance.heliocentricDistanceV1AU(target)));
+        sb.lightTimeSunToVoyager2(LightTravelTime.formatTravelTime(VoyagerDistance.heliocentricDistanceV2AU(target)));
+
+        // Moon phase
+        MoonPhase mp = MoonPhase.fromDate(targetDate);
+        sb.moonPhaseName(mp.getPhaseName());
+        sb.moonPhaseIcon(mp.getPhaseIcon());
+        sb.moonAsciiArt(mp.getAscii());
+        sb.moonIlluminationPercent(mp.getIlluminationPercent());
+        sb.moonAgeDays(mp.getAgeDays());
+        sb.daysUntilFullMoon(mp.getDaysUntilFullMoon());
+
+        // LEO — live-only, cannot be reconstructed for historical dates
+        sb.issAltitudeKm(0).tiangongAltitudeKm(0).hubbleAltitudeKm(0)
+          .starlinkSatelliteCount(0).kuiperSatelliteCount(0).totalSatellitesInOrbit(0);
+
+        sb.lastUpdated(target.format(ISO_FMT));
+        return sb.build();
     }
 
     private void doUpdate() {

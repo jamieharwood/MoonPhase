@@ -33,19 +33,27 @@ public class HistoryService {
      * a single new entry here instead of updating both ALLOWED_METRICS and the switch.
      */
     private static final Map<String, ToDoubleFunction<SnapshotDocument>> METRIC_EXTRACTORS = Map.ofEntries(
-            Map.entry("daylightHours",           SnapshotDocument::getDaylightHours),
+            Map.entry("daylightHours",            SnapshotDocument::getDaylightHours),
             Map.entry("moonIlluminationPercent",  d -> d.getMoonIlluminationPercent()),
+            Map.entry("moonAgeDays",              d -> d.getMoonAgeDays()),
+            Map.entry("moonDistanceKm",           SnapshotDocument::getMoonDistanceKm),
+            Map.entry("daysUntilFullMoon",        d -> d.getDaysUntilFullMoon()),
             Map.entry("sunDistanceAu",            SnapshotDocument::getSunDistanceAu),
             Map.entry("marsDistanceAu",           SnapshotDocument::getMarsDistanceAu),
             Map.entry("jupiterDistanceAu",        SnapshotDocument::getJupiterDistanceAu),
             Map.entry("saturnDistanceAu",         SnapshotDocument::getSaturnDistanceAu),
-            Map.entry("moonDistanceKm",           SnapshotDocument::getMoonDistanceKm),
-            Map.entry("earthSpeedKmPerSec",       SnapshotDocument::getEarthSpeedKmPerSec),
-            Map.entry("earthSpeedKmPerHour",      SnapshotDocument::getEarthSpeedKmPerHour),
             Map.entry("voyager1DistanceAu",       SnapshotDocument::getVoyager1DistanceAu),
             Map.entry("voyager2DistanceAu",       SnapshotDocument::getVoyager2DistanceAu),
             Map.entry("newHorizonsDistanceAu",    SnapshotDocument::getNewHorizonsDistanceAu),
-            Map.entry("daysUntilFullMoon",        d -> d.getDaysUntilFullMoon()),
+            Map.entry("earthSpeedKmPerSec",       SnapshotDocument::getEarthSpeedKmPerSec),
+            Map.entry("earthSpeedKmPerHour",      SnapshotDocument::getEarthSpeedKmPerHour),
+            Map.entry("earthAxialTiltDegrees",    SnapshotDocument::getEarthAxialTiltDegrees),
+            Map.entry("issAltitudeKm",            SnapshotDocument::getIssAltitudeKm),
+            Map.entry("tiangongAltitudeKm",       SnapshotDocument::getTiangongAltitudeKm),
+            Map.entry("hubbleAltitudeKm",         SnapshotDocument::getHubbleAltitudeKm),
+            Map.entry("starlinkSatelliteCount",   d -> d.getStarlinkSatelliteCount()),
+            Map.entry("kuiperSatelliteCount",     d -> d.getKuiperSatelliteCount()),
+            Map.entry("totalSatellitesInOrbit",   d -> d.getTotalSatellitesInOrbit()),
             Map.entry("daysUntilSummerSolstice",  d -> d.getDaysUntilSummerSolstice()),
             Map.entry("daysUntilWinterSolstice",  d -> d.getDaysUntilWinterSolstice()),
             Map.entry("daysUntilPerihelion",      d -> d.getDaysUntilPerihelion()),
@@ -66,6 +74,24 @@ public class HistoryService {
             logger.debug("Snapshot saved to MongoDB.");
         } catch (Exception e) {
             logger.warn("Failed to save snapshot to MongoDB: {}", e.getMessage());
+        }
+    }
+
+    public void saveAt(AstronomicalSnapshot snapshot, java.time.Instant timestamp) {
+        try {
+            repository.save(SnapshotDocument.from(snapshot, timestamp));
+            logger.debug("Historical snapshot saved for {}.", timestamp);
+        } catch (Exception e) {
+            logger.warn("Failed to save historical snapshot: {}", e.getMessage());
+        }
+    }
+
+    public void clearAll() {
+        try {
+            repository.deleteAll();
+            logger.info("All snapshots deleted from MongoDB.");
+        } catch (Exception e) {
+            logger.warn("Failed to clear snapshots from MongoDB: {}", e.getMessage());
         }
     }
 
