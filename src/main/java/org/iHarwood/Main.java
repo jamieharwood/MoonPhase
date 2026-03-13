@@ -130,9 +130,14 @@ public class Main {
         sb.sunDistanceAu(sunDistAu);
 
         // Planet distances
+        sb.mercuryDistanceAu(Planets.MERCURY.heliocentricDistanceAU(target));
+        sb.venusDistanceAu(Planets.VENUS.heliocentricDistanceAU(target));
         sb.marsDistanceAu(Planets.MARS.distanceAU(target));
         sb.jupiterDistanceAu(Planets.JUPITER.distanceAU(target));
         sb.saturnDistanceAu(Planets.SATURN.distanceAU(target));
+        sb.uranusDistanceAu(Planets.URANUS.heliocentricDistanceAU(target));
+        sb.neptuneDistanceAu(Planets.NEPTUNE.heliocentricDistanceAU(target));
+        sb.plutoDistanceAu(Planets.PLUTO.heliocentricDistanceAU(target));
 
         // Daylight
         sb.daylightHours(DayLight.dayLengthHours(targetDate, latitude));
@@ -140,6 +145,8 @@ public class Main {
         // Deep-space probes
         sb.voyager1DistanceAu(VoyagerDistance.distanceFromEarthV1AU(target));
         sb.voyager2DistanceAu(VoyagerDistance.distanceFromEarthV2AU(target));
+        sb.voyager1HelioDistanceAu(VoyagerDistance.heliocentricDistanceV1AU(target));
+        sb.voyager2HelioDistanceAu(VoyagerDistance.heliocentricDistanceV2AU(target));
         sb.newHorizonsDistanceAu(NewHorizonsDistance.distanceFromEarthAU(target));
 
         // Upcoming events (relative to target date)
@@ -235,6 +242,9 @@ public class Main {
     }
 
     private void computePlanetDistances(AstronomicalSnapshot.Builder sb) {
+        sb.mercuryDistanceAu(Planets.MERCURY.heliocentricDistanceAUNow());
+        sb.venusDistanceAu(Planets.VENUS.heliocentricDistanceAUNow());
+
         double marsAu = Planets.MARS.distanceAUNow();
         sb.marsDistanceAu(marsAu);
         logPlanetDistance("Mars", marsAu, Planets.MARS);
@@ -249,6 +259,10 @@ public class Main {
         sb.saturnDistanceAu(saturnAu);
         logPlanetDistance("Saturn", saturnAu, Planets.SATURN);
         sendAwtrix("saturnDistanceAu", String.format("%.1fau", saturnAu), APIPost.IconType.SATURN.name());
+
+        sb.uranusDistanceAu(Planets.URANUS.heliocentricDistanceAUNow());
+        sb.neptuneDistanceAu(Planets.NEPTUNE.heliocentricDistanceAUNow());
+        sb.plutoDistanceAu(Planets.PLUTO.heliocentricDistanceAUNow());
     }
 
     private void logPlanetDistance(String name, double currentAu, PlanetDistance planet) {
@@ -267,6 +281,8 @@ public class Main {
         double v2Au = VoyagerDistance.distanceFromEarthV2AUNow();
         sb.voyager1DistanceAu(v1Au);
         sb.voyager2DistanceAu(v2Au);
+        sb.voyager1HelioDistanceAu(VoyagerDistance.heliocentricDistanceV1AUNow());
+        sb.voyager2HelioDistanceAu(VoyagerDistance.heliocentricDistanceV2AUNow());
 
         logger.info("Voyager 1 distance from Earth: {} AU", String.format("%.6f", v1Au));
         logger.info("Voyager 2 distance from Earth: {} AU", String.format("%.6f", v2Au));

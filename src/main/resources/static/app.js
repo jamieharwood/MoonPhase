@@ -56,10 +56,17 @@
     }
 
     // Solar System Distances
-    setText('dist-sun',     fmtAu(data.sunDistanceAu));
-    setText('dist-mars',    fmtAu(data.marsDistanceAu));
-    setText('dist-jupiter', fmtAu(data.jupiterDistanceAu));
-    setText('dist-saturn',  fmtAu(data.saturnDistanceAu));
+    setText('dist-mercury',  fmtAu(data.mercuryDistanceAu));
+    setText('dist-venus',    fmtAu(data.venusDistanceAu));
+    setText('dist-sun',      fmtAu(data.sunDistanceAu));
+    setText('dist-mars',     fmtAu(data.marsDistanceAu));
+    setText('dist-jupiter',  fmtAu(data.jupiterDistanceAu));
+    setText('dist-saturn',   fmtAu(data.saturnDistanceAu));
+    setText('dist-uranus',   fmtAu(data.uranusDistanceAu));
+    setText('dist-neptune',  fmtAu(data.neptuneDistanceAu));
+    setText('dist-pluto',    fmtAu(data.plutoDistanceAu));
+    setText('dist-v2-helio', fmtAu(data.voyager2HelioDistanceAu));
+    setText('dist-v1-helio', fmtAu(data.voyager1HelioDistanceAu));
 
     // Probes
     setText('probe-v1', fmtAu(data.voyager1DistanceAu));
@@ -103,7 +110,7 @@
     setText('last-updated', data.lastUpdated ? 'Updated ' + data.lastUpdated + ' UTC' : '');
 
     // Flash all cards
-    ['card-moon', 'card-solar', 'card-probes', 'card-earth', 'card-light', 'card-events']
+    ['card-moon', 'card-solar', 'card-probes', 'card-earth', 'card-events']
       .forEach(flashCard);
 
   }
