@@ -21,9 +21,16 @@ public class SnapshotDocument {
     private double daylightHours;
     private int moonIlluminationPercent;
     private double sunDistanceAu;
+    private double mercuryDistanceAu;
+    private double venusDistanceAu;
     private double marsDistanceAu;
     private double jupiterDistanceAu;
     private double saturnDistanceAu;
+    private double uranusDistanceAu;
+    private double neptuneDistanceAu;
+    private double plutoDistanceAu;
+    private double voyager1HelioDistanceAu;
+    private double voyager2HelioDistanceAu;
     private double moonDistanceKm;
     private double earthSpeedKmPerSec;
     private double earthSpeedKmPerHour;
@@ -56,9 +63,16 @@ public class SnapshotDocument {
         doc.daylightHours = s.daylightHours();
         doc.moonIlluminationPercent = s.moonIlluminationPercent();
         doc.sunDistanceAu = s.sunDistanceAu();
+        doc.mercuryDistanceAu = s.mercuryDistanceAu();
+        doc.venusDistanceAu = s.venusDistanceAu();
         doc.marsDistanceAu = s.marsDistanceAu();
         doc.jupiterDistanceAu = s.jupiterDistanceAu();
         doc.saturnDistanceAu = s.saturnDistanceAu();
+        doc.uranusDistanceAu = s.uranusDistanceAu();
+        doc.neptuneDistanceAu = s.neptuneDistanceAu();
+        doc.plutoDistanceAu = s.plutoDistanceAu();
+        doc.voyager1HelioDistanceAu = s.voyager1HelioDistanceAu();
+        doc.voyager2HelioDistanceAu = s.voyager2HelioDistanceAu();
         doc.moonDistanceKm = s.moonDistanceKm();
         doc.earthSpeedKmPerSec = s.earthSpeedKmPerSec();
         doc.earthSpeedKmPerHour = s.earthSpeedKmPerHour();
@@ -85,9 +99,16 @@ public class SnapshotDocument {
     public double getDaylightHours() { return daylightHours; }
     public int getMoonIlluminationPercent() { return moonIlluminationPercent; }
     public double getSunDistanceAu() { return sunDistanceAu; }
+    public double getMercuryDistanceAu() { return mercuryDistanceAu; }
+    public double getVenusDistanceAu() { return venusDistanceAu; }
     public double getMarsDistanceAu() { return marsDistanceAu; }
     public double getJupiterDistanceAu() { return jupiterDistanceAu; }
     public double getSaturnDistanceAu() { return saturnDistanceAu; }
+    public double getUranusDistanceAu() { return uranusDistanceAu; }
+    public double getNeptuneDistanceAu() { return neptuneDistanceAu; }
+    public double getPlutoDistanceAu() { return plutoDistanceAu; }
+    public double getVoyager1HelioDistanceAu() { return voyager1HelioDistanceAu; }
+    public double getVoyager2HelioDistanceAu() { return voyager2HelioDistanceAu; }
     public double getMoonDistanceKm() { return moonDistanceKm; }
     public double getEarthSpeedKmPerSec() { return earthSpeedKmPerSec; }
     public double getEarthSpeedKmPerHour() { return earthSpeedKmPerHour; }

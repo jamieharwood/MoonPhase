@@ -364,6 +364,20 @@ header {
   border-bottom: none;
 }
 
+.data-table th {
+  color: var(--text-glow);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: normal;
+  padding: 0 0 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table th.val {
+  text-align: right;
+}
+
 .data-table td:first-child {
   color: var(--text-secondary);
   padding-right: 1rem;

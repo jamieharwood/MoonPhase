@@ -17,9 +17,16 @@ public record AstronomicalSnapshot(
 
         // Distances in AU
         double sunDistanceAu,
+        double mercuryDistanceAu,
+        double venusDistanceAu,
         double marsDistanceAu,
         double jupiterDistanceAu,
         double saturnDistanceAu,
+        double uranusDistanceAu,
+        double neptuneDistanceAu,
+        double plutoDistanceAu,
+        double voyager1HelioDistanceAu,
+        double voyager2HelioDistanceAu,
 
         // Moon distance in km
         double moonDistanceKm,
@@ -84,9 +91,16 @@ public record AstronomicalSnapshot(
         private int moonAgeDays;
         private int daysUntilFullMoon;
         private double sunDistanceAu;
+        private double mercuryDistanceAu;
+        private double venusDistanceAu;
         private double marsDistanceAu;
         private double jupiterDistanceAu;
         private double saturnDistanceAu;
+        private double uranusDistanceAu;
+        private double neptuneDistanceAu;
+        private double plutoDistanceAu;
+        private double voyager1HelioDistanceAu;
+        private double voyager2HelioDistanceAu;
         private double moonDistanceKm;
         private double voyager1DistanceAu;
         private double voyager2DistanceAu;
@@ -126,11 +140,18 @@ public record AstronomicalSnapshot(
         public Builder moonAsciiArt(String[] v)          { this.moonAsciiArt = v; return this; }
         public Builder moonAgeDays(int v)                { this.moonAgeDays = v; return this; }
         public Builder daysUntilFullMoon(int v)          { this.daysUntilFullMoon = v; return this; }
-        public Builder sunDistanceAu(double v)           { this.sunDistanceAu = v; return this; }
-        public Builder marsDistanceAu(double v)          { this.marsDistanceAu = v; return this; }
-        public Builder jupiterDistanceAu(double v)       { this.jupiterDistanceAu = v; return this; }
-        public Builder saturnDistanceAu(double v)        { this.saturnDistanceAu = v; return this; }
-        public Builder moonDistanceKm(double v)          { this.moonDistanceKm = v; return this; }
+        public Builder sunDistanceAu(double v)              { this.sunDistanceAu = v; return this; }
+        public Builder mercuryDistanceAu(double v)          { this.mercuryDistanceAu = v; return this; }
+        public Builder venusDistanceAu(double v)            { this.venusDistanceAu = v; return this; }
+        public Builder marsDistanceAu(double v)             { this.marsDistanceAu = v; return this; }
+        public Builder jupiterDistanceAu(double v)          { this.jupiterDistanceAu = v; return this; }
+        public Builder saturnDistanceAu(double v)           { this.saturnDistanceAu = v; return this; }
+        public Builder uranusDistanceAu(double v)           { this.uranusDistanceAu = v; return this; }
+        public Builder neptuneDistanceAu(double v)          { this.neptuneDistanceAu = v; return this; }
+        public Builder plutoDistanceAu(double v)            { this.plutoDistanceAu = v; return this; }
+        public Builder voyager1HelioDistanceAu(double v)    { this.voyager1HelioDistanceAu = v; return this; }
+        public Builder voyager2HelioDistanceAu(double v)    { this.voyager2HelioDistanceAu = v; return this; }
+        public Builder moonDistanceKm(double v)             { this.moonDistanceKm = v; return this; }
         public Builder voyager1DistanceAu(double v)      { this.voyager1DistanceAu = v; return this; }
         public Builder voyager2DistanceAu(double v)      { this.voyager2DistanceAu = v; return this; }
         public Builder newHorizonsDistanceAu(double v)   { this.newHorizonsDistanceAu = v; return this; }
@@ -165,7 +186,10 @@ public record AstronomicalSnapshot(
             return new AstronomicalSnapshot(
                     moonPhaseName, moonIlluminationPercent, moonPhaseIcon, moonAsciiArt,
                     moonAgeDays, daysUntilFullMoon,
-                    sunDistanceAu, marsDistanceAu, jupiterDistanceAu, saturnDistanceAu,
+                    sunDistanceAu, mercuryDistanceAu, venusDistanceAu,
+                    marsDistanceAu, jupiterDistanceAu, saturnDistanceAu,
+                    uranusDistanceAu, neptuneDistanceAu, plutoDistanceAu,
+                    voyager1HelioDistanceAu, voyager2HelioDistanceAu,
                     moonDistanceKm,
                     voyager1DistanceAu, voyager2DistanceAu, newHorizonsDistanceAu,
                     earthSpeedKmPerSec, earthSpeedKmPerHour,

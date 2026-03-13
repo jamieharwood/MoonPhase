@@ -16,7 +16,7 @@
   <header>
     <div class="header-left">
       <span class="header-title">&#9790; MoonPhaseAI</span>
-      <span class="header-subtitle">Live Astronomical Dashboard</span>
+      <span class="header-subtitle">Almost Live Astronomical Dashboard</span>
     </div>
     <div class="header-right">
       <button id="install-btn" class="install-btn" hidden>&#11015; Install App</button>
@@ -59,15 +59,29 @@
       </div>
     </section>
 
-    <!-- Solar System Distances -->
+    <!-- Solar System Distances + Light Travel Times -->
     <section class="card" id="card-solar">
-      <h2>&#9728;&#65039; Solar System Distances</h2>
+      <h2>&#9728;&#65039; Solar System</h2>
       <table class="data-table">
+        <thead>
+          <tr>
+            <th>Sun &#8594;</th>
+            <th class="val">Distance</th>
+            <th class="val">Light Travel</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td>Sun &#8594; Earth</td><td id="dist-sun" class="val">—</td></tr>
-          <tr><td>Earth &#8594; Mars</td><td id="dist-mars" class="val">—</td></tr>
-          <tr><td>Earth &#8594; Jupiter</td><td id="dist-jupiter" class="val">—</td></tr>
-          <tr><td>Earth &#8594; Saturn</td><td id="dist-saturn" class="val">—</td></tr>
+          <tr><td>Mercury</td>  <td id="dist-mercury"  class="val">—</td>  <td id="light-mercury" class="val">—</td></tr>
+          <tr><td>Venus</td>    <td id="dist-venus"    class="val">—</td>  <td id="light-venus"   class="val">—</td></tr>
+          <tr><td>Earth</td>    <td id="dist-sun"      class="val">—</td>  <td id="light-sun"     class="val">—</td></tr>
+          <tr><td>Mars</td>     <td id="dist-mars"     class="val">—</td>  <td id="light-mars"    class="val">—</td></tr>
+          <tr><td>Jupiter</td>  <td id="dist-jupiter"  class="val">—</td>  <td id="light-jupiter" class="val">—</td></tr>
+          <tr><td>Saturn</td>   <td id="dist-saturn"   class="val">—</td>  <td id="light-saturn"  class="val">—</td></tr>
+          <tr><td>Uranus</td>   <td id="dist-uranus"   class="val">—</td>  <td id="light-uranus"  class="val">—</td></tr>
+          <tr><td>Neptune</td>  <td id="dist-neptune"  class="val">—</td>  <td id="light-neptune" class="val">—</td></tr>
+          <tr><td>Pluto</td>    <td id="dist-pluto"    class="val">—</td>  <td id="light-pluto"   class="val">—</td></tr>
+          <tr><td>Voyager 2</td><td id="dist-v2-helio" class="val">—</td>  <td id="light-v2"      class="val">—</td></tr>
+          <tr><td>Voyager 1</td><td id="dist-v1-helio" class="val">—</td>  <td id="light-v1"      class="val">—</td></tr>
         </tbody>
       </table>
     </section>
@@ -93,26 +107,6 @@
           <tr><td>Speed (km/h)</td><td id="earth-speed-h" class="val">—</td></tr>
           <tr><td>Daylight Hours</td><td id="earth-daylight" class="val">—</td></tr>
           <tr><td>Axial Tilt</td><td id="earth-tilt" class="val">—</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- Light Travel Times -->
-    <section class="card" id="card-light">
-      <h2>&#9889; Light Travel Times</h2>
-      <table class="data-table">
-        <tbody>
-          <tr><td>Sun &#8594; Mercury</td><td id="light-mercury" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Venus</td><td id="light-venus" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Earth</td><td id="light-sun" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Mars</td><td id="light-mars" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Jupiter</td><td id="light-jupiter" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Saturn</td><td id="light-saturn" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Uranus</td><td id="light-uranus" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Neptune</td><td id="light-neptune" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Pluto</td><td id="light-pluto" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Voyager 2</td><td id="light-v2" class="val">—</td></tr>
-          <tr><td>Sun &#8594; Voyager 1</td><td id="light-v1" class="val">—</td></tr>
         </tbody>
       </table>
     </section>
@@ -158,10 +152,17 @@
             <option value="daysUntilFullMoon">Days Until Full Moon</option>
           </optgroup>
           <optgroup label="Solar System">
-            <option value="sunDistanceAu">Sun Distance (AU)</option>
-            <option value="marsDistanceAu">Mars Distance (AU)</option>
-            <option value="jupiterDistanceAu">Jupiter Distance (AU)</option>
-            <option value="saturnDistanceAu">Saturn Distance (AU)</option>
+            <option value="sunDistanceAu">Sun → Earth (AU)</option>
+            <option value="mercuryDistanceAu">Sun → Mercury (AU)</option>
+            <option value="venusDistanceAu">Sun → Venus (AU)</option>
+            <option value="marsDistanceAu">Earth → Mars (AU)</option>
+            <option value="jupiterDistanceAu">Earth → Jupiter (AU)</option>
+            <option value="saturnDistanceAu">Earth → Saturn (AU)</option>
+            <option value="uranusDistanceAu">Sun → Uranus (AU)</option>
+            <option value="neptuneDistanceAu">Sun → Neptune (AU)</option>
+            <option value="plutoDistanceAu">Sun → Pluto (AU)</option>
+            <option value="voyager1HelioDistanceAu">Sun → Voyager 1 (AU)</option>
+            <option value="voyager2HelioDistanceAu">Sun → Voyager 2 (AU)</option>
           </optgroup>
           <optgroup label="Deep Space Probes">
             <option value="voyager1DistanceAu">Voyager 1 (AU)</option>
