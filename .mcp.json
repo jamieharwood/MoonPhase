@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "MoonPhaseAI": {
-      "url": "http://localhost:8080/sse",
+      "url": "http://localhost:8081/sse",
       "type": "sse"
     }
   }
