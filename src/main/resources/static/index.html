@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#030a1a">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <header>
@@ -20,6 +20,13 @@
     </div>
     <div class="header-right">
       <button id="install-btn" class="install-btn" hidden>&#11015; Install App</button>
+      <button id="notify-btn" class="notify-btn" hidden title="Enable event notifications">&#128276;</button>
+      <div class="unit-selector" id="unit-selector">
+        <button class="unit-btn" data-unit="au">AU</button>
+        <button class="unit-btn" data-unit="km">km</button>
+        <button class="unit-btn" data-unit="mi">mi</button>
+      </div>
+      <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle dark/light theme">&#9728;</button>
       <span id="sse-dot" class="sse-dot connecting" title="SSE connection status"></span>
       <div class="hamburger-menu">
         <button id="menu-btn" class="menu-btn" aria-label="Menu" aria-expanded="false">&#9776;</button>
@@ -80,8 +87,6 @@
           <tr><td>Uranus</td>   <td id="dist-uranus"   class="val">—</td>  <td id="light-uranus"  class="val">—</td></tr>
           <tr><td>Neptune</td>  <td id="dist-neptune"  class="val">—</td>  <td id="light-neptune" class="val">—</td></tr>
           <tr><td>Pluto</td>    <td id="dist-pluto"    class="val">—</td>  <td id="light-pluto"   class="val">—</td></tr>
-          <tr><td>Voyager 2</td><td id="dist-v2-helio" class="val">—</td>  <td id="light-v2"      class="val">—</td></tr>
-          <tr><td>Voyager 1</td><td id="dist-v1-helio" class="val">—</td>  <td id="light-v1"      class="val">—</td></tr>
         </tbody>
       </table>
     </section>
@@ -91,6 +96,8 @@
       <h2>&#128640; Deep Space Probes</h2>
       <table class="data-table">
         <tbody>
+          <tr><td>Hubble</td><td id="probe-hubble" class="val">—</td></tr>
+          <tr><td>James Webb</td><td id="probe-jwst" class="val">—</td></tr>
           <tr><td>Voyager 1</td><td id="probe-v1" class="val">—</td></tr>
           <tr><td>Voyager 2</td><td id="probe-v2" class="val">—</td></tr>
           <tr><td>New Horizons</td><td id="probe-nh" class="val">—</td></tr>
@@ -106,7 +113,10 @@
           <tr><td>Orbital Speed</td><td id="earth-speed-s" class="val">—</td></tr>
           <tr><td>Speed (km/h)</td><td id="earth-speed-h" class="val">—</td></tr>
           <tr><td>Daylight Hours</td><td id="earth-daylight" class="val">—</td></tr>
+          <tr><td>Sunrise (UTC~)</td><td id="earth-sunrise" class="val">—</td></tr>
+          <tr><td>Sunset (UTC~)</td><td id="earth-sunset" class="val">—</td></tr>
           <tr><td>Axial Tilt</td><td id="earth-tilt" class="val">—</td></tr>
+          <tr><td>Aurora Kp Index</td><td id="earth-aurora" class="val">—</td></tr>
         </tbody>
       </table>
     </section>
@@ -115,12 +125,7 @@
     <section class="card" id="card-events">
       <h2>&#128197; Upcoming Events</h2>
       <table class="data-table">
-        <tbody>
-          <tr><td>Summer Solstice</td><td id="event-summer" class="val">—</td></tr>
-          <tr><td>Winter Solstice</td><td id="event-winter" class="val">—</td></tr>
-          <tr><td>Perihelion</td><td id="event-perihelion" class="val">—</td></tr>
-          <tr><td>Aphelion</td><td id="event-aphelion" class="val">—</td></tr>
-        </tbody>
+        <tbody id="events-tbody"></tbody>
       </table>
     </section>
 
@@ -130,6 +135,7 @@
       <table class="data-table">
         <tbody>
           <tr><td>ISS Altitude</td><td id="leo-iss" class="val">—</td></tr>
+          <tr><td>ISS Crew</td><td id="leo-iss-crew" class="val">—</td></tr>
           <tr><td>Tiangong Altitude</td><td id="leo-tiangong" class="val">—</td></tr>
           <tr><td>Hubble Altitude</td><td id="leo-hubble" class="val">—</td></tr>
           <tr><td>Starlink Satellites</td><td id="leo-starlink" class="val">—</td></tr>
@@ -139,56 +145,84 @@
       </table>
     </section>
 
+    <!-- People in Space -->
+    <section class="card" id="card-people">
+      <h2>&#128104;&#8205;&#128640; People in Space</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Spacecraft</th>
+            <th class="val" id="leo-people-total">—</th>
+          </tr>
+        </thead>
+        <tbody id="craft-tbody"></tbody>
+      </table>
+    </section>
+
     <!-- Historical Graph -->
     <section class="card history-card" id="card-history">
       <div class="history-header">
         <h2>&#128202; Historical Data</h2>
-        <select id="metric-select" class="metric-select">
-          <optgroup label="Moon">
-            <option value="daylightHours" selected>Daylight Hours</option>
-            <option value="moonIlluminationPercent">Moon Illumination (%)</option>
-            <option value="moonAgeDays">Moon Age (days)</option>
-            <option value="moonDistanceKm">Moon Distance (km)</option>
-            <option value="daysUntilFullMoon">Days Until Full Moon</option>
-          </optgroup>
-          <optgroup label="Solar System">
-            <option value="sunDistanceAu">Sun → Earth (AU)</option>
-            <option value="mercuryDistanceAu">Sun → Mercury (AU)</option>
-            <option value="venusDistanceAu">Sun → Venus (AU)</option>
-            <option value="marsDistanceAu">Earth → Mars (AU)</option>
-            <option value="jupiterDistanceAu">Earth → Jupiter (AU)</option>
-            <option value="saturnDistanceAu">Earth → Saturn (AU)</option>
-            <option value="uranusDistanceAu">Sun → Uranus (AU)</option>
-            <option value="neptuneDistanceAu">Sun → Neptune (AU)</option>
-            <option value="plutoDistanceAu">Sun → Pluto (AU)</option>
-            <option value="voyager1HelioDistanceAu">Sun → Voyager 1 (AU)</option>
-            <option value="voyager2HelioDistanceAu">Sun → Voyager 2 (AU)</option>
-          </optgroup>
-          <optgroup label="Deep Space Probes">
-            <option value="voyager1DistanceAu">Voyager 1 (AU)</option>
-            <option value="voyager2DistanceAu">Voyager 2 (AU)</option>
-            <option value="newHorizonsDistanceAu">New Horizons (AU)</option>
-          </optgroup>
-          <optgroup label="Earth">
-            <option value="earthSpeedKmPerSec">Earth Speed (km/s)</option>
-            <option value="earthSpeedKmPerHour">Earth Speed (km/h)</option>
-            <option value="earthAxialTiltDegrees">Earth Axial Tilt (°)</option>
-          </optgroup>
-          <optgroup label="LEO">
-            <option value="issAltitudeKm">ISS Altitude (km)</option>
-            <option value="tiangongAltitudeKm">Tiangong Altitude (km)</option>
-            <option value="hubbleAltitudeKm">Hubble Altitude (km)</option>
-            <option value="starlinkSatelliteCount">Starlink Satellites</option>
-            <option value="kuiperSatelliteCount">Amazon Kuiper Satellites</option>
-            <option value="totalSatellitesInOrbit">Total Satellites in Orbit</option>
-          </optgroup>
-          <optgroup label="Upcoming Events">
-            <option value="daysUntilSummerSolstice">Days Until Summer Solstice</option>
-            <option value="daysUntilWinterSolstice">Days Until Winter Solstice</option>
-            <option value="daysUntilPerihelion">Days Until Perihelion</option>
-            <option value="daysUntilAphelion">Days Until Aphelion</option>
-          </optgroup>
-        </select>
+        <div class="history-controls">
+            <select id="metric-select" class="metric-select">
+              <optgroup label="Moon">
+                <option value="daylightHours" selected>Daylight Hours</option>
+                <option value="moonIlluminationPercent">Moon Illumination (%)</option>
+                <option value="moonAgeDays">Moon Age (days)</option>
+                <option value="moonDistanceKm">Moon Distance (km)</option>
+                <option value="daysUntilFullMoon">Days Until Full Moon</option>
+              </optgroup>
+              <optgroup label="Solar System">
+                <option value="sunDistanceAu">Sun → Earth (AU)</option>
+                <option value="mercuryDistanceAu">Sun → Mercury (AU)</option>
+                <option value="venusDistanceAu">Sun → Venus (AU)</option>
+                <option value="marsDistanceAu">Earth → Mars (AU)</option>
+                <option value="jupiterDistanceAu">Earth → Jupiter (AU)</option>
+                <option value="saturnDistanceAu">Earth → Saturn (AU)</option>
+                <option value="uranusDistanceAu">Sun → Uranus (AU)</option>
+                <option value="neptuneDistanceAu">Sun → Neptune (AU)</option>
+                <option value="plutoDistanceAu">Sun → Pluto (AU)</option>
+                <option value="voyager1HelioDistanceAu">Sun → Voyager 1 (AU)</option>
+                <option value="voyager2HelioDistanceAu">Sun → Voyager 2 (AU)</option>
+              </optgroup>
+              <optgroup label="Deep Space Probes">
+                <option value="voyager1DistanceAu">Voyager 1 (AU)</option>
+                <option value="voyager2DistanceAu">Voyager 2 (AU)</option>
+                <option value="newHorizonsDistanceAu">New Horizons (AU)</option>
+              </optgroup>
+              <optgroup label="Earth">
+                <option value="earthSpeedKmPerSec">Earth Speed (km/s)</option>
+                <option value="earthSpeedKmPerHour">Earth Speed (km/h)</option>
+                <option value="earthAxialTiltDegrees">Earth Axial Tilt (°)</option>
+                <option value="auroraKpIndex">Aurora Kp Index</option>
+              </optgroup>
+              <optgroup label="LEO">
+                <option value="issAltitudeKm">ISS Altitude (km)</option>
+                <option value="tiangongAltitudeKm">Tiangong Altitude (km)</option>
+                <option value="hubbleAltitudeKm">Hubble Altitude (km)</option>
+                <option value="starlinkSatelliteCount">Starlink Satellites</option>
+                <option value="kuiperSatelliteCount">Amazon Kuiper Satellites</option>
+                <option value="totalSatellitesInOrbit">Total Satellites in Orbit</option>
+                <option value="issCrew">ISS Crew</option>
+                <option value="totalPeopleInSpace">Total People in Space</option>
+              </optgroup>
+              <optgroup label="Upcoming Events">
+                <option value="daysUntilSummerSolstice">Days Until Summer Solstice</option>
+                <option value="daysUntilWinterSolstice">Days Until Winter Solstice</option>
+                <option value="daysUntilPerihelion">Days Until Perihelion</option>
+                <option value="daysUntilAphelion">Days Until Aphelion</option>
+              </optgroup>
+            </select>
+            <select id="range-select" class="metric-select" title="Date range">
+              <option value="14">7 days</option>
+              <option value="28">14 days</option>
+              <option value="60" selected>30 days</option>
+              <option value="180">90 days</option>
+              <option value="730">365 days</option>
+              <option value="500">All (max 500)</option>
+            </select>
+            <button id="export-csv-btn" class="export-btn" title="Download data as CSV">&#8595; CSV</button>
+          </div>
       </div>
       <div class="history-chart-wrap">
         <canvas id="history-chart"></canvas>
@@ -212,7 +246,9 @@
     <span id="last-updated" class="last-updated">Waiting for data...</span>
   </footer>
 
+  <div id="toast" class="toast"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

@@ -50,6 +50,9 @@ public class SnapshotDocument {
     private int starlinkSatelliteCount;
     private int kuiperSatelliteCount;
     private int totalSatellitesInOrbit;
+    private double auroraKpIndex;
+    private int issCrew;
+    private int totalPeopleInSpace;
 
     public static SnapshotDocument from(AstronomicalSnapshot s, Instant timestamp) {
         SnapshotDocument doc = from(s);
@@ -92,6 +95,9 @@ public class SnapshotDocument {
         doc.starlinkSatelliteCount = s.starlinkSatelliteCount();
         doc.kuiperSatelliteCount = s.kuiperSatelliteCount();
         doc.totalSatellitesInOrbit = s.totalSatellitesInOrbit();
+        doc.auroraKpIndex = s.auroraKpIndex();
+        doc.issCrew = s.issCrew();
+        doc.totalPeopleInSpace = s.totalPeopleInSpace();
         return doc;
     }
 
@@ -128,4 +134,7 @@ public class SnapshotDocument {
     public int getStarlinkSatelliteCount() { return starlinkSatelliteCount; }
     public int getKuiperSatelliteCount() { return kuiperSatelliteCount; }
     public int getTotalSatellitesInOrbit() { return totalSatellitesInOrbit; }
+    public double getAuroraKpIndex() { return auroraKpIndex; }
+    public int getIssCrew() { return issCrew; }
+    public int getTotalPeopleInSpace() { return totalPeopleInSpace; }
 }

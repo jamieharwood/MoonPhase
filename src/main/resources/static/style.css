@@ -8,10 +8,27 @@
   --text-secondary:#7aa8cc;
   --text-glow:     #00d4ff;
   --moon-color:    #f0e68c;
+  --moon-glow:     rgba(240, 230, 140, 0.5);
   --accent-green:  #00ff88;
   --accent-amber:  #ffaa00;
   --accent-red:    #ff4444;
   --font-mono:     'Courier New', Courier, monospace;
+}
+
+/* ===== Light Theme Overrides ===== */
+body.light-theme {
+  --bg-deep:       #f0f4f8;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #e4edf8;
+  --border:        #c0d4eb;
+  --text-primary:  #1a2e45;
+  --text-secondary:#3a6a9a;
+  --text-glow:     #005fa3;
+  --moon-color:    #000000;
+  --moon-glow:     transparent;
+  --accent-green:  #007744;
+  --accent-amber:  #b87800;
+  --accent-red:    #bb2222;
 }
 
 /* ===== Reset & Base ===== */
@@ -35,7 +52,7 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.5rem;
-  background: rgba(3, 10, 26, 0.92);
+  background: var(--bg-deep);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
 }
@@ -190,6 +207,107 @@ header {
   box-shadow: 0 0 10px var(--text-glow);
 }
 
+/* ===== Theme Toggle Button ===== */
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(122, 168, 204, 0.15);
+  box-shadow: 0 0 8px var(--text-secondary);
+  color: var(--text-primary);
+}
+
+/* ===== Notification Bell ===== */
+.notify-btn {
+  background: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s, opacity 0.2s;
+}
+.notify-btn:hover {
+  background: rgba(122, 168, 204, 0.15);
+  box-shadow: 0 0 8px var(--text-secondary);
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+/* ===== Unit Selector ===== */
+.unit-selector {
+  display: flex;
+  border: 1px solid var(--text-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.unit-btn {
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+.unit-btn:last-child {
+  border-right: none;
+}
+
+.unit-btn:hover {
+  background: rgba(122, 168, 204, 0.15);
+  color: var(--text-primary);
+}
+
+.unit-btn.active {
+  background: var(--text-secondary);
+  color: var(--bg-deep);
+  font-weight: bold;
+}
+
+/* ===== Toast Notification ===== */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-green);
+  color: var(--accent-green);
+  padding: 0.55rem 1.1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  box-shadow: 0 0 16px rgba(0, 255, 136, 0.25);
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  z-index: 400;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ===== Reset Data Button ===== */
 .reset-btn {
   background: transparent;
@@ -311,7 +429,7 @@ header {
 .moon-phase-name {
   font-size: 1.3rem;
   color: var(--moon-color);
-  text-shadow: 0 0 10px rgba(240, 230, 140, 0.5);
+  text-shadow: 0 0 10px var(--moon-glow);
   margin-bottom: 0.75rem;
 }
 
@@ -410,6 +528,12 @@ header {
   padding-bottom: 0;
 }
 
+.history-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .metric-select {
   background: var(--bg-deep);
   border: 1px solid var(--border);
@@ -425,6 +549,26 @@ header {
 .metric-select:focus {
   border-color: var(--text-glow);
   box-shadow: 0 0 6px var(--text-glow);
+}
+
+.export-btn {
+  background: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.65rem;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.export-btn:hover {
+  background: rgba(122, 168, 204, 0.12);
+  color: var(--text-primary);
+  box-shadow: 0 0 8px var(--text-secondary);
 }
 
 .history-chart-wrap {
@@ -469,6 +613,19 @@ header {
   font-size: 0.75rem;
   color: var(--text-secondary);
   letter-spacing: 0.05em;
+}
+
+/* ===== People-in-space sub-section ===== */
+.people-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.9rem 0 0.75rem;
+}
+
+.craft-name {
+  color: var(--text-secondary);
+  padding-left: 1rem !important;
+  font-size: 0.8rem !important;
 }
 
 /* ===== Footer ===== */

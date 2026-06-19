@@ -26,7 +26,8 @@ public final class APIPost {
         MOON("MOON"),
         LIGHT("LIGHT"),
         NEWHORIZONS("NEWHORIZONS"),
-        PERIHELION("PERIHELION");
+        PERIHELION("PERIHELION"),
+        AURORA("AURORA");
 
         private final String value;
 

@@ -11,18 +11,41 @@
     var card = document.getElementById(id);
     if (!card) return;
     card.classList.remove('updated');
-    // Force reflow so the animation restarts
     void card.offsetWidth;
     card.classList.add('updated');
   }
 
   // ── Number formatters ─────────────────────────────────────────────────────
+  var KM_PER_AU     = 149597870.7;
+  var MILES_PER_AU  = 92955807.273;
+  var MILES_PER_KM  = 0.621371;
+
   function fmtAu(val) {
     return (typeof val === 'number') ? val.toFixed(6) + ' AU' : '—';
   }
 
   function fmtKm(val) {
     return (typeof val === 'number') ? val.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' km' : '—';
+  }
+
+  function fmtMi(val) {
+    return (typeof val === 'number') ? val.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' mi' : '—';
+  }
+
+  /** Format a distance stored in AU, respecting the current unit preference. */
+  function fmtDistFromAu(au) {
+    if (typeof au !== 'number') return '—';
+    if (currentUnit === 'km') return fmtKm(au * KM_PER_AU);
+    if (currentUnit === 'mi') return fmtMi(au * MILES_PER_AU);
+    return au.toFixed(6) + ' AU';
+  }
+
+  /** Format a distance stored in km, respecting the current unit preference. */
+  function fmtDistFromKm(km) {
+    if (typeof km !== 'number' || km <= 0) return '—';
+    if (currentUnit === 'au') return (km / KM_PER_AU).toFixed(6) + ' AU';
+    if (currentUnit === 'mi') return fmtMi(km * MILES_PER_KM);
+    return fmtKm(km);
   }
 
   function fmtKmPerSec(val) {
@@ -41,14 +64,83 @@
     return (val !== null && val !== undefined) ? val + ' days' : '—';
   }
 
+  function fmtKp(val) {
+    if (typeof val !== 'number' || val < 0) return '—';
+    var label = val < 2 ? 'Quiet' : val < 4 ? 'Unsettled' : val < 5 ? 'Active' : 'Storm ⚡';
+    return val.toFixed(1) + ' (' + label + ')';
+  }
+
+  // ── Toast notification ────────────────────────────────────────────────────
+  var toastTimer = null;
+  function showToast(message) {
+    var toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('visible');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toast.classList.remove('visible');
+      toastTimer = null;
+    }, 3000);
+  }
+
+  // ── Dark / Light theme toggle ─────────────────────────────────────────────
+  var THEME_KEY = 'moonphase-theme';
+  var themeBtn = document.getElementById('theme-toggle-btn');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+      if (themeBtn) themeBtn.textContent = '\uD83C\uDF19'; // 🌙
+    } else {
+      document.body.classList.remove('light-theme');
+      if (themeBtn) themeBtn.textContent = '\u2600\uFE0F'; // ☀️
+    }
+  }
+
+  applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function () {
+      var next = document.body.classList.contains('light-theme') ? 'dark' : 'light';
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
+  }
+
+  // ── Distance unit selector ────────────────────────────────────────────────
+  var UNIT_KEY = 'moonphase-unit';
+  var currentUnit = localStorage.getItem(UNIT_KEY) || 'au';
+  var lastSnapshot = null;
+
+  function applyUnit(unit) {
+    currentUnit = unit;
+    localStorage.setItem(UNIT_KEY, unit);
+    document.querySelectorAll('.unit-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-unit') === unit);
+    });
+    if (lastSnapshot) applySnapshot(lastSnapshot);
+  }
+
+  // Set initial active state
+  applyUnit(currentUnit);
+
+  document.querySelectorAll('.unit-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      applyUnit(btn.getAttribute('data-unit'));
+    });
+  });
+
   // ── Apply snapshot to DOM ─────────────────────────────────────────────────
   function applySnapshot(data) {
+    lastSnapshot = data;
+
     // Moon
     setText('moon-phase-name',  data.moonPhaseName || '—');
     setText('moon-illumination', data.moonIlluminationPercent != null ? data.moonIlluminationPercent + '%' : '—');
     setText('moon-age',         data.moonAgeDays != null ? data.moonAgeDays + ' days' : '—');
     setText('moon-full-in',     data.daysUntilFullMoon != null ? data.daysUntilFullMoon + ' days' : '—');
-    setText('moon-distance',    fmtKm(data.moonDistanceKm));
+    setText('moon-distance',    fmtDistFromKm(data.moonDistanceKm));
 
     var asciiEl = document.getElementById('moon-ascii');
     if (asciiEl && Array.isArray(data.moonAsciiArt)) {
@@ -56,28 +148,31 @@
     }
 
     // Solar System Distances
-    setText('dist-mercury',  fmtAu(data.mercuryDistanceAu));
-    setText('dist-venus',    fmtAu(data.venusDistanceAu));
-    setText('dist-sun',      fmtAu(data.sunDistanceAu));
-    setText('dist-mars',     fmtAu(data.marsDistanceAu));
-    setText('dist-jupiter',  fmtAu(data.jupiterDistanceAu));
-    setText('dist-saturn',   fmtAu(data.saturnDistanceAu));
-    setText('dist-uranus',   fmtAu(data.uranusDistanceAu));
-    setText('dist-neptune',  fmtAu(data.neptuneDistanceAu));
-    setText('dist-pluto',    fmtAu(data.plutoDistanceAu));
-    setText('dist-v2-helio', fmtAu(data.voyager2HelioDistanceAu));
-    setText('dist-v1-helio', fmtAu(data.voyager1HelioDistanceAu));
+    setText('dist-mercury',  fmtDistFromAu(data.mercuryDistanceAu));
+    setText('dist-venus',    fmtDistFromAu(data.venusDistanceAu));
+    setText('dist-sun',      fmtDistFromAu(data.sunDistanceAu));
+    setText('dist-mars',     fmtDistFromAu(data.marsDistanceAu));
+    setText('dist-jupiter',  fmtDistFromAu(data.jupiterDistanceAu));
+    setText('dist-saturn',   fmtDistFromAu(data.saturnDistanceAu));
+    setText('dist-uranus',   fmtDistFromAu(data.uranusDistanceAu));
+    setText('dist-neptune',  fmtDistFromAu(data.neptuneDistanceAu));
+    setText('dist-pluto',    fmtDistFromAu(data.plutoDistanceAu));
 
     // Probes
-    setText('probe-v1', fmtAu(data.voyager1DistanceAu));
-    setText('probe-v2', fmtAu(data.voyager2DistanceAu));
-    setText('probe-nh', fmtAu(data.newHorizonsDistanceAu));
+    setText('probe-hubble', data.hubbleAltitudeKm > 0 ? fmtDistFromKm(data.hubbleAltitudeKm) + ' alt' : '—');
+    setText('probe-jwst',   data.jamesWebbDistanceKm > 0 ? fmtDistFromKm(data.jamesWebbDistanceKm) : '—');
+    setText('probe-v1', fmtDistFromAu(data.voyager1DistanceAu));
+    setText('probe-v2', fmtDistFromAu(data.voyager2DistanceAu));
+    setText('probe-nh', fmtDistFromAu(data.newHorizonsDistanceAu));
 
     // Earth
     setText('earth-speed-s',  fmtKmPerSec(data.earthSpeedKmPerSec));
     setText('earth-speed-h',  fmtKmPerHour(data.earthSpeedKmPerHour));
     setText('earth-daylight', fmtHours(data.daylightHours));
+    setText('earth-sunrise',  data.sunriseTime  || '—');
+    setText('earth-sunset',   data.sunsetTime   || '—');
     setText('earth-tilt',     typeof data.earthAxialTiltDegrees === 'number' ? data.earthAxialTiltDegrees.toFixed(3) + '°' : '—');
+    setText('earth-aurora',   fmtKp(data.auroraKpIndex));
 
     // Light travel times
     setText('light-sun',     data.lightTimeSunToEarth    || '—');
@@ -89,28 +184,54 @@
     setText('light-uranus',  data.lightTimeSunToUranus   || '—');
     setText('light-neptune', data.lightTimeSunToNeptune  || '—');
     setText('light-pluto',   data.lightTimeSunToPluto    || '—');
-    setText('light-v1',      data.lightTimeSunToVoyager1 || '—');
-    setText('light-v2',      data.lightTimeSunToVoyager2 || '—');
 
     // LEO
-    setText('leo-iss',      data.issAltitudeKm      > 0 ? Math.round(data.issAltitudeKm)      + ' km' : '—');
-    setText('leo-tiangong', data.tiangongAltitudeKm  > 0 ? Math.round(data.tiangongAltitudeKm)  + ' km' : '—');
-    setText('leo-hubble',   data.hubbleAltitudeKm    > 0 ? Math.round(data.hubbleAltitudeKm)    + ' km' : '—');
+    setText('leo-iss',      data.issAltitudeKm      > 0 ? fmtDistFromKm(data.issAltitudeKm)      : '—');
+    setText('leo-iss-crew', data.issCrew            > 0 ? data.issCrew + ' crew' : '—');
+    setText('leo-tiangong', data.tiangongAltitudeKm  > 0 ? fmtDistFromKm(data.tiangongAltitudeKm)  : '—');
+    setText('leo-hubble',   data.hubbleAltitudeKm    > 0 ? fmtDistFromKm(data.hubbleAltitudeKm)    : '—');
     setText('leo-starlink', data.starlinkSatelliteCount > 0 ? data.starlinkSatelliteCount.toLocaleString() : '—');
     setText('leo-kuiper',   data.kuiperSatelliteCount   > 0 ? data.kuiperSatelliteCount.toLocaleString()   : '—');
     setText('leo-total',    data.totalSatellitesInOrbit > 0 ? data.totalSatellitesInOrbit.toLocaleString() : '—');
 
-    // Events
-    setText('event-summer',     fmtDays(data.daysUntilSummerSolstice));
-    setText('event-winter',     fmtDays(data.daysUntilWinterSolstice));
-    setText('event-perihelion', fmtDays(data.daysUntilPerihelion));
-    setText('event-aphelion',   fmtDays(data.daysUntilAphelion));
+    // People in space
+    var peopleTotal = data.totalPeopleInSpace;
+    setText('leo-people-total', peopleTotal > 0 ? peopleTotal.toString() : '—');
+    var craftTbody = document.getElementById('craft-tbody');
+    if (craftTbody) {
+      var occupancy = data.craftOccupancy;
+      if (occupancy && typeof occupancy === 'object' && Object.keys(occupancy).length > 0) {
+        craftTbody.innerHTML = Object.entries(occupancy).map(function (entry) {
+          var craft = entry[0];
+          var count = entry[1];
+          return '<tr><td class="craft-name">' + craft + '</td>'
+               + '<td class="val">' + count + '</td></tr>';
+        }).join('');
+      } else {
+        craftTbody.innerHTML = '';
+      }
+    }
+
+    // Events — sorted chronologically by days remaining
+    var events = [
+      { label: 'Summer Solstice', days: data.daysUntilSummerSolstice },
+      { label: 'Winter Solstice', days: data.daysUntilWinterSolstice },
+      { label: 'Perihelion',      days: data.daysUntilPerihelion },
+      { label: 'Aphelion',        days: data.daysUntilAphelion }
+    ];
+    events.sort(function (a, b) { return a.days - b.days; });
+    var eventsTbody = document.getElementById('events-tbody');
+    if (eventsTbody) {
+      eventsTbody.innerHTML = events.map(function (e) {
+        return '<tr><td>' + e.label + '</td><td class="val">' + fmtDays(e.days) + '</td></tr>';
+      }).join('');
+    }
 
     // Last updated
     setText('last-updated', data.lastUpdated ? 'Updated ' + data.lastUpdated + ' UTC' : '');
 
     // Flash all cards
-    ['card-moon', 'card-solar', 'card-probes', 'card-earth', 'card-events']
+    ['card-moon', 'card-solar', 'card-probes', 'card-earth', 'card-events', 'card-leo', 'card-people']
       .forEach(flashCard);
 
   }
@@ -163,8 +284,14 @@
       setRefreshPending(true);
       fetch('/api/refresh', { method: 'POST' })
         .then(function (res) {
-          if (!res.ok) console.warn('[Refresh] Server returned', res.status);
-          setRefreshPending(false);
+          if (res.status === 429) {
+            showToast('⏳ Refresh already in progress…');
+            setRefreshPending(false);
+          } else if (!res.ok) {
+            console.warn('[Refresh] Server returned', res.status);
+            setRefreshPending(false);
+          }
+          // on 202 keep spinner spinning until SSE update arrives
         })
         .catch(function (err) {
           console.warn('[Refresh] Request failed:', err.message);
@@ -253,8 +380,12 @@
       try {
         var data = JSON.parse(e.data);
         applySnapshot(data);
+        setRefreshPending(false);
         // Refresh chart with the latest persisted data point
         if (metricSelect) loadHistory(metricSelect.value);
+        showToast('✓ Data updated');
+        // Browser notifications for notable events
+        maybeNotify(data);
         console.log('[SSE] Snapshot received.');
       } catch (err) {
         console.warn('[SSE] Failed to parse event data:', err.message);
@@ -308,7 +439,9 @@
 
   function loadHistory(metric) {
     var msg = document.getElementById('history-msg');
-    fetch('/api/history?metric=' + encodeURIComponent(metric) + '&limit=500')
+    var rangeSelect = document.getElementById('range-select');
+    var limit = rangeSelect ? parseInt(rangeSelect.value, 10) : 60;
+    fetch('/api/history?metric=' + encodeURIComponent(metric) + '&limit=' + limit)
       .then(function (res) {
         if (res.status === 503) {
           if (msg) msg.textContent = 'Historical data unavailable — MongoDB not configured.';
@@ -383,6 +516,98 @@
   if (metricSelect) {
     metricSelect.addEventListener('change', function () {
       loadHistory(this.value);
+    });
+  }
+
+  // ── Date-range picker ─────────────────────────────────────────────────────
+  var rangeSelect = document.getElementById('range-select');
+  if (rangeSelect) {
+    rangeSelect.addEventListener('change', function () {
+      if (metricSelect) loadHistory(metricSelect.value);
+    });
+  }
+
+  // ── Browser notifications ─────────────────────────────────────────────────
+  var notifyBtn = document.getElementById('notify-btn');
+  var notificationsEnabled = false;
+
+  // Show the bell button if the Notifications API is supported
+  if ('Notification' in window && notifyBtn) {
+    notifyBtn.hidden = false;
+    if (Notification.permission === 'granted') {
+      notificationsEnabled = true;
+      notifyBtn.title = 'Notifications enabled';
+      notifyBtn.style.opacity = '1';
+    }
+    notifyBtn.addEventListener('click', function () {
+      Notification.requestPermission().then(function (perm) {
+        notificationsEnabled = perm === 'granted';
+        notifyBtn.title = notificationsEnabled ? 'Notifications enabled' : 'Notifications blocked';
+        notifyBtn.style.opacity = notificationsEnabled ? '1' : '0.4';
+        if (notificationsEnabled) showToast('🔔 Notifications enabled');
+      });
+    });
+  }
+
+  /**
+   * Fires a browser notification when a geomagnetic storm (Kp ≥ 5) is detected
+   * or when a full moon is tonight (0 days) or tomorrow (1 day).
+   * Notifications are throttled: the same alert is not repeated within 6 hours.
+   */
+  var lastNotified = {};
+  function maybeNotify(data) {
+    if (!notificationsEnabled || Notification.permission !== 'granted') return;
+    var now = Date.now();
+    var SIX_HOURS = 6 * 60 * 60 * 1000;
+
+    if (typeof data.auroraKpIndex === 'number' && data.auroraKpIndex >= 5) {
+      var kpKey = 'kp-storm';
+      if (!lastNotified[kpKey] || (now - lastNotified[kpKey]) > SIX_HOURS) {
+        lastNotified[kpKey] = now;
+        new Notification('🌌 Aurora Alert — Geomagnetic Storm!', {
+          body: 'Kp index is ' + data.auroraKpIndex.toFixed(1) + ' — aurora may be visible at mid-latitudes.',
+          icon: '/icon-192.png',
+          tag: kpKey
+        });
+      }
+    }
+
+    if (data.daysUntilFullMoon === 0) {
+      var fullKey = 'full-moon-tonight';
+      if (!lastNotified[fullKey] || (now - lastNotified[fullKey]) > SIX_HOURS) {
+        lastNotified[fullKey] = now;
+        new Notification('🌕 Full Moon Tonight!', {
+          body: 'Tonight\'s moon is full — ' + (data.moonIlluminationPercent || '?') + '% illuminated.',
+          icon: '/icon-192.png',
+          tag: fullKey
+        });
+      }
+    } else if (data.daysUntilFullMoon === 1) {
+      var tomorrowKey = 'full-moon-tomorrow';
+      if (!lastNotified[tomorrowKey] || (now - lastNotified[tomorrowKey]) > SIX_HOURS) {
+        lastNotified[tomorrowKey] = now;
+        new Notification('🌔 Full Moon Tomorrow', {
+          body: 'The full moon is tomorrow — ' + (data.moonIlluminationPercent || '?') + '% illuminated tonight.',
+          icon: '/icon-192.png',
+          tag: tomorrowKey
+        });
+      }
+    }
+  }
+
+  // ── CSV Export ────────────────────────────────────────────────────────────
+  var exportBtn = document.getElementById('export-csv-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function () {
+      var metric = metricSelect ? metricSelect.value : 'daylightHours';
+      var limit = rangeSelect ? rangeSelect.value : '500';
+      var url = '/api/history/export?metric=' + encodeURIComponent(metric) + '&limit=' + limit;
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = metric + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     });
   }
 

@@ -1,5 +1,8 @@
 package org.iHarwood;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * Immutable snapshot of all computed astronomical metrics.
  * Jackson-serialisable via its record accessors.
@@ -35,6 +38,7 @@ public record AstronomicalSnapshot(
         double voyager1DistanceAu,
         double voyager2DistanceAu,
         double newHorizonsDistanceAu,
+        double jamesWebbDistanceKm,
 
         // Earth orbital speed
         double earthSpeedKmPerSec,
@@ -73,6 +77,20 @@ public record AstronomicalSnapshot(
         long daysUntilPerihelion,
         long daysUntilAphelion,
 
+        // Sunrise / Sunset (approximate UTC times, e.g. "06:32")
+        String sunriseTime,
+        String sunsetTime,
+
+        // Aurora geomagnetic activity (NOAA Kp index 0–9, -1 if unavailable)
+        double auroraKpIndex,
+
+        // ISS crew aboard (-1 if unavailable)
+        int issCrew,
+
+        // Total humans in space and per-craft breakdown (-1 / empty if unavailable)
+        int totalPeopleInSpace,
+        Map<String, Integer> craftOccupancy,
+
         // Metadata
         String lastUpdated
 ) {
@@ -105,6 +123,7 @@ public record AstronomicalSnapshot(
         private double voyager1DistanceAu;
         private double voyager2DistanceAu;
         private double newHorizonsDistanceAu;
+        private double jamesWebbDistanceKm;
         private double earthSpeedKmPerSec;
         private double earthSpeedKmPerHour;
         private double daylightHours;
@@ -130,6 +149,12 @@ public record AstronomicalSnapshot(
         private long daysUntilWinterSolstice;
         private long daysUntilPerihelion;
         private long daysUntilAphelion;
+        private String sunriseTime;
+        private String sunsetTime;
+        private double auroraKpIndex = -1.0;
+        private int issCrew = -1;
+        private int totalPeopleInSpace = -1;
+        private Map<String, Integer> craftOccupancy = Collections.emptyMap();
         private String lastUpdated;
 
         private Builder() {}
@@ -155,6 +180,7 @@ public record AstronomicalSnapshot(
         public Builder voyager1DistanceAu(double v)      { this.voyager1DistanceAu = v; return this; }
         public Builder voyager2DistanceAu(double v)      { this.voyager2DistanceAu = v; return this; }
         public Builder newHorizonsDistanceAu(double v)   { this.newHorizonsDistanceAu = v; return this; }
+        public Builder jamesWebbDistanceKm(double v)     { this.jamesWebbDistanceKm = v; return this; }
         public Builder earthSpeedKmPerSec(double v)      { this.earthSpeedKmPerSec = v; return this; }
         public Builder earthSpeedKmPerHour(double v)     { this.earthSpeedKmPerHour = v; return this; }
         public Builder daylightHours(double v)           { this.daylightHours = v; return this; }
@@ -180,6 +206,12 @@ public record AstronomicalSnapshot(
         public Builder daysUntilWinterSolstice(long v)   { this.daysUntilWinterSolstice = v; return this; }
         public Builder daysUntilPerihelion(long v)       { this.daysUntilPerihelion = v; return this; }
         public Builder daysUntilAphelion(long v)         { this.daysUntilAphelion = v; return this; }
+        public Builder sunriseTime(String v)            { this.sunriseTime = v; return this; }
+        public Builder sunsetTime(String v)             { this.sunsetTime = v; return this; }
+        public Builder auroraKpIndex(double v)          { this.auroraKpIndex = v; return this; }
+        public Builder issCrew(int v)                   { this.issCrew = v; return this; }
+        public Builder totalPeopleInSpace(int v)        { this.totalPeopleInSpace = v; return this; }
+        public Builder craftOccupancy(Map<String, Integer> v) { this.craftOccupancy = v != null ? v : Collections.emptyMap(); return this; }
         public Builder lastUpdated(String v)             { this.lastUpdated = v; return this; }
 
         public AstronomicalSnapshot build() {
@@ -191,7 +223,7 @@ public record AstronomicalSnapshot(
                     uranusDistanceAu, neptuneDistanceAu, plutoDistanceAu,
                     voyager1HelioDistanceAu, voyager2HelioDistanceAu,
                     moonDistanceKm,
-                    voyager1DistanceAu, voyager2DistanceAu, newHorizonsDistanceAu,
+                    voyager1DistanceAu, voyager2DistanceAu, newHorizonsDistanceAu, jamesWebbDistanceKm,
                     earthSpeedKmPerSec, earthSpeedKmPerHour,
                     daylightHours, earthAxialTiltDegrees,
                     lightTimeSunToEarth, lightTimeSunToMercury, lightTimeSunToVenus,
@@ -200,10 +232,12 @@ public record AstronomicalSnapshot(
                     lightTimeSunToVoyager1, lightTimeSunToVoyager2,
                     issAltitudeKm, tiangongAltitudeKm, hubbleAltitudeKm,
                     starlinkSatelliteCount, kuiperSatelliteCount, totalSatellitesInOrbit,
-                    daysUntilSummerSolstice, daysUntilWinterSolstice,
-                    daysUntilPerihelion, daysUntilAphelion,
-                    lastUpdated
-            );
+                     daysUntilSummerSolstice, daysUntilWinterSolstice,
+                     daysUntilPerihelion, daysUntilAphelion,
+                     sunriseTime, sunsetTime, auroraKpIndex, issCrew,
+                     totalPeopleInSpace, craftOccupancy,
+                     lastUpdated
+             );
         }
     }
 }

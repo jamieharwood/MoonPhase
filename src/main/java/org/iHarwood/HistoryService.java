@@ -2,12 +2,17 @@ package org.iHarwood;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +32,13 @@ public class HistoryService {
     private static final DateTimeFormatter LABEL_FMT =
             DateTimeFormatter.ofPattern("dd MMM HH:mm").withZone(ZoneOffset.UTC);
     private static final int DEFAULT_LIMIT = 60;
+
+    /**
+     * Number of days of history to retain. Snapshots older than this are purged nightly.
+     * 0 (default) means no pruning — keep all history indefinitely.
+     */
+    @Value("${app.history.retention-days:0}")
+    private int retentionDays;
 
     /**
      * Metric extractors keyed by metric name. Adding a new metric only requires
@@ -64,7 +76,10 @@ public class HistoryService {
             Map.entry("daysUntilSummerSolstice",  d -> d.getDaysUntilSummerSolstice()),
             Map.entry("daysUntilWinterSolstice",  d -> d.getDaysUntilWinterSolstice()),
             Map.entry("daysUntilPerihelion",      d -> d.getDaysUntilPerihelion()),
-            Map.entry("daysUntilAphelion",        d -> d.getDaysUntilAphelion())
+            Map.entry("daysUntilAphelion",        d -> d.getDaysUntilAphelion()),
+            Map.entry("auroraKpIndex",            SnapshotDocument::getAuroraKpIndex),
+            Map.entry("issCrew",                  d -> d.getIssCrew()),
+            Map.entry("totalPeopleInSpace",        d -> d.getTotalPeopleInSpace())
     );
 
     static final Set<String> ALLOWED_METRICS = METRIC_EXTRACTORS.keySet();
@@ -77,6 +92,18 @@ public class HistoryService {
 
     public void save(AstronomicalSnapshot snapshot) {
         try {
+            // Deduplication: allow at most one snapshot per 12-hour window so both the
+            // 00:01 and 12:01 scheduled runs are persisted, but rapid manual refreshes
+            // within the same window are not duplicated.
+            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+            Instant halfDayStart = now.getHour() < 12
+                    ? now.toLocalDate().atStartOfDay(ZoneOffset.UTC).toInstant()
+                    : now.toLocalDate().atStartOfDay(ZoneOffset.UTC).toInstant().plus(12, ChronoUnit.HOURS);
+            Instant halfDayEnd = halfDayStart.plus(12, ChronoUnit.HOURS);
+            if (repository.countByTimestampBetween(halfDayStart, halfDayEnd) > 0) {
+                logger.debug("Snapshot for this 12-hour window already exists in MongoDB — skipping duplicate save.");
+                return;
+            }
             repository.save(SnapshotDocument.from(snapshot));
             logger.debug("Snapshot saved to MongoDB.");
         } catch (Exception e) {
@@ -99,6 +126,26 @@ public class HistoryService {
             logger.info("All snapshots deleted from MongoDB.");
         } catch (Exception e) {
             logger.warn("Failed to clear snapshots from MongoDB: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Purges snapshots older than {@code app.history.retention-days} days.
+     * Runs nightly at 03:00 UTC. No-op when retention-days is 0 (the default).
+     */
+    @Scheduled(cron = "0 0 3 * * *")
+    public void purgeOldSnapshots() {
+        if (retentionDays <= 0) return;
+        Instant cutoff = Instant.now().minus(retentionDays, ChronoUnit.DAYS);
+        try {
+            long deleted = repository.deleteByTimestampBefore(cutoff);
+            if (deleted > 0) {
+                logger.info("Purged {} snapshot(s) older than {} days.", deleted, retentionDays);
+            } else {
+                logger.debug("History purge: no snapshots older than {} days found.", retentionDays);
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to purge old snapshots: {}", e.getMessage());
         }
     }
 
@@ -133,5 +180,17 @@ public class HistoryService {
             throw new IllegalArgumentException("Unknown metric: " + metric);
         }
         return extractor.applyAsDouble(doc);
+    }
+
+    /**
+     * Returns historical data as a CSV string (timestamp,value header + rows).
+     */
+    public String exportCsv(String metric, int limit) {
+        List<Map<String, Object>> data = getHistory(metric, limit);
+        StringBuilder sb = new StringBuilder("timestamp,value\n");
+        for (Map<String, Object> point : data) {
+            sb.append(point.get("timestamp")).append(",").append(point.get("value")).append("\n");
+        }
+        return sb.toString();
     }
 }

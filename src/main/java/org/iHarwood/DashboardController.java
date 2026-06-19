@@ -13,9 +13,11 @@ import java.time.ZonedDateTime;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
@@ -31,6 +33,9 @@ public class DashboardController {
     private final AstronomicalDataService dataService;
     private final Optional<HistoryService> historyService;
     private final Main main;
+
+    /** Guards against concurrent manual refresh calls. */
+    private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
 
     public DashboardController(AstronomicalDataService dataService,
                                Optional<HistoryService> historyService,
@@ -56,13 +61,22 @@ public class DashboardController {
     }
 
     /**
-     * Manual refresh - update() is already synchronized via updateLock,
-     * so concurrent calls are safe (they will queue up, not race).
+     * Manual refresh — rate-limited to one concurrent execution.
+     * Returns 429 if a refresh is already in progress.
      */
     @PostMapping(value = "/api/refresh")
     @ResponseBody
     public ResponseEntity<Void> refresh() {
-        new Thread(main::update, "manual-refresh").start();
+        if (!refreshRunning.compareAndSet(false, true)) {
+            return ResponseEntity.status(429).build();
+        }
+        new Thread(() -> {
+            try {
+                main.update();
+            } finally {
+                refreshRunning.set(false);
+            }
+        }, "manual-refresh").start();
         return ResponseEntity.accepted().build();
     }
 
@@ -72,6 +86,34 @@ public class DashboardController {
         return dataService.subscribe();
     }
 
+    /**
+     * Health endpoint — reports status of each subsystem.
+     * Useful for container-level liveness checks and operator troubleshooting.
+     */
+    @GetMapping(value = "/api/health", produces = APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> health() {
+        AstronomicalSnapshot snapshot = dataService.getLatestSnapshot();
+        boolean dataAvailable = snapshot != null;
+
+        Map<String, Object> components = new LinkedHashMap<>();
+        components.put("snapshot", dataAvailable ? "UP" : "WAITING");
+        components.put("history",  historyService.isPresent() ? "UP" : "DISABLED");
+        components.put("refreshRunning", refreshRunning.get());
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", dataAvailable ? "UP" : "STARTING");
+        body.put("dataAvailable", dataAvailable);
+        body.put("lastUpdated", dataAvailable ? snapshot.lastUpdated() : null);
+        body.put("historyEnabled", historyService.isPresent());
+        body.put("components", components);
+        return ResponseEntity.ok(body);
+    }
+
+    /**
+     * Populate history asynchronously — runs on a background thread so the
+     * HTTP request returns immediately (202 Accepted) rather than blocking.
+     */
     @PostMapping("/api/history/populate")
     @ResponseBody
     public ResponseEntity<Void> populateHistory(
@@ -80,13 +122,15 @@ public class DashboardController {
             return ResponseEntity.status(503).build();
         }
         int clampedDays = Math.min(Math.max(days, 1), 365);
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-        for (int i = clampedDays; i >= 1; i--) {
-            ZonedDateTime target = now.minusDays(i).withHour(12).withMinute(0).withSecond(0).withNano(0);
-            AstronomicalSnapshot snapshot = main.calculateSnapshotForDate(target);
-            historyService.get().saveAt(snapshot, target.toInstant());
-        }
-        return ResponseEntity.noContent().build();
+        new Thread(() -> {
+            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+            for (int i = clampedDays; i >= 1; i--) {
+                ZonedDateTime target = now.minusDays(i).withHour(12).withMinute(0).withSecond(0).withNano(0);
+                AstronomicalSnapshot snapshot = main.calculateSnapshotForDate(target);
+                historyService.get().saveAt(snapshot, target.toInstant());
+            }
+        }, "history-populate").start();
+        return ResponseEntity.accepted().build();
     }
 
     @DeleteMapping("/api/history")
@@ -108,5 +152,23 @@ public class DashboardController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(historyService.get().getHistory(metric, limit));
+    }
+
+    @GetMapping("/api/history/export")
+    @ResponseBody
+    public ResponseEntity<String> exportHistory(
+            @RequestParam(defaultValue = "daylightHours") String metric,
+            @RequestParam(defaultValue = "500") int limit) {
+        if (!historyService.isPresent()) {
+            return ResponseEntity.status(503).build();
+        }
+        if (!HistoryService.ALLOWED_METRICS.contains(metric)) {
+            return ResponseEntity.badRequest().build();
+        }
+        String csv = historyService.get().exportCsv(metric, limit);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + metric + ".csv\"")
+                .header("Content-Type", "text/csv")
+                .body(csv);
     }
 }
