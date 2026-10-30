@@ -58,7 +58,7 @@ Live data fetched from the [TLE API](https://tle.ivanstanojevic.me/) on every sc
 
 MoonPhaseAI includes an optional live web dashboard that displays all computed metrics in a browser, updated in real time via Server-Sent Events (SSE) whenever the scheduled calculation cycle completes.
 
-![MoonPhaseAI Dashboard](/home/jamie/IdeaProjects/MoonPhase/dashboard.png)
+![MoonPhaseAI Dashboard](dashboard.png)
 
 The dashboard is **enabled by default** and accessible at `http://localhost:8080/` (or the configured port).
 
@@ -82,7 +82,12 @@ The sticky header contains:
 ### Dashboard Cards
 
 #### 🌙 Moon Phase
-Displays the current phase name and ASCII art rendering, plus four statistics:
+Displays the current phase name and a moon graphic, plus four statistics. Use the **ASCII / Animated** switch in the card header to choose the graphic; your choice is remembered in the browser.
+
+- **ASCII** — the server-generated ASCII art rendering of the current phase (default).
+- **Animated** — a canvas-rendered moon with craters and maria, a shadowed terminator matching the live illumination and age, and a twinkling starfield. A moon base sits on the surface while a Starship repeatedly lands beside it, kicking up dust. The phase is synced to each server snapshot and then advances in real time between updates. Star colours adapt to light themes.
+
+Statistics:
 - **Illumination** — percentage of the visible surface lit by the Sun.
 - **Age** — days elapsed since the last new moon.
 - **Full Moon In** — days until the next full moon.
