@@ -1,8 +1,6 @@
 package org.iHarwood.MoonPhaseModule;
-
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-
 /**
  * Calculates Earth's current orbital speed around the Sun.
  *
@@ -14,29 +12,31 @@ import java.time.ZonedDateTime;
  */
 public final class EarthSpeed {
     private EarthSpeed() {}
-
     private static final double GM_SUN = 1.32712440018e11;
     private static final double A_EARTH_KM = 149_597_870.7;
     private static final double KM_PER_AU = 149_597_870.7;
-
     public static double speedKmPerSecNow() {
         return speedKmPerSec(ZonedDateTime.now(ZoneOffset.UTC));
     }
-
     public static double speedKmPerSec(ZonedDateTime zdt) {
-        double rAu = SunDistance.distanceAU(zdt);
+        return speedKmPerSecFromDistanceAu(SunDistance.distanceAU(zdt));
+    }
+    /**
+     * Vis-viva speed from a precomputed Sun-Earth distance (avoids recomputing the orbit).
+     */
+    public static double speedKmPerSecFromDistanceAu(double rAu) {
         double rKm = rAu * KM_PER_AU;
         return Math.sqrt(GM_SUN * (2.0 / rKm - 1.0 / A_EARTH_KM));
     }
-
     public static double speedKmPerHour(ZonedDateTime zdt) {
         return speedKmPerSec(zdt) * 3600.0;
     }
-
+    public static double speedKmPerHourFromDistanceAu(double rAu) {
+        return speedKmPerSecFromDistanceAu(rAu) * 3600.0;
+    }
     public static double speedKmPerHourNow() {
         return speedKmPerHour(ZonedDateTime.now(ZoneOffset.UTC));
     }
-
     public static double speedMphNow() {
         return speedKmPerHourNow() / 1.60934;
     }

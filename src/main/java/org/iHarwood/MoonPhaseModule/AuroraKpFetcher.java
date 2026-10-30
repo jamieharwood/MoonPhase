@@ -1,16 +1,13 @@
 package org.iHarwood.MoonPhaseModule;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-
 /**
  * Fetches the current geomagnetic Kp index from NOAA Space Weather Services.
  *
@@ -18,28 +15,46 @@ import java.time.Duration;
  *   0–1 = Quiet,  2–3 = Unsettled,  4 = Active,  5+ = Geomagnetic Storm
  * Aurora may be visible at mid-latitudes when Kp ≥ 5.
  *
- * Returns -1.0 if the data is unavailable.
+ * Returns -1.0 if the data is unavailable. Results are cached for {@value #CACHE_TTL_MS} ms.
  */
 public final class AuroraKpFetcher {
-
     private static final Logger logger = LoggerFactory.getLogger(AuroraKpFetcher.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
+    private static final JsonMapper OBJECT_MAPPER = JsonMapper.shared();
+    /** Cache NOAA responses for 15 minutes — Kp updates roughly hourly. */
+    static final long CACHE_TTL_MS = 15L * 60 * 1000;
     private static final String KP_URL =
             "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json";
-
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .connectTimeout(Duration.ofSeconds(10))
             .build();
-
+    private record KpCache(double kp, long fetchedAtMs) {}
+    private static volatile KpCache cache = null;
     private AuroraKpFetcher() {}
-
+    static synchronized void resetCache() { cache = null; }
     /**
      * Returns the most recent Kp index (0.0–9.0), or -1.0 if unavailable.
      * The value is rounded to one decimal place by NOAA.
      */
     public static double fetchKpIndex() {
+        KpCache c = cache;
+        if (c != null && (System.currentTimeMillis() - c.fetchedAtMs()) < CACHE_TTL_MS) {
+            logger.debug("Aurora Kp served from cache (age {}s)",
+                    (System.currentTimeMillis() - c.fetchedAtMs()) / 1000);
+            return c.kp();
+        }
+        return fetchAndCache();
+    }
+    private static synchronized double fetchAndCache() {
+        KpCache c = cache;
+        if (c != null && (System.currentTimeMillis() - c.fetchedAtMs()) < CACHE_TTL_MS) {
+            return c.kp();
+        }
+        double kp = doFetch();
+        cache = new KpCache(kp, System.currentTimeMillis());
+        return kp;
+    }
+    private static double doFetch() {
         try {
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(KP_URL))
@@ -60,7 +75,6 @@ public final class AuroraKpFetcher {
             return -1.0;
         }
     }
-
     /**
      * Parses the latest estimated Kp value from the NOAA JSON array using Jackson.
      * The array is ordered oldest-first, so the last element is most recent.

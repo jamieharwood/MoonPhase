@@ -33,12 +33,8 @@ public class HistoryService {
             DateTimeFormatter.ofPattern("dd MMM HH:mm").withZone(ZoneOffset.UTC);
     private static final int DEFAULT_LIMIT = 60;
 
-    /**
-     * Number of days of history to retain. Snapshots older than this are purged nightly.
-     * 0 (default) means no pruning — keep all history indefinitely.
-     */
-    @Value("${app.history.retention-days:0}")
-    private int retentionDays;
+    /** Days of history to retain; 0 means keep forever. */
+    private final int retentionDays;
 
     /**
      * Metric extractors keyed by metric name. Adding a new metric only requires
@@ -86,8 +82,11 @@ public class HistoryService {
 
     private final SnapshotRepository repository;
 
-    public HistoryService(SnapshotRepository repository) {
+    public HistoryService(
+            SnapshotRepository repository,
+            @Value("${app.history.retention-days:0}") int retentionDays) {
         this.repository = repository;
+        this.retentionDays = retentionDays;
     }
 
     public void save(AstronomicalSnapshot snapshot) {
@@ -117,6 +116,23 @@ public class HistoryService {
             logger.debug("Historical snapshot saved for {}.", timestamp);
         } catch (Exception e) {
             logger.warn("Failed to save historical snapshot: {}", e.getMessage());
+        }
+    }
+    /**
+     * Bulk-insert historical snapshots in one Mongo round-trip.
+     * @param docs pre-built documents (timestamp already set)
+     */
+    public int saveAll(List<SnapshotDocument> docs) {
+        if (docs == null || docs.isEmpty()) {
+            return 0;
+        }
+        try {
+            repository.saveAll(docs);
+            logger.info("Bulk-saved {} historical snapshot(s) to MongoDB.", docs.size());
+            return docs.size();
+        } catch (Exception e) {
+            logger.warn("Failed to bulk-save historical snapshots: {}", e.getMessage());
+            return 0;
         }
     }
 

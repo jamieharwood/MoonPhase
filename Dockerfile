@@ -1,5 +1,5 @@
 # Multi-stage build
-FROM eclipse-temurin:21-jdk-jammy AS builder
+FROM eclipse-temurin:25-jdk-jammy AS builder
 
 WORKDIR /app
 
@@ -17,12 +17,12 @@ RUN chmod +x ./gradlew && \
     ./gradlew clean bootJar --no-daemon
 
 # Runtime stage
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-jammy
 
 WORKDIR /app
 
 # Install tzdata for timezone support
-RUN apt-get update && apt-get install -y tzdata && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata wget && rm -rf /var/lib/apt/lists/*
 
 # Copy the built JAR from the builder stage
 COPY --from=builder /app/build/libs/MoonPhase-1.0-SNAPSHOT.jar app.jar
@@ -35,7 +35,7 @@ USER appuser
 
 # Health check - use Spring Boot actuator if available, fall back to process check
 HEALTHCHECK --interval=5m --timeout=10s --start-period=30s --retries=3 \
-    CMD wget -q --spider http://localhost:8080/actuator/health 2>/dev/null || pgrep -f "app.jar" > /dev/null || exit 1
+    CMD wget -q --spider http://localhost:8080/actuator/health/liveness 2>/dev/null || wget -q --spider http://localhost:8080/api/health 2>/dev/null || pgrep -f "app.jar" > /dev/null || exit 1
 
 # Run the application with the required JVM arguments
 ENTRYPOINT ["java", "--enable-native-access=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.util=ALL-UNNAMED", "-XX:+EnableDynamicAgentLoading", "-jar", "app.jar"]

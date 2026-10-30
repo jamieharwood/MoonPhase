@@ -13,9 +13,21 @@
   --accent-amber:  #ffaa00;
   --accent-red:    #ff4444;
   --font-mono:     'Courier New', Courier, monospace;
+  --chart-line:    #00d4ff;
+  --chart-fill:    rgba(0, 212, 255, 0.08);
+  --chart-tick:    #7aa8cc;
+  --chart-grid:    rgba(13, 42, 74, 0.8);
+  --row-border:    rgba(13, 42, 74, 0.5);
+  --radius:        8px;
+  --header-bg:     var(--bg-deep);
+  --header-title:  var(--text-glow);
+  --header-sub:    var(--text-secondary);
+  --header-rule:   1px solid var(--border);
+  --title-shadow:  0 0 12px var(--text-glow);
 }
 
 /* ===== Light Theme Overrides ===== */
+html[data-theme="light"],
 body.light-theme {
   --bg-deep:       #f0f4f8;
   --bg-card:       #ffffff;
@@ -29,6 +41,242 @@ body.light-theme {
   --accent-green:  #007744;
   --accent-amber:  #b87800;
   --accent-red:    #bb2222;
+  --chart-line:    #005fa3;
+  --chart-fill:    rgba(0, 95, 163, 0.1);
+  --chart-tick:    #3a6a9a;
+  --chart-grid:    rgba(192, 212, 235, 0.95);
+  --row-border:    rgba(192, 212, 235, 0.9);
+  --title-shadow:  none;
+}
+
+/* ===== SpaceX — black, white, sharp, industrial ===== */
+html[data-theme="spacex"] {
+  --bg-deep:       #000000;
+  --bg-card:       #0a0a0a;
+  --bg-card-hover: #141414;
+  --border:        #2a2a2a;
+  --text-primary:  #ffffff;
+  --text-secondary:#9a9a9a;
+  --text-glow:     #ffffff;
+  --moon-color:    #ffffff;
+  --moon-glow:     transparent;
+  --accent-green:  #ffffff;
+  --accent-amber:  #cfcfcf;
+  --accent-red:    #ff5a5a;
+  --font-mono:     "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --chart-line:    #ffffff;
+  --chart-fill:    rgba(255, 255, 255, 0.06);
+  --chart-tick:    #9a9a9a;
+  --chart-grid:    rgba(255, 255, 255, 0.08);
+  --row-border:    rgba(255, 255, 255, 0.08);
+  --radius:        0px;
+  --header-bg:     #000000;
+  --header-title:  #ffffff;
+  --header-sub:    #9a9a9a;
+  --header-rule:   1px solid #ffffff;
+  --title-shadow:  none;
+}
+
+/* ===== NASA — official blue, worm red, clean sans ===== */
+html[data-theme="nasa"] {
+  --bg-deep:       #eef2f7;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f7f9fc;
+  --border:        #d3dce8;
+  --text-primary:  #1b1b1b;
+  --text-secondary:#3e4c63;
+  --text-glow:     #0B3D91;
+  --moon-color:    #0B3D91;
+  --moon-glow:     transparent;
+  --accent-green:  #0B3D91;
+  --accent-amber:  #FC3D21;
+  --accent-red:    #FC3D21;
+  --font-mono:     "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --chart-line:    #0B3D91;
+  --chart-fill:    rgba(11, 61, 145, 0.08);
+  --chart-tick:    #3e4c63;
+  --chart-grid:    rgba(11, 61, 145, 0.12);
+  --row-border:    rgba(11, 61, 145, 0.12);
+  --radius:        2px;
+  --header-bg:     #0B3D91;
+  --header-title:  #ffffff;
+  --header-sub:    rgba(255, 255, 255, 0.82);
+  --header-rule:   4px solid #FC3D21;
+  --title-shadow:  none;
+}
+
+/* ===== Blue Origin — feather navy and sky blue ===== */
+html[data-theme="blueorigin"] {
+  --bg-deep:       #061525;
+  --bg-card:       #0c243c;
+  --bg-card-hover: #123050;
+  --border:        #1d4e78;
+  --text-primary:  #e7f4fb;
+  --text-secondary:#8eb8d0;
+  --text-glow:     #5ec8ef;
+  --moon-color:    #d7f1fb;
+  --moon-glow:     rgba(94, 200, 239, 0.35);
+  --accent-green:  #3ddc97;
+  --accent-amber:  #7ed0f2;
+  --accent-red:    #ff6b6b;
+  --font-mono:     "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --chart-line:    #5ec8ef;
+  --chart-fill:    rgba(94, 200, 239, 0.1);
+  --chart-tick:    #8eb8d0;
+  --chart-grid:    rgba(94, 200, 239, 0.12);
+  --row-border:    rgba(94, 200, 239, 0.14);
+  --radius:        6px;
+  --header-bg:     #00205B;
+  --header-title:  #ffffff;
+  --header-sub:    rgba(255, 255, 255, 0.8);
+  --header-rule:   3px solid #7ed0f2;
+  --title-shadow:  none;
+  --header-active-fg: #00205B;
+}
+
+/* ===== Rocket Lab — black and Electron pink ===== */
+html[data-theme="rocketlab"] {
+  --bg-deep:       #050505;
+  --bg-card:       #111111;
+  --bg-card-hover: #1a1a1a;
+  --border:        #2c2c2c;
+  --text-primary:  #ffffff;
+  --text-secondary:#b3b3b3;
+  --text-glow:     #ff2e97;
+  --moon-color:    #ffd0ea;
+  --moon-glow:     rgba(255, 46, 151, 0.35);
+  --accent-green:  #3ddc97;
+  --accent-amber:  #ff2e97;
+  --accent-red:    #ff4d6a;
+  --font-mono:     "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --chart-line:    #ff2e97;
+  --chart-fill:    rgba(255, 46, 151, 0.1);
+  --chart-tick:    #b3b3b3;
+  --chart-grid:    rgba(255, 46, 151, 0.12);
+  --row-border:    rgba(255, 255, 255, 0.08);
+  --radius:        0px;
+  --header-bg:     #000000;
+  --header-title:  #ffffff;
+  --header-sub:    #ff8ac4;
+  --header-rule:   3px solid #ff2e97;
+  --title-shadow:  none;
+  --header-active-fg: #000000;
+}
+
+/* ===== ULA — Atlas blue and Delta orange ===== */
+html[data-theme="ula"] {
+  --bg-deep:       #f3f5f7;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f7f8fa;
+  --border:        #d5dde6;
+  --text-primary:  #1c2430;
+  --text-secondary:#4d5d70;
+  --text-glow:     #004B87;
+  --moon-color:    #004B87;
+  --moon-glow:     transparent;
+  --accent-green:  #0d7a45;
+  --accent-amber:  #E87722;
+  --accent-red:    #c0392b;
+  --font-mono:     "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --chart-line:    #004B87;
+  --chart-fill:    rgba(0, 75, 135, 0.08);
+  --chart-tick:    #4d5d70;
+  --chart-grid:    rgba(0, 75, 135, 0.12);
+  --row-border:    rgba(0, 75, 135, 0.12);
+  --radius:        2px;
+  --header-bg:     #004B87;
+  --header-title:  #ffffff;
+  --header-sub:    rgba(255, 255, 255, 0.82);
+  --header-rule:   4px solid #E87722;
+  --title-shadow:  none;
+  --header-active-fg: #004B87;
+}
+
+/* ===== Arianespace — indigo night and Ariane cyan ===== */
+html[data-theme="arianespace"] {
+  --bg-deep:       #07101c;
+  --bg-card:       #0e1c30;
+  --bg-card-hover: #142844;
+  --border:        #1e3d66;
+  --text-primary:  #e8f2ff;
+  --text-secondary:#9bb4d4;
+  --text-glow:     #3ec6ff;
+  --moon-color:    #d6ebff;
+  --moon-glow:     rgba(62, 198, 255, 0.3);
+  --accent-green:  #3ddc97;
+  --accent-amber:  #3ec6ff;
+  --accent-red:    #ef4135;
+  --font-mono:     "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --chart-line:    #3ec6ff;
+  --chart-fill:    rgba(62, 198, 255, 0.1);
+  --chart-tick:    #9bb4d4;
+  --chart-grid:    rgba(62, 198, 255, 0.12);
+  --row-border:    rgba(62, 198, 255, 0.14);
+  --radius:        4px;
+  --header-bg:     #001E60;
+  --header-title:  #ffffff;
+  --header-sub:    rgba(255, 255, 255, 0.78);
+  --header-rule:   3px solid #3ec6ff;
+  --title-shadow:  none;
+  --header-active-fg: #001E60;
+}
+
+/* ===== Relativity — charcoal and printed copper ===== */
+html[data-theme="relativity"] {
+  --bg-deep:       #161210;
+  --bg-card:       #221c19;
+  --bg-card-hover: #2c241f;
+  --border:        #3d322b;
+  --text-primary:  #f6eee8;
+  --text-secondary:#c2aea0;
+  --text-glow:     #e07a3d;
+  --moon-color:    #f0c7a8;
+  --moon-glow:     rgba(224, 122, 61, 0.35);
+  --accent-green:  #7dcea0;
+  --accent-amber:  #e07a3d;
+  --accent-red:    #e05a4f;
+  --font-mono:     "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --chart-line:    #e07a3d;
+  --chart-fill:    rgba(224, 122, 61, 0.12);
+  --chart-tick:    #c2aea0;
+  --chart-grid:    rgba(224, 122, 61, 0.14);
+  --row-border:    rgba(224, 122, 61, 0.16);
+  --radius:        2px;
+  --header-bg:     #100e0c;
+  --header-title:  #f6eee8;
+  --header-sub:    #e0b090;
+  --header-rule:   3px solid #e07a3d;
+  --title-shadow:  none;
+  --header-active-fg: #100e0c;
+}
+
+/* ===== Firefly — night sky and firefly gold ===== */
+html[data-theme="firefly"] {
+  --bg-deep:       #070b16;
+  --bg-card:       #12182b;
+  --bg-card-hover: #1a2340;
+  --border:        #2a3658;
+  --text-primary:  #f8f3e4;
+  --text-secondary:#cbb98a;
+  --text-glow:     #f5c518;
+  --moon-color:    #ffe27a;
+  --moon-glow:     rgba(245, 197, 24, 0.45);
+  --accent-green:  #8ee08a;
+  --accent-amber:  #f5c518;
+  --accent-red:    #ff6b5a;
+  --font-mono:     "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --chart-line:    #f5c518;
+  --chart-fill:    rgba(245, 197, 24, 0.12);
+  --chart-tick:    #cbb98a;
+  --chart-grid:    rgba(245, 197, 24, 0.12);
+  --row-border:    rgba(245, 197, 24, 0.14);
+  --radius:        10px;
+  --header-bg:     #070b16;
+  --header-title:  #ffe27a;
+  --header-sub:    #cbb98a;
+  --header-rule:   3px solid #f5c518;
+  --title-shadow:  0 0 14px rgba(245, 197, 24, 0.45);
+  --header-active-fg: #070b16;
 }
 
 /* ===== Reset & Base ===== */
@@ -52,9 +300,9 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.5rem;
-  background: var(--bg-deep);
+  background: var(--header-bg);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--header-rule);
 }
 
 .header-left {
@@ -66,14 +314,14 @@ header {
 .header-title {
   font-size: 1.25rem;
   font-weight: bold;
-  color: var(--text-glow);
-  text-shadow: 0 0 12px var(--text-glow);
+  color: var(--header-title);
+  text-shadow: var(--title-shadow);
   letter-spacing: 0.05em;
 }
 
 .header-subtitle {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: var(--header-sub);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -392,7 +640,7 @@ header {
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 1.25rem;
   transition: border-color 0.3s;
 }
@@ -425,6 +673,58 @@ header {
   padding-bottom: 0.5rem;
 }
 
+.moon-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.moon-card-head h2 {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.moon-graphic-switch {
+  display: flex;
+  flex-shrink: 0;
+  border: 1px solid var(--text-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.graphic-btn {
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  padding: 0.28rem 0.45rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.graphic-btn:last-child {
+  border-right: none;
+}
+
+.graphic-btn:hover {
+  background: rgba(122, 168, 204, 0.15);
+  color: var(--text-primary);
+}
+
+.graphic-btn[aria-pressed="true"] {
+  background: var(--text-secondary);
+  color: var(--bg-deep);
+  font-weight: bold;
+}
+
 /* ===== Moon Card ===== */
 .moon-phase-name {
   font-size: 1.3rem;
@@ -433,13 +733,46 @@ header {
   margin-bottom: 0.75rem;
 }
 
+.moon-stage {
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
 .moon-ascii {
   font-size: 0.85rem;
   line-height: 1.4;
   color: var(--moon-color);
   opacity: 0.85;
-  margin-bottom: 1rem;
+  margin: 0;
   white-space: pre;
+}
+
+.moon-canvas {
+  display: block;
+  width: 100%;
+  height: 200px;
+}
+
+html[data-moon-graphic="ascii"] .moon-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+html[data-moon-graphic="animated"] .moon-ascii {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .moon-stats {
@@ -474,7 +807,7 @@ header {
 
 .data-table td {
   padding: 0.4rem 0;
-  border-bottom: 1px solid rgba(13, 42, 74, 0.5);
+  border-bottom: 1px solid var(--row-border);
   font-size: 0.85rem;
 }
 
@@ -646,4 +979,320 @@ footer {
   header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
   .card-grid { padding: 0.75rem; gap: 0.75rem; }
   .moon-card { grid-row: span 1; }
+}
+
+/* ===== Theme Switcher ===== */
+.theme-toggle-btn:hover {
+  background: rgba(122, 168, 204, 0.15);
+  box-shadow: 0 0 8px var(--text-secondary);
+  color: var(--text-primary);
+}
+
+.theme-switcher {
+  position: relative;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 7.4rem;
+  text-align: left;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.theme-switcher-kicker {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  line-height: 1.1;
+}
+
+.theme-current {
+  font-size: 0.78rem;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.theme-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 168px;
+  max-height: min(70vh, 440px);
+  overflow-y: auto;
+  z-index: 200;
+  padding: 4px 0;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+
+.theme-option {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.theme-option:hover,
+.theme-option[aria-checked="true"] {
+  background: var(--bg-card-hover);
+  color: var(--text-glow);
+}
+
+.theme-option[aria-checked="true"]::before {
+  content: "▸ ";
+}
+
+html[data-theme="spacex"] .card,
+html[data-theme="spacex"] button,
+html[data-theme="spacex"] .unit-selector,
+html[data-theme="spacex"] .moon-graphic-switch,
+html[data-theme="spacex"] .menu-dropdown,
+html[data-theme="spacex"] .theme-menu,
+html[data-theme="spacex"] .metric-select,
+html[data-theme="spacex"] .toast,
+html[data-theme="spacex"] .qr-link {
+  border-radius: 0;
+}
+
+html[data-theme="spacex"] .header-title,
+html[data-theme="spacex"] .card h2,
+html[data-theme="spacex"] .header-subtitle {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  text-shadow: none;
+}
+
+html[data-theme="spacex"] .menu-btn,
+html[data-theme="spacex"] .install-btn,
+html[data-theme="spacex"] .theme-toggle-btn,
+html[data-theme="spacex"] .notify-btn,
+html[data-theme="spacex"] .unit-selector,
+html[data-theme="spacex"] .unit-btn,
+html[data-theme="spacex"] .menu-dropdown {
+  border-color: #ffffff;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+html[data-theme="spacex"] .unit-btn {
+  border-right-color: #ffffff;
+}
+
+html[data-theme="spacex"] .unit-btn.active {
+  background: #ffffff;
+  color: #000000;
+}
+
+html[data-theme="spacex"] .menu-btn:hover,
+html[data-theme="spacex"] .install-btn:hover,
+html[data-theme="spacex"] .theme-toggle-btn:hover,
+html[data-theme="spacex"] .notify-btn:hover,
+html[data-theme="spacex"] .refresh-item:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+  color: #ffffff;
+}
+
+html[data-theme="spacex"] .refresh-item {
+  color: #ffffff;
+}
+
+html[data-theme="nasa"] .card h2,
+html[data-theme="nasa"] .history-header {
+  border-bottom: 2px solid #FC3D21;
+}
+
+html[data-theme="nasa"] .header-title {
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+
+html[data-theme="nasa"] header .theme-toggle-btn,
+html[data-theme="nasa"] header .notify-btn,
+html[data-theme="nasa"] header .menu-btn,
+html[data-theme="nasa"] header .install-btn,
+html[data-theme="nasa"] header .unit-selector,
+html[data-theme="nasa"] header .unit-btn {
+  border-color: rgba(255, 255, 255, 0.75);
+  color: #ffffff;
+}
+
+html[data-theme="nasa"] header .unit-btn {
+  border-right-color: rgba(255, 255, 255, 0.75);
+}
+
+html[data-theme="nasa"] header .unit-btn.active {
+  background: #ffffff;
+  color: #0B3D91;
+}
+
+html[data-theme="nasa"] header .menu-btn:hover,
+html[data-theme="nasa"] header .install-btn:hover,
+html[data-theme="nasa"] header .theme-toggle-btn:hover,
+html[data-theme="nasa"] header .notify-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  color: #ffffff;
+}
+
+html[data-theme="nasa"] .theme-option[aria-checked="true"] {
+  color: #FC3D21;
+}
+
+html[data-theme="spacex"] .sse-dot.connected,
+html[data-theme="nasa"] .sse-dot.connected {
+  background: #00c853;
+  box-shadow: 0 0 6px #00c853;
+}
+
+html[data-theme="spacex"] .sse-dot.disconnected,
+html[data-theme="nasa"] .sse-dot.disconnected {
+  background: #ff4444;
+  box-shadow: 0 0 6px #ff4444;
+}
+
+html[data-theme="spacex"] .sse-dot.connecting,
+html[data-theme="nasa"] .sse-dot.connecting {
+  background: #ffaa00;
+  box-shadow: 0 0 6px #ffaa00;
+}
+
+html[data-theme="blueorigin"] header {
+  background: linear-gradient(100deg, #001833 0%, #004e86 58%, #1a94c9 100%);
+}
+
+html[data-theme="arianespace"] header {
+  box-shadow: inset 0 -2px 0 #0055A4, inset 0 -4px 0 #ffffff, inset 0 -6px 0 #EF4135;
+  border-bottom: none;
+}
+
+html[data-theme="rocketlab"] .header-title,
+html[data-theme="rocketlab"] .card h2 {
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+html[data-theme="ula"] .card h2,
+html[data-theme="ula"] .history-header {
+  border-bottom: 2px solid #E87722;
+}
+
+html[data-theme="firefly"] .card h2 {
+  text-shadow: 0 0 10px rgba(245, 197, 24, 0.35);
+}
+
+html[data-theme="blueorigin"] header .theme-toggle-btn,
+html[data-theme="blueorigin"] header .notify-btn,
+html[data-theme="blueorigin"] header .menu-btn,
+html[data-theme="blueorigin"] header .install-btn,
+html[data-theme="blueorigin"] header .unit-selector,
+html[data-theme="blueorigin"] header .unit-btn,
+html[data-theme="rocketlab"] header .theme-toggle-btn,
+html[data-theme="rocketlab"] header .notify-btn,
+html[data-theme="rocketlab"] header .menu-btn,
+html[data-theme="rocketlab"] header .install-btn,
+html[data-theme="rocketlab"] header .unit-selector,
+html[data-theme="rocketlab"] header .unit-btn,
+html[data-theme="ula"] header .theme-toggle-btn,
+html[data-theme="ula"] header .notify-btn,
+html[data-theme="ula"] header .menu-btn,
+html[data-theme="ula"] header .install-btn,
+html[data-theme="ula"] header .unit-selector,
+html[data-theme="ula"] header .unit-btn,
+html[data-theme="arianespace"] header .theme-toggle-btn,
+html[data-theme="arianespace"] header .notify-btn,
+html[data-theme="arianespace"] header .menu-btn,
+html[data-theme="arianespace"] header .install-btn,
+html[data-theme="arianespace"] header .unit-selector,
+html[data-theme="arianespace"] header .unit-btn,
+html[data-theme="relativity"] header .theme-toggle-btn,
+html[data-theme="relativity"] header .notify-btn,
+html[data-theme="relativity"] header .menu-btn,
+html[data-theme="relativity"] header .install-btn,
+html[data-theme="relativity"] header .unit-selector,
+html[data-theme="relativity"] header .unit-btn,
+html[data-theme="firefly"] header .theme-toggle-btn,
+html[data-theme="firefly"] header .notify-btn,
+html[data-theme="firefly"] header .menu-btn,
+html[data-theme="firefly"] header .install-btn,
+html[data-theme="firefly"] header .unit-selector,
+html[data-theme="firefly"] header .unit-btn {
+  border-color: rgba(255, 255, 255, 0.75);
+  color: #ffffff;
+}
+
+html[data-theme="blueorigin"] header .unit-btn,
+html[data-theme="rocketlab"] header .unit-btn,
+html[data-theme="ula"] header .unit-btn,
+html[data-theme="arianespace"] header .unit-btn,
+html[data-theme="relativity"] header .unit-btn,
+html[data-theme="firefly"] header .unit-btn {
+  border-right-color: rgba(255, 255, 255, 0.75);
+}
+
+html[data-theme="blueorigin"] header .unit-btn.active,
+html[data-theme="rocketlab"] header .unit-btn.active,
+html[data-theme="ula"] header .unit-btn.active,
+html[data-theme="arianespace"] header .unit-btn.active,
+html[data-theme="relativity"] header .unit-btn.active,
+html[data-theme="firefly"] header .unit-btn.active {
+  background: #ffffff;
+  color: var(--header-active-fg);
+}
+
+html[data-theme="blueorigin"] header .menu-btn:hover,
+html[data-theme="blueorigin"] header .install-btn:hover,
+html[data-theme="blueorigin"] header .theme-toggle-btn:hover,
+html[data-theme="blueorigin"] header .notify-btn:hover,
+html[data-theme="rocketlab"] header .menu-btn:hover,
+html[data-theme="rocketlab"] header .install-btn:hover,
+html[data-theme="rocketlab"] header .theme-toggle-btn:hover,
+html[data-theme="rocketlab"] header .notify-btn:hover,
+html[data-theme="ula"] header .menu-btn:hover,
+html[data-theme="ula"] header .install-btn:hover,
+html[data-theme="ula"] header .theme-toggle-btn:hover,
+html[data-theme="ula"] header .notify-btn:hover,
+html[data-theme="arianespace"] header .menu-btn:hover,
+html[data-theme="arianespace"] header .install-btn:hover,
+html[data-theme="arianespace"] header .theme-toggle-btn:hover,
+html[data-theme="arianespace"] header .notify-btn:hover,
+html[data-theme="relativity"] header .menu-btn:hover,
+html[data-theme="relativity"] header .install-btn:hover,
+html[data-theme="relativity"] header .theme-toggle-btn:hover,
+html[data-theme="relativity"] header .notify-btn:hover,
+html[data-theme="firefly"] header .menu-btn:hover,
+html[data-theme="firefly"] header .install-btn:hover,
+html[data-theme="firefly"] header .theme-toggle-btn:hover,
+html[data-theme="firefly"] header .notify-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  color: #ffffff;
+}
+
+html[data-theme="rocketlab"] .card,
+html[data-theme="rocketlab"] button,
+html[data-theme="rocketlab"] .unit-selector,
+html[data-theme="rocketlab"] .moon-graphic-switch,
+html[data-theme="rocketlab"] .menu-dropdown,
+html[data-theme="rocketlab"] .theme-menu,
+html[data-theme="rocketlab"] .metric-select,
+html[data-theme="rocketlab"] .toast,
+html[data-theme="rocketlab"] .qr-link {
+  border-radius: 0;
 }

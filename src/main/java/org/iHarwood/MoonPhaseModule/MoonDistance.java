@@ -37,19 +37,14 @@ public final class MoonDistance {
     }
 
     /**
-     * Get min/max Moon distance over the current lunar cycle (roughly 30 days).
+     * Analytical min/max Moon distance from the simplified elliptical model
+     * (mean ± amplitude). Avoids a 30-day sampling loop.
      */
     public static double[] minMaxDistanceKmNow() {
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime start = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
-        double min = Double.POSITIVE_INFINITY;
-        double max = Double.NEGATIVE_INFINITY;
-        for (int i = 0; i < 30; i++) {
-            double d = distanceKm(start.plusDays(i));
-            if (d < min) min = d;
-            if (d > max) max = d;
-        }
-        return new double[]{min, max};
+        return new double[]{
+                MEAN_DISTANCE_KM - DISTANCE_AMPLITUDE_KM,
+                MEAN_DISTANCE_KM + DISTANCE_AMPLITUDE_KM
+        };
     }
 
     public static String formatDistanceKm(double km) {

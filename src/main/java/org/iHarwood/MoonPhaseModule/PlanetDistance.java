@@ -113,13 +113,19 @@ public final class PlanetDistance {
     public double[] minMaxDistanceAU(ZonedDateTime zdt) {
         ZonedDateTime start = zdt.withHour(0).withMinute(0).withSecond(0).withNano(0);
         int daysInYear = Year.of(start.getYear()).length();
+        // 5-day stride is enough for log bar charts and ~5x cheaper than daily sampling.
+        final int step = 5;
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
-        for (int i = 0; i < daysInYear; i++) {
+        for (int i = 0; i < daysInYear; i += step) {
             double d = distanceAU(start.plusDays(i));
             if (d < min) min = d;
             if (d > max) max = d;
         }
+        // Always include year-end day
+        double end = distanceAU(start.plusDays(daysInYear - 1L));
+        if (end < min) min = end;
+        if (end > max) max = end;
         return new double[]{min, max};
     }
 }

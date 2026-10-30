@@ -1,45 +1,41 @@
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.5.9"
+    id("org.springframework.boot") version "4.1.2"
     id("io.spring.dependency-management") version "1.1.7"
 }
-
 group = "org.iHarwood"
 version = "1.0-SNAPSHOT"
-
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
-
 repositories {
     mavenCentral()
 }
-
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    // Spring Boot 4 preferred MVC starter (spring-boot-starter-web is deprecated)
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
-    implementation("com.google.code.gson:gson:2.13.2")
-    
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("org.mockito:mockito-core:5.11.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
-
 springBoot {
     mainClass.set("org.iHarwood.MoonPhaseApplication")
 }
-
 tasks.jar {
     enabled = false
 }
-
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:deprecation")
+    options.compilerArgs.add("-parameters")
+}
 tasks.test {
     useJUnitPlatform()
 }
-
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
     jvmArgs = listOf(
         "--enable-native-access=ALL-UNNAMED",
@@ -48,4 +44,3 @@ tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
         "-XX:+EnableDynamicAgentLoading"
     )
 }
-

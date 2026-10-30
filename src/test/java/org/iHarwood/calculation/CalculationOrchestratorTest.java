@@ -13,6 +13,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -47,11 +48,12 @@ class CalculationOrchestratorTest {
 
     @ParameterizedTest(name = "{0} → phase starts with '{1}', age ~{2}")
     @CsvSource({
-        "2025-12-30, Waxing Gibbous, 27",
-        "2026-01-06, Waning Gibbous, 4",
-        "2026-01-15, New Moon,       13",
-        "2026-01-23, First Quarter,  21",
-        "2026-01-29, Waxing Gibbous, 27"
+        "2025-12-30, Waxing Gibbous, 11",
+        "2026-01-06, Waning Gibbous, 18",
+        "2026-01-15, Waning Crescent, 27",
+        "2026-01-23, Waxing Crescent, 5",
+        "2026-01-29, Waxing Gibbous, 11",
+        "2026-10-24, Waxing Gibbous, 13"
     })
     @DisplayName("computeForDate returns correct moon phase data for known dates")
     void computeForDate_knownMoonPhases(String dateStr, String expectedPhasePrefix, int expectedAge) {
@@ -160,7 +162,7 @@ class CalculationOrchestratorTest {
         AstronomicalSnapshot snapshot = freshOrchestrator.computeCurrent();
 
         // We don't know the exact count (it varies), but a normal run pushes many apps.
-        verify(freshMock, atLeast(10)).push(anyString(), anyString(), anyString());
+        verify(freshMock, times(1)).pushAll(org.mockito.ArgumentMatchers.argThat(list -> list != null && list.size() >= 10));
         verify(freshMock, atLeastOnce()).getStats();
     }
 

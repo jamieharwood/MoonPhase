@@ -10,7 +10,19 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#030a1a">
-  <link rel="stylesheet" href="style.css?v=3">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('moonphase-theme') || 'dark';
+        if (['dark', 'light', 'spacex', 'nasa', 'blueorigin', 'rocketlab', 'ula', 'arianespace', 'relativity', 'firefly'].indexOf(t) === -1) t = 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        var g = localStorage.getItem('moonphase-graphic') || 'ascii';
+        if (g !== 'animated') g = 'ascii';
+        document.documentElement.setAttribute('data-moon-graphic', g);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <header>
@@ -26,7 +38,26 @@
         <button class="unit-btn" data-unit="km">km</button>
         <button class="unit-btn" data-unit="mi">mi</button>
       </div>
-      <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle dark/light theme">&#9728;</button>
+      <div class="theme-switcher">
+        <button id="theme-toggle-btn" class="theme-toggle-btn" type="button"
+                aria-haspopup="true" aria-expanded="false" aria-controls="theme-menu"
+                title="Switch look and feel">
+          <span class="theme-switcher-kicker">Theme</span>
+          <span id="theme-current" class="theme-current">Classic</span>
+        </button>
+        <div id="theme-menu" class="theme-menu" role="menu" hidden>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="dark" aria-checked="true">Classic</button>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="light" aria-checked="false">Light</button>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="spacex" aria-checked="false">SpaceX</button>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="nasa" aria-checked="false">NASA</button>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="blueorigin" aria-checked="false">Blue Origin</button>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="rocketlab" aria-checked="false">Rocket Lab</button>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="ula" aria-checked="false">ULA</button>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="arianespace" aria-checked="false">Arianespace</button>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="relativity" aria-checked="false">Relativity</button>
+          <button type="button" class="theme-option" role="menuitemradio" data-theme="firefly" aria-checked="false">Firefly</button>
+        </div>
+      </div>
       <span id="sse-dot" class="sse-dot connecting" title="SSE connection status"></span>
       <div class="hamburger-menu">
         <button id="menu-btn" class="menu-btn" aria-label="Menu" aria-expanded="false">&#9776;</button>
@@ -43,9 +74,18 @@
 
     <!-- Moon Phase -->
     <section class="card moon-card" id="card-moon">
-      <h2>&#127769; Moon Phase</h2>
+      <div class="moon-card-head">
+        <h2>&#127769; Moon Phase</h2>
+        <div class="moon-graphic-switch" role="group" aria-label="Moon graphic">
+          <button type="button" class="graphic-btn" data-graphic="ascii" aria-pressed="true">ASCII</button>
+          <button type="button" class="graphic-btn" data-graphic="animated" aria-pressed="false">Animated</button>
+        </div>
+      </div>
       <div class="moon-phase-name" id="moon-phase-name">—</div>
-      <pre class="moon-ascii" id="moon-ascii"></pre>
+      <div class="moon-stage">
+        <pre class="moon-ascii" id="moon-ascii"></pre>
+        <canvas id="moon-canvas" class="moon-canvas" aria-label="Animated moon phase"></canvas>
+      </div>
       <div class="moon-stats">
         <div class="stat">
           <span class="stat-label">Illumination</span>
@@ -110,8 +150,8 @@
       <h2>&#127759; Earth</h2>
       <table class="data-table">
         <tbody>
-          <tr><td>Orbital Speed</td><td id="earth-speed-s" class="val">—</td></tr>
-          <tr><td>Speed (km/h)</td><td id="earth-speed-h" class="val">—</td></tr>
+          <tr><td id="earth-speed-s-label">Orbital Speed (km/s)</td><td id="earth-speed-s" class="val">—</td></tr>
+          <tr><td id="earth-speed-h-label">Speed (km/h)</td><td id="earth-speed-h" class="val">—</td></tr>
           <tr><td>Daylight Hours</td><td id="earth-daylight" class="val">—</td></tr>
           <tr><td>Sunrise (UTC~)</td><td id="earth-sunrise" class="val">—</td></tr>
           <tr><td>Sunset (UTC~)</td><td id="earth-sunset" class="val">—</td></tr>
@@ -248,7 +288,7 @@
 
   <div id="toast" class="toast"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="app.js?v=3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

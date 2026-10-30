@@ -1,10 +1,8 @@
 package org.iHarwood.MoonPhaseModule;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -15,7 +13,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 /**
  * Fetches live Low Earth Orbit and human spaceflight data.
  *
@@ -23,17 +23,13 @@ import java.util.Set;
  *  - Altitudes + counts: https://tle.ivanstanojevic.me/api/tle/
  *  - People in space:    https://corquaid.github.io/international-space-station-APIs/JSON/people-in-space.json
  *
- * All fetches are batched and cached for {@value #CACHE_TTL_MS} ms (6 hours).
+ * All fetches are batched in parallel and cached for {@value #CACHE_TTL_MS} ms (6 hours).
  */
 public final class LeoDataFetcher {
-
     private static final Logger logger = LoggerFactory.getLogger(LeoDataFetcher.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
+    private static final JsonMapper OBJECT_MAPPER = JsonMapper.shared();
     private LeoDataFetcher() {}
-
     // ── People-in-space DTO ───────────────────────────────────────────────────
-
     /**
      * Snapshot of all humans currently in space.
      * craftOccupancy keys have a " ★" suffix for ISS-docked vehicles.
@@ -44,11 +40,8 @@ public final class LeoDataFetcher {
             return new PeopleInSpace(-1, -1, Collections.emptyMap());
         }
     }
-
     // ── Cache ─────────────────────────────────────────────────────────────────
-
     static final long CACHE_TTL_MS = 6L * 60 * 60 * 1000;
-
     private record LeoCache(
             double issAltitudeKm,
             double tiangongAltitudeKm,
@@ -58,11 +51,10 @@ public final class LeoDataFetcher {
             int totalSatelliteCount,
             PeopleInSpace people,
             long fetchedAtMs) {}
-
     private static volatile LeoCache cache = null;
-
+    /** Shared virtual-thread executor for parallel outbound HTTP. */
+    private static final ExecutorService FETCH_EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
     static synchronized void resetCache() { cache = null; }
-
     private static synchronized LeoCache getOrFetch() {
         LeoCache c = cache;
         if (c != null && (System.currentTimeMillis() - c.fetchedAtMs()) < CACHE_TTL_MS) {
@@ -70,25 +62,36 @@ public final class LeoDataFetcher {
                     (System.currentTimeMillis() - c.fetchedAtMs()) / 1000);
             return c;
         }
-        logger.info("Fetching fresh LEO data...");
-        int starlink = fetchConstellationCount("STARLINK", "Starlink");
-        int kuiper   = fetchConstellationCount("KUIPER", "Kuiper");
-        int total    = fetchAllSatellitesFromApi();
+        logger.info("Fetching fresh LEO data (parallel)...");
+        CompletableFuture<Integer> starlinkF = CompletableFuture.supplyAsync(
+                () -> fetchConstellationCount("STARLINK", "Starlink"), FETCH_EXECUTOR);
+        CompletableFuture<Integer> kuiperF = CompletableFuture.supplyAsync(
+                () -> fetchConstellationCount("KUIPER", "Kuiper"), FETCH_EXECUTOR);
+        CompletableFuture<Integer> totalF = CompletableFuture.supplyAsync(
+                LeoDataFetcher::fetchAllSatellitesFromApi, FETCH_EXECUTOR);
+        CompletableFuture<Double> issF = CompletableFuture.supplyAsync(
+                () -> fetchAltitudeKm(ISS_NORAD, "ISS"), FETCH_EXECUTOR);
+        CompletableFuture<Double> tiangongF = CompletableFuture.supplyAsync(
+                () -> fetchAltitudeKm(TIANGONG_NORAD, "Tiangong"), FETCH_EXECUTOR);
+        CompletableFuture<Double> hubbleF = CompletableFuture.supplyAsync(
+                () -> fetchAltitudeKm(HUBBLE_NORAD, "Hubble"), FETCH_EXECUTOR);
+        CompletableFuture<PeopleInSpace> peopleF = CompletableFuture.supplyAsync(
+                LeoDataFetcher::fetchPeopleInSpaceData, FETCH_EXECUTOR);
+        CompletableFuture.allOf(starlinkF, kuiperF, totalF, issF, tiangongF, hubbleF, peopleF).join();
         LeoCache fresh = new LeoCache(
-                fetchAltitudeKm(ISS_NORAD, "ISS"),
-                fetchAltitudeKm(TIANGONG_NORAD, "Tiangong"),
-                fetchAltitudeKm(HUBBLE_NORAD, "Hubble"),
-                starlink, kuiper,
-                total,
-                fetchPeopleInSpaceData(),
+                issF.join(),
+                tiangongF.join(),
+                hubbleF.join(),
+                starlinkF.join(),
+                kuiperF.join(),
+                totalF.join(),
+                peopleF.join(),
                 System.currentTimeMillis()
         );
         cache = fresh;
         return fresh;
     }
-
     // ── Public API ────────────────────────────────────────────────────────────
-
     public static double        fetchIssAltitudeKm()       { return getOrFetch().issAltitudeKm(); }
     public static double        fetchTiangongAltitudeKm()  { return getOrFetch().tiangongAltitudeKm(); }
     public static double        fetchHubbleAltitudeKm()    { return getOrFetch().hubbleAltitudeKm(); }
@@ -97,38 +100,51 @@ public final class LeoDataFetcher {
     public static int           fetchTotalSatelliteCount() { return getOrFetch().totalSatelliteCount(); }
     public static int           fetchIssCrew()             { return getOrFetch().people().issCrew(); }
     public static PeopleInSpace fetchPeopleInSpace()       { return getOrFetch().people(); }
-
+    /**
+     * Fetches (or returns cached) LEO data once. Prefer this over calling individual
+     * fetch* methods when many fields are needed.
+     */
+    public static LeoSnapshot fetchAll() {
+        LeoCache c = getOrFetch();
+        return new LeoSnapshot(
+                c.issAltitudeKm(), c.tiangongAltitudeKm(), c.hubbleAltitudeKm(),
+                c.starlinkCount(), c.kuiperCount(), c.totalSatelliteCount(),
+                c.people());
+    }
+    public record LeoSnapshot(
+            double issAltitudeKm,
+            double tiangongAltitudeKm,
+            double hubbleAltitudeKm,
+            int starlinkCount,
+            int kuiperCount,
+            int totalSatelliteCount,
+            PeopleInSpace people) {}
     // ── Constants ─────────────────────────────────────────────────────────────
-
     private static final double GM_EARTH        = 3.986004418e14;
     private static final double EARTH_RADIUS_KM = 6371.0;
     private static final double TWO_PI          = 2.0 * Math.PI;
-
     private static final int ISS_NORAD      = 25544;
     private static final int TIANGONG_NORAD = 48274;
     private static final int HUBBLE_NORAD   = 20580;
-
     private static final String TLE_API_URL       = "https://tle.ivanstanojevic.me/api/tle/%d";
     private static final String GROUP_API_URL      = "https://tle.ivanstanojevic.me/api/tle/?search=%s&page-size=1";
     /** Queries the entire catalogue (no search filter) to get the real total object count. */
     private static final String TOTAL_COUNT_URL    = "https://tle.ivanstanojevic.me/api/tle/?page-size=1";
     private static final String CREW_API_URL  =
             "https://corquaid.github.io/international-space-station-APIs/JSON/people-in-space.json";
-
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(10))
             .followRedirects(HttpClient.Redirect.NORMAL)
+            .executor(FETCH_EXECUTOR)
             .build();
-
     // ── Private helpers ───────────────────────────────────────────────────────
-
     private static double fetchAltitudeKm(int noradId, String name) {
         try {
             String json = fetch(String.format(TLE_API_URL, noradId), 15);
             if (json == null) return -1;
             JsonNode root = OBJECT_MAPPER.readTree(json);
-            String line2 = root.path("line2").asText(null);
+            String line2 = root.path("line2").asString(null);
             if (line2 == null) { logger.warn("No line2 in TLE JSON for {}", name); return -1; }
             if (line2.length() < 63) { logger.warn("TLE line 2 too short for {}", name); return -1; }
             double meanMotion = Double.parseDouble(line2.substring(52, 63).trim());
@@ -142,7 +158,6 @@ public final class LeoDataFetcher {
             return -1;
         }
     }
-
     private static int fetchConstellationCount(String term, String label) {
         try {
             String json = fetch(String.format(GROUP_API_URL, term), 15);
@@ -155,7 +170,6 @@ public final class LeoDataFetcher {
             return -1;
         }
     }
-
     /**
      * Fetches the total number of catalogued objects from the TLE API (no search filter).
      * This is the real "total satellites in orbit" count, not just starlink + kuiper.
@@ -172,7 +186,6 @@ public final class LeoDataFetcher {
             return -1;
         }
     }
-
     /**
      * Parses the people-in-space JSON using Jackson.
      * ISS-docked craft (where any crew member has "iss": true) get a " ★" suffix.
@@ -182,20 +195,16 @@ public final class LeoDataFetcher {
         try {
             String json = fetch(CREW_API_URL, 10);
             if (json == null) return PeopleInSpace.unavailable();
-
             JsonNode root = OBJECT_MAPPER.readTree(json);
             int total = root.path("number").asInt(-1);
-
             JsonNode people = root.path("people");
             if (people.isMissingNode() || !people.isArray()) {
                 return new PeopleInSpace(total, 0, Collections.emptyMap());
             }
-
             Map<String, Integer> craftCounts = new LinkedHashMap<>();
             Set<String> issDockedCraft = new LinkedHashSet<>();
-
             for (JsonNode person : people) {
-                String craft = person.path("spacecraft").asText(null);
+                String craft = person.path("spacecraft").asString(null);
                 if (craft != null && !craft.isEmpty()) {
                     craftCounts.merge(craft, 1, Integer::sum);
                     if (person.path("iss").asBoolean(false)) {
@@ -203,27 +212,21 @@ public final class LeoDataFetcher {
                     }
                 }
             }
-
             int issCrew = issDockedCraft.stream()
                     .mapToInt(c -> craftCounts.getOrDefault(c, 0)).sum();
-
             Map<String, Integer> sortedCraft = new LinkedHashMap<>();
             craftCounts.entrySet().stream()
                     .sorted((a, b) -> b.getValue() - a.getValue())
                     .forEach(e -> sortedCraft.put(
                             issDockedCraft.contains(e.getKey()) ? e.getKey() + " \u2605" : e.getKey(),
                             e.getValue()));
-
             logger.info("People in space: {} total, {} on ISS, craft: {}", total, issCrew, craftCounts);
             return new PeopleInSpace(total, issCrew, sortedCraft);
-
         } catch (Exception e) {
             logger.warn("Failed to fetch people-in-space data: {}", e.getMessage());
             return PeopleInSpace.unavailable();
         }
     }
-
-
     private static String fetch(String url, int timeoutSeconds) {
         try {
             HttpRequest req = HttpRequest.newBuilder()

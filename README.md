@@ -73,7 +73,7 @@ The sticky header contains:
 | **⇩ Install App** | Appears on supported browsers — installs the PWA to the desktop or home screen. |
 | **🔔 Bell** | Enables browser notifications for aurora storms and full moon events (see [Browser Notifications](#browser-notifications)). |
 | **AU / km / mi** | Unit selector — switches all distance values on the page between Astronomical Units, kilometres, and miles. Preference is saved to `localStorage`. |
-| **☀️ / 🌙** | Dark/light theme toggle. Preference is saved to `localStorage`. |
+| **Theme** | Switches look and feel between Classic, Light, SpaceX, NASA, Blue Origin, Rocket Lab, ULA, Arianespace, Relativity, and Firefly. Preference is saved to `localStorage`. |
 | **● SSE dot** | Live connection indicator: green = connected, amber = connecting, red = disconnected. |
 | **☰ Menu** | Hamburger menu containing **↻ Refresh**, **🗑 Reset Data**, and **📅 Populate Past**. |
 
