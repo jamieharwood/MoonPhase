@@ -47,7 +47,9 @@ Tests in the default package (`src/test/java/*.java`) are mixed: `DayLightTest`,
 
 6. `AwtrixPusher` (`integration/awtrix/`) — dedicated component for all Awtrix HTTP communication. `pushAll()` sends apps in small parallel batches (to avoid overwhelming the ESP32) with a per-cycle circuit breaker that skips remaining pushes once the device is unreachable, plus retries (3 attempts, 2s delay), success/failure counters, and startup connectivity check. Delegates each push to `APIPost`, which holds the `IconType` enum, serialises the payload to JSON via Jackson, and executes the HTTP POST.
 
-7. `HistoryService` — persists snapshots to MongoDB; only active when `app.history.enabled=true`. The `METRIC_EXTRACTORS` map is the single source of truth for which metrics are graphable — add new metrics there only.
+7. `mcp/AstronomyMcpTools` — Spring AI MCP server (Streamable HTTP at `/mcp`, `spring-ai-starter-mcp-server-webmvc`). `@McpTool` methods are read-only views over `AstronomicalDataService`, `Main.calculateSnapshotForDate()` and `HistoryService`; they must never trigger refreshes, Awtrix pushes or history writes. `mcp/McpConfig` registers `McpAuthFilter` (bearer token) only when `MCP_API_KEY` is set. Tool errors are signalled by throwing (Spring AI returns them as `isError` results).
+
+8. `HistoryService` — persists snapshots to MongoDB; only active when `app.history.enabled=true`. The `METRIC_EXTRACTORS` map is the single source of truth for which metrics are graphable — add new metrics there only.
 
 ### Calculation modules (`MoonPhaseModule/`)
 
@@ -79,6 +81,8 @@ All config can be set via environment variables. Key ones:
 | `APP_HISTORY_ENABLED` | `false` | Set `true` + provide MongoDB URI |
 | `APP_HISTORY_RETENTION_DAYS` | `0` | Days of history to keep (0 = unlimited); purges nightly at 03:00 UTC |
 | `SPRING_DATA_MONGODB_URI` | _(none)_ | e.g. `mongodb://localhost:27017/moonphase` |
+| `MCP_ENABLED` | `true` | MCP server at `/mcp` |
+| `MCP_API_KEY` | _(none)_ | If set, `/mcp` requires `Authorization: Bearer <key>` |
 
 ### Frontend
 

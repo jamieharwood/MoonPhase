@@ -239,6 +239,43 @@ SPRING_MAIN_WEB-APPLICATION-TYPE=none
 
 ---
 
+## MCP Server (AI agents)
+
+The app runs a [Model Context Protocol](https://modelcontextprotocol.io) server (Spring AI, Streamable HTTP) at **`/mcp`**. Any MCP-capable agent, such as Claude Code, Claude Desktop, Cursor or VS Code, can query the data directly. All tools are read-only: none of them trigger refreshes, Awtrix pushes or history writes.
+
+| Tool | Description |
+|---|---|
+| `get_current_astronomical_data` | Full live snapshot (moon, planets, probes, light times, Earth, daylight, LEO, aurora, people in space). |
+| `get_moon_phase` | Just the moon: phase, illumination, age, days to full moon, distance. |
+| `get_astronomical_data_for_date` | Calculated snapshot for any date `1900-01-01`–`2100-12-31` (at 12:00 UTC). Live-only LEO/aurora/crew values are 0 or -1. |
+| `list_history_metrics` | Valid metric names, and whether history is enabled. |
+| `get_metric_history` | Stored values for one metric (needs `APP_HISTORY_ENABLED=true`). |
+| `get_service_status` | Whether data is available and when it was last updated. |
+
+Set `MCP_API_KEY` to require `Authorization: Bearer <key>` on `/mcp` (strongly recommended when the app is reachable from the internet). Without a key the endpoint is open, like the rest of the API. Set `MCP_ENABLED=false` to turn the server off.
+
+Connect Claude Code:
+
+```bash
+claude mcp add --transport http moonphase https://your-host/mcp --header "Authorization: Bearer $MCP_API_KEY"
+```
+
+Generic client config (Claude Desktop, Cursor, VS Code, etc.):
+
+```json
+{
+  "mcpServers": {
+    "moonphase": {
+      "type": "http",
+      "url": "https://your-host/mcp",
+      "headers": { "Authorization": "Bearer <MCP_API_KEY>" }
+    }
+  }
+}
+```
+
+---
+
 ## Configuration
 
 All configuration is via environment variables (or `application.properties`):
@@ -256,6 +293,8 @@ All configuration is via environment variables (or `application.properties`):
 | `APP_HISTORY_ENABLED` | `false` | Set to `true` to enable MongoDB history storage |
 | `APP_HISTORY_RETENTION_DAYS` | `0` | Days of history to retain (0 = keep all). Older snapshots are purged nightly at 03:00 UTC. |
 | `SPRING_DATA_MONGODB_URI` | _(none)_ | MongoDB connection URI, e.g. `mongodb://localhost:27017/moonphase` |
+| `MCP_ENABLED` | `true` | Set to `false` to disable the MCP server at `/mcp` |
+| `MCP_API_KEY` | _(none)_ | When set, `/mcp` requires `Authorization: Bearer <key>` |
 
 ---
 

@@ -13,12 +13,19 @@ java {
 repositories {
     mavenCentral()
 }
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.ai:spring-ai-bom:2.1.0")
+    }
+}
 dependencies {
     // Spring Boot 4 preferred MVC starter (spring-boot-starter-web is deprecated)
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    // MCP server (Streamable HTTP at /mcp) so AI agents can query the astronomical data
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

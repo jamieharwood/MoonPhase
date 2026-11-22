@@ -78,7 +78,7 @@ public class HistoryService {
             Map.entry("totalPeopleInSpace",        d -> d.getTotalPeopleInSpace())
     );
 
-    static final Set<String> ALLOWED_METRICS = METRIC_EXTRACTORS.keySet();
+    public static final Set<String> ALLOWED_METRICS = METRIC_EXTRACTORS.keySet();
 
     private final SnapshotRepository repository;
 
