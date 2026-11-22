@@ -1,0 +1,43 @@
+# MoonPhase for a home NAS (e.g. UGREEN UGOS Pro "Docker → Project").
+# App + MongoDB only — no nginx/certbot. Put a reverse proxy in front if you
+# expose it to the internet, and always set MCP_API_KEY in that case.
+#
+# Values come from a .env file next to this file (copy .env.example), or
+# replace the ${...} placeholders below with real values.
+services:
+  moonphase:
+    image: jamieharwood/moonphase:latest
+    container_name: moonphase-app
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+      - SERVER_PORT=8081
+      - AWTRIXHOSTNAME=http://moonclock.bluelarma.com   # your Awtrix device
+      # - LATITUDE=51.4769                              # your location (defaults: Greenwich)
+      # - LONGITUDE=0.0
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}               # optional moon-phase cross-check
+      - MCP_API_KEY=${MCP_API_KEY:-}                     # bearer token for /mcp; empty = open
+      - APP_HISTORY_ENABLED=true
+      - APP_HISTORY_RETENTION_DAYS=0                     # 0 = keep all history
+      - SPRING_DATA_MONGODB_URI=mongodb://moonphase-mongo:27017/moonphase
+    ports:
+      - "8081:8081"   # dashboard at http://<nas-ip>:8081, MCP at http://<nas-ip>:8081/mcp
+    depends_on:
+      - mongodb
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  mongodb:
+    image: mongo:8
+    container_name: moonphase-mongo
+    restart: unless-stopped
+    # Not published on the LAN; only the app container talks to it.
+    volumes:
+      - ./mongo-data:/data/db   # stored inside the project folder on the NAS
