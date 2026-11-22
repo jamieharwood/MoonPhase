@@ -90,6 +90,30 @@ class DayLightTest {
     }
 
     @Test
+    void dayLengthHours_matchesAlmanacAtGreenwichSolstices() {
+        // Almanac (official sunrise/sunset incl. refraction): 21 Jun 2026 ≈ 16h38m, 21 Dec 2026 ≈ 7h49m
+        double tolerance = 3.0 / 60.0;
+        assertEquals(16.0 + 38.0 / 60.0, DayLight.dayLengthHours(LocalDate.of(2026, Month.JUNE, 21), GREENWICH_LAT), tolerance);
+        assertEquals(7.0 + 49.0 / 60.0, DayLight.dayLengthHours(LocalDate.of(2026, Month.DECEMBER, 21), GREENWICH_LAT), tolerance);
+    }
+
+    @Test
+    void dayLengthHours_sameDateDiffersBetweenYears() {
+        // The seasons drift ~6h later each year relative to the calendar, so a fixed date
+        // near the equinox should not give an identical day length every year.
+        double y2025 = DayLight.dayLengthHours(LocalDate.of(2025, Month.MARCH, 1), GREENWICH_LAT);
+        double y2027 = DayLight.dayLengthHours(LocalDate.of(2027, Month.MARCH, 1), GREENWICH_LAT);
+        assertNotEquals(y2025, y2027, 1.0 / 3600.0, "1 March should differ between 2025 and 2027");
+    }
+
+    @Test
+    void minMaxDayLengthHours_matchesSolstices() {
+        double[] range = DayLight.minMaxDayLengthHoursNow(GREENWICH_LAT);
+        assertEquals(DayLight.dayLengthHours(LocalDate.of(2026, Month.DECEMBER, 21), GREENWICH_LAT), range[0], 0.05);
+        assertEquals(DayLight.dayLengthHours(LocalDate.of(2026, Month.JUNE, 21), GREENWICH_LAT), range[1], 0.05);
+    }
+
+    @Test
     void dayLengthHours_greenwichWinterReasonable() {
         LocalDate solstice = LocalDate.of(2026, Month.DECEMBER, 21);
         double dayLength = DayLight.dayLengthHours(solstice, GREENWICH_LAT);

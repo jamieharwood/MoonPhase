@@ -1,62 +1,38 @@
 package org.iHarwood.MoonPhaseModule;
 
 import java.time.LocalDate;
-import java.time.Year;
 
+/**
+ * Day length (sunrise to sunset) using the real solar position for the date
+ * ({@link SolarPosition}) and the official sunrise definition (Sun's upper limb on the
+ * horizon, with standard refraction), so results match published almanac day lengths.
+ */
 public final class DayLight {
 
-    private static final double AXIAL_TILT_DEG = 23.44;
+    /** Time of day (UTC hours) at which the Sun's declination is sampled when no longitude is known. */
+    private static final double SAMPLE_HOUR_UTC = 12.0;
 
     private DayLight() {}
 
     /**
-     * Compute day length in hours for given date and latitude (degrees)
-     * using solar declination approximation.
+     * Compute day length in hours for the given date and latitude (degrees).
+     * Returns 0 for polar night and 24 for midnight sun.
      */
     public static double dayLengthHours(LocalDate date, double latitudeDeg) {
-        int n = date.getDayOfYear();
-        double lat = Math.toRadians(latitudeDeg);
-        double daysInYear = Year.of(date.getYear()).length();
-        double decl = Math.toRadians(AXIAL_TILT_DEG) * Math.sin(2.0 * Math.PI * (284 + n) / daysInYear);
-        double x = -Math.tan(lat) * Math.tan(decl);
-        if (x >= 1.0) return 0.0;   // polar night
-        if (x <= -1.0) return 24.0; // polar day
-        double hourAngle = Math.acos(x);
-        return (24.0 / Math.PI) * hourAngle;
+        double declination = SolarPosition.at(date, SAMPLE_HOUR_UTC).declinationRad();
+        return 2.0 * SolarPosition.halfDayHours(latitudeDeg, declination);
     }
 
     /**
-     * Calculate min/max daylight hours analytically for given latitude.
-     * Min/max occur near winter/summer solstices.
+     * Shortest and longest possible day length at this latitude, i.e. at the solstices,
+     * using the current obliquity of the ecliptic.
+     *
+     * @return {min, max} in hours
      */
     public static double[] minMaxDayLengthHoursNow(double latitudeDeg) {
-        double lat = Math.toRadians(latitudeDeg);
-
-        double absLat = Math.abs(latitudeDeg);
-        if (absLat >= 66.5) {
-            return new double[]{0.0, 24.0};
-        }
-
-        double maxDecl = Math.toRadians(AXIAL_TILT_DEG);
-        double minDecl = Math.toRadians(-AXIAL_TILT_DEG);
-
-        double maxLen = calculateDayLengthFromDeclination(lat, maxDecl);
-        double minLen = calculateDayLengthFromDeclination(lat, minDecl);
-
-        if (maxLen < minLen) {
-            double tmp = maxLen;
-            maxLen = minLen;
-            minLen = tmp;
-        }
-
-        return new double[]{minLen, maxLen};
-    }
-
-    private static double calculateDayLengthFromDeclination(double latRad, double declRad) {
-        double x = -Math.tan(latRad) * Math.tan(declRad);
-        if (x >= 1.0) return 0.0;
-        if (x <= -1.0) return 24.0;
-        double hourAngle = Math.acos(x);
-        return (24.0 / Math.PI) * hourAngle;
+        double tilt = Math.toRadians(EarthAxialTilt.tiltDegreesNow());
+        double a = 2.0 * SolarPosition.halfDayHours(latitudeDeg, tilt);
+        double b = 2.0 * SolarPosition.halfDayHours(latitudeDeg, -tilt);
+        return new double[]{Math.min(a, b), Math.max(a, b)};
     }
 }

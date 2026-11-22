@@ -1,20 +1,22 @@
 package org.iHarwood.MoonPhaseModule;
 
 import java.time.LocalDate;
-import java.time.Year;
 
 /**
- * Calculates approximate sunrise and sunset times using solar declination.
+ * Sunrise and sunset times (UTC) using the real solar position for the date
+ * ({@link SolarPosition}: NOAA algorithm, declination and equation of time) and the
+ * official sunrise definition (Sun's upper limb on the horizon, with standard refraction).
  *
- * Uses the same declination formula as DayLight.java for consistency.
- * Results are in UTC and depend on both latitude and longitude.
- * Accuracy: ±5 minutes (simplified equation of time used).
+ * Each event is refined once using the Sun's position at the estimated event time.
+ * Accuracy: about ±1 minute of almanac values at mid latitudes.
  *
  * Special return values: "Polar Night" or "Midnight Sun" for extreme latitudes.
  */
 public final class SunriseSunset {
 
-    private static final double AXIAL_TILT_DEG = 23.44;
+    private static final double POLAR_NIGHT = Double.NEGATIVE_INFINITY;
+    private static final double MIDNIGHT_SUN = Double.POSITIVE_INFINITY;
+    private static final int REFINEMENT_PASSES = 2;
 
     private SunriseSunset() {}
 
@@ -23,10 +25,7 @@ public final class SunriseSunset {
      * Returns "Polar Night" or "Midnight Sun" at extreme latitudes.
      */
     public static String sunriseUtc(LocalDate date, double latitudeDeg, double longitudeDeg) {
-        double halfDay = halfDayHours(date, latitudeDeg);
-        if (halfDay < 0) return halfDay == POLAR_NIGHT ? "Polar Night" : "Midnight Sun";
-        double solarNoon = solarNoonUtc(date, longitudeDeg);
-        return formatHour(solarNoon - halfDay);
+        return format(eventUtcHours(date, latitudeDeg, longitudeDeg, true));
     }
 
     /**
@@ -34,10 +33,7 @@ public final class SunriseSunset {
      * Returns "Polar Night" or "Midnight Sun" at extreme latitudes.
      */
     public static String sunsetUtc(LocalDate date, double latitudeDeg, double longitudeDeg) {
-        double halfDay = halfDayHours(date, latitudeDeg);
-        if (halfDay < 0) return halfDay == POLAR_NIGHT ? "Polar Night" : "Midnight Sun";
-        double solarNoon = solarNoonUtc(date, longitudeDeg);
-        return formatHour(solarNoon + halfDay);
+        return format(eventUtcHours(date, latitudeDeg, longitudeDeg, false));
     }
 
     /** Convenience wrappers that use current date */
@@ -51,45 +47,30 @@ public final class SunriseSunset {
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private static final double POLAR_NIGHT = -1.0;
-    private static final double MIDNIGHT_SUN = -2.0;
-
     /**
-     * Returns half the daylight duration in hours (offset from solar noon).
-     * Returns POLAR_NIGHT or MIDNIGHT_SUN sentinel values.
-     */
-    private static double halfDayHours(LocalDate date, double latitudeDeg) {
-        int n = date.getDayOfYear();
-        double lat = Math.toRadians(latitudeDeg);
-        double daysInYear = Year.of(date.getYear()).length();
-        double decl = Math.toRadians(AXIAL_TILT_DEG) * Math.sin(2.0 * Math.PI * (284 + n) / daysInYear);
-        double x = -Math.tan(lat) * Math.tan(decl);
-        if (x >= 1.0) return POLAR_NIGHT;
-        if (x <= -1.0) return MIDNIGHT_SUN;
-        // hourAngle in radians → convert to hours: hours = radians * (12 / π)
-        return Math.acos(x) * (12.0 / Math.PI);
-    }
-
-    /**
-     * Solar noon in UTC hours for the given longitude and date.
-     * Includes a simplified equation of time correction.
+     * UTC hours after midnight of the event, or a polar sentinel.
+     * The first pass samples the Sun at mean solar noon; the second at the estimated event time.
      *
      * @param longitudeDeg degrees east (negative = west)
      */
-    private static double solarNoonUtc(LocalDate date, double longitudeDeg) {
-        double longitudeOffset = -longitudeDeg / 15.0; // hours
-        double eot = equationOfTimeHours(date.getDayOfYear());
-        return 12.0 + longitudeOffset - eot;
+    private static double eventUtcHours(LocalDate date, double latitudeDeg, double longitudeDeg, boolean sunrise) {
+        double longitudeOffset = -longitudeDeg / 15.0;
+        double t = 12.0 + longitudeOffset;
+        for (int pass = 0; pass < REFINEMENT_PASSES; pass++) {
+            SolarPosition.Result sun = SolarPosition.at(date, t);
+            double halfDay = SolarPosition.halfDayHours(latitudeDeg, sun.declinationRad());
+            if (halfDay <= 0.0) return POLAR_NIGHT;
+            if (halfDay >= 12.0) return MIDNIGHT_SUN;
+            double solarNoon = 12.0 + longitudeOffset - sun.equationOfTimeMinutes() / 60.0;
+            t = sunrise ? solarNoon - halfDay : solarNoon + halfDay;
+        }
+        return t;
     }
 
-    /**
-     * Simplified equation of time in hours.
-     * Accounts for Earth's elliptical orbit and axial tilt (~±16 min accuracy).
-     */
-    private static double equationOfTimeHours(int dayOfYear) {
-        double B = Math.toRadians(360.0 / 365.0 * (dayOfYear - 81));
-        double eotMinutes = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
-        return eotMinutes / 60.0;
+    private static String format(double hours) {
+        if (hours == POLAR_NIGHT) return "Polar Night";
+        if (hours == MIDNIGHT_SUN) return "Midnight Sun";
+        return formatHour(hours);
     }
 
     private static String formatHour(double decimalHour) {
@@ -101,4 +82,3 @@ public final class SunriseSunset {
         return String.format("%02d:%02d", hours, minutes);
     }
 }
-
