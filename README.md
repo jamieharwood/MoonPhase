@@ -136,7 +136,7 @@ A per-spacecraft table of everyone currently in space. The column header shows t
 #### 📊 Historical Data
 Requires MongoDB (see Configuration). Controls:
 - **Metric selector** — grouped dropdown covering all graphable metrics (see table below).
-- **Date range** — 7 / 14 / 30 / 90 / 365 days, or all (max 500 points).
+- **Date range** — 7 / 14 / 30 / 90 / 365 days, 2 / 5 years, or all stored points.
 - **↓ CSV** — downloads the currently displayed metric and range as a CSV file.
 
 The chart is a Chart.js line graph, updated automatically via SSE after each calculation cycle. If MongoDB is not configured, the card is hidden.
@@ -169,7 +169,7 @@ The metric dropdown covers all computed numeric metrics:
 
 History can be automatically pruned by setting `APP_HISTORY_RETENTION_DAYS` (see Configuration). When set, snapshots older than the configured number of days are deleted nightly at 03:00 UTC.
 
-The **📅 Populate Past** option in the hamburger menu backfills historical data for a user-specified number of past days (1–365) using the deterministic calculation engine. LEO and aurora data cannot be reconstructed historically and will be zero in backfilled records.
+The **📅 Populate Past** option in the hamburger menu backfills historical data for a user-specified number of past days (no upper limit; requests reaching before 1900-01-01 are trimmed to that date) using the deterministic calculation engine. LEO and aurora data cannot be reconstructed historically and will be zero in backfilled records.
 
 ---
 
@@ -216,9 +216,9 @@ SPRING_MAIN_WEB-APPLICATION-TYPE=none
 | `GET` | `/api/events` | SSE stream — emits an `update` event with the full snapshot on every calculation cycle. |
 | `POST` | `/api/refresh` | Triggers an immediate recalculation. Returns `202 Accepted` or `429` if one is already running. |
 | `GET` | `/api/health` | Returns application health: snapshot availability, history status, and whether a refresh is in progress. |
-| `GET` | `/api/history?metric=X&limit=N` | Returns up to N historical data points for metric X, oldest first. |
-| `GET` | `/api/history/export?metric=X&limit=N` | Downloads history as a CSV file. |
-| `POST` | `/api/history/populate?days=N` | Backfills historical snapshots for the past N days (1–365). Runs asynchronously. |
+| `GET` | `/api/history?metric=X&limit=N` | Returns the newest N historical data points for metric X, oldest first (default 60; `limit=0` returns all). |
+| `GET` | `/api/history/export?metric=X&limit=N` | Downloads history as a CSV file (default all points; `limit=N` keeps the newest N). |
+| `POST` | `/api/history/populate?days=N` | Backfills one snapshot per day for the past N days (N ≥ 1, trimmed to 1900-01-01). Runs asynchronously; returns 400 for N < 1 and 429 if a populate is already running. |
 | `DELETE` | `/api/history` | Deletes all stored snapshots. |
 
 ### Health response example

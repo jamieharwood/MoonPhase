@@ -406,11 +406,11 @@
   var populateBtn = document.getElementById('populate-btn');
   if (populateBtn) {
     populateBtn.addEventListener('click', function () {
-      var input = prompt('Populate how many past days? (1\u2013365)', '30');
+      var input = prompt('Populate how many past days? (1 or more, back to 1900)', '30');
       if (input === null) return;
       var days = parseInt(input, 10);
-      if (isNaN(days) || days < 1 || days > 365) {
-        alert('Please enter a number between 1 and 365.');
+      if (isNaN(days) || days < 1) {
+        alert('Please enter a whole number of days (1 or more).');
         return;
       }
       populateBtn.disabled = true;
@@ -418,7 +418,7 @@
       fetch('/api/history/populate?days=' + days, { method: 'POST' })
         .then(function (r) {
           if (r.ok) { window.location.reload(); }
-          else { alert('Populate failed (status ' + r.status + ')'); populateBtn.disabled = false; populateBtn.textContent = '\ud83d\udcc5 Populate Past'; }
+          else { alert(r.status === 429 ? 'A populate is already running \u2014 try again when it finishes.' : 'Populate failed (status ' + r.status + ')'); populateBtn.disabled = false; populateBtn.textContent = '\ud83d\udcc5 Populate Past'; }
         })
         .catch(function () { alert('Populate failed \u2014 server unreachable.'); populateBtn.disabled = false; populateBtn.textContent = '\ud83d\udcc5 Populate Past'; });
     });
@@ -551,8 +551,13 @@
           return;
         }
         if (msg) msg.textContent = data.length + ' data point' + (data.length !== 1 ? 's' : '');
+        // Thousands of points: drop markers and smoothing, skip the animation so it stays responsive.
+        var dense = data.length > 500;
         historyChart.data.labels = data.map(function (d) { return d.timestamp; });
         historyChart.data.datasets[0].data = data.map(function (d) { return d.value; });
+        historyChart.data.datasets[0].pointRadius = dense ? 0 : 2;
+        historyChart.data.datasets[0].tension = dense ? 0 : 0.3;
+        historyChart.options.animation = data.length > 2000 ? false : { duration: 400 };
         historyChart.update();
       })
       .catch(function (err) {
@@ -690,7 +695,7 @@
   if (exportBtn) {
     exportBtn.addEventListener('click', function () {
       var metric = metricSelect ? metricSelect.value : 'daylightHours';
-      var limit = rangeSelect ? rangeSelect.value : '500';
+      var limit = rangeSelect ? rangeSelect.value : '0';
       var url = '/api/history/export?metric=' + encodeURIComponent(metric) + '&limit=' + limit;
       var a = document.createElement('a');
       a.href = url;

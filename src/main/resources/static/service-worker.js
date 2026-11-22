@@ -2,7 +2,7 @@
 // Satisfies Chrome's PWA installability requirement.
 // Uses a network-first strategy so the live SSE data is never stale.
 
-var CACHE = 'moonphaseai-v6';
+var CACHE = 'moonphaseai-v7';
 var PRECACHE = [
   '/',
   '/index.html',

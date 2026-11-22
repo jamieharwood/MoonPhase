@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -166,18 +168,21 @@ public class HistoryService {
     }
 
     /**
-     * Returns up to {@code limit} data points for the requested metric,
-     * oldest first, formatted for the chart.
+     * Returns the newest {@code limit} data points for the requested metric,
+     * oldest first, formatted for the chart. {@code limit <= 0} returns every stored point.
      */
     public List<Map<String, Object>> getHistory(String metric, int limit) {
         if (!ALLOWED_METRICS.contains(metric)) {
             throw new IllegalArgumentException("Unknown metric: " + metric);
         }
-        int clampedLimit = Math.min(Math.max(limit, 1), 500);
         try {
-            List<SnapshotDocument> docs = repository.findAllByOrderByTimestampDesc(
-                    PageRequest.of(0, clampedLimit));
-            Collections.reverse(docs); // oldest → newest for the chart
+            List<SnapshotDocument> docs;
+            if (limit <= 0) {
+                docs = repository.findAll(Sort.by(Sort.Direction.ASC, "timestamp"));
+            } else {
+                docs = new ArrayList<>(repository.findAllByOrderByTimestampDesc(PageRequest.of(0, limit)));
+                Collections.reverse(docs); // oldest → newest for the chart
+            }
             return docs.stream().map(doc -> {
                 Map<String, Object> point = new LinkedHashMap<>();
                 point.put("timestamp", LABEL_FMT.format(doc.getTimestamp()));
