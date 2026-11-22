@@ -206,6 +206,10 @@
       <div class="history-header">
         <h2>&#128202; Historical Data</h2>
         <div class="history-controls">
+            <select id="chart-type-select" class="metric-select" title="Graph type">
+              <option value="line" selected>Timeline</option>
+              <option value="monthly">Monthly by year</option>
+            </select>
             <select id="metric-select" class="metric-select">
               <optgroup label="Moon">
                 <option value="daylightHours" selected>Daylight Hours</option>
@@ -268,8 +272,11 @@
             <button id="export-csv-btn" class="export-btn" title="Download data as CSV">&#8595; CSV</button>
           </div>
       </div>
-      <div class="history-chart-wrap">
+      <div class="history-chart-wrap" id="history-line-wrap">
         <canvas id="history-chart"></canvas>
+      </div>
+      <div class="history-chart-wrap history-monthly-wrap" id="history-monthly-wrap" hidden>
+        <canvas id="history-monthly-chart" role="img" aria-label="Monthly values grouped by month, one bar per year, with a dashed monthly average line"></canvas>
       </div>
       <p id="history-msg" class="history-msg"></p>
     </section>

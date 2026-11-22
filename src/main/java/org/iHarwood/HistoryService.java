@@ -14,8 +14,11 @@ import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.TreeMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +84,12 @@ public class HistoryService {
     );
 
     public static final Set<String> ALLOWED_METRICS = METRIC_EXTRACTORS.keySet();
+
+    /**
+     * Metrics where a month's value is the sum of its daily values (e.g. total daylight hours).
+     * Every other metric is averaged over the month.
+     */
+    public static final Set<String> SUMMED_METRICS = Set.of("daylightHours");
 
     private final SnapshotRepository repository;
 
@@ -191,6 +200,53 @@ public class HistoryService {
             }).toList();
         } catch (Exception e) {
             logger.warn("Failed to query history from MongoDB: {}", e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Aggregates every stored point for {@code metric} into one value per calendar month (UTC).
+     * Snapshots on the same day are averaged first, so days with two scheduled runs aren't
+     * counted twice. The month's value is then the sum of its daily values for
+     * {@link #SUMMED_METRICS} and the mean otherwise.
+     *
+     * @return oldest month first; each entry has year, month (1–12), value, days (days with data)
+     *         and daysInMonth, so callers can spot partial months
+     */
+    public List<Map<String, Object>> getMonthlyByYear(String metric) {
+        if (!ALLOWED_METRICS.contains(metric)) {
+            throw new IllegalArgumentException("Unknown metric: " + metric);
+        }
+        try {
+            List<SnapshotDocument> docs = repository.findAll(Sort.by(Sort.Direction.ASC, "timestamp"));
+            Map<LocalDate, double[]> daily = new TreeMap<>(); // {sum, count}
+            for (SnapshotDocument doc : docs) {
+                if (doc.getTimestamp() == null) continue;
+                LocalDate day = doc.getTimestamp().atZone(ZoneOffset.UTC).toLocalDate();
+                double[] acc = daily.computeIfAbsent(day, d -> new double[2]);
+                acc[0] += extractMetric(doc, metric);
+                acc[1]++;
+            }
+            boolean summed = SUMMED_METRICS.contains(metric);
+            Map<YearMonth, double[]> monthly = new TreeMap<>(); // {sum of daily means, days}
+            daily.forEach((day, acc) -> {
+                double[] m = monthly.computeIfAbsent(YearMonth.from(day), ym -> new double[2]);
+                m[0] += acc[0] / acc[1];
+                m[1]++;
+            });
+            List<Map<String, Object>> result = new ArrayList<>(monthly.size());
+            monthly.forEach((ym, m) -> {
+                Map<String, Object> point = new LinkedHashMap<>();
+                point.put("year", ym.getYear());
+                point.put("month", ym.getMonthValue());
+                point.put("value", summed ? m[0] : m[0] / m[1]);
+                point.put("days", (int) m[1]);
+                point.put("daysInMonth", ym.lengthOfMonth());
+                result.add(point);
+            });
+            return result;
+        } catch (Exception e) {
+            logger.warn("Failed to aggregate monthly history from MongoDB: {}", e.getMessage());
             return Collections.emptyList();
         }
     }

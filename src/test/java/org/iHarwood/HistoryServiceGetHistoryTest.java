@@ -56,6 +56,34 @@ class HistoryServiceGetHistoryTest {
         assertEquals(0.0, result.get(0).get("value"));
     }
 
+    private static SnapshotDocument at(String instant, double daylight, double moonKm) {
+        AstronomicalSnapshot s = AstronomicalSnapshot.builder()
+                .daylightHours(daylight).moonDistanceKm(moonKm).lastUpdated("x").build();
+        return SnapshotDocument.from(s, Instant.parse(instant));
+    }
+
+    @Test
+    void monthlySumsDaylightAndAveragesSameDayRuns() {
+        when(repository.findAll(any(Sort.class))).thenReturn(List.of(
+                at("2025-01-01T00:01:00Z", 8.0, 0), at("2025-01-01T12:01:00Z", 10.0, 0), // same day → 9
+                at("2025-01-02T12:00:00Z", 8.0, 0),
+                at("2026-01-15T12:00:00Z", 7.5, 0)));
+        List<Map<String, Object>> months = service.getMonthlyByYear("daylightHours");
+        assertEquals(2, months.size());
+        assertEquals(Map.of("year", 2025, "month", 1, "value", 17.0, "days", 2, "daysInMonth", 31), months.get(0));
+        assertEquals(2026, months.get(1).get("year"));
+        assertEquals(7.5, months.get(1).get("value"));
+    }
+
+    @Test
+    void monthlyAveragesNonSummedMetrics() {
+        when(repository.findAll(any(Sort.class))).thenReturn(List.of(
+                at("2024-02-01T12:00:00Z", 0, 360_000), at("2024-02-02T12:00:00Z", 0, 400_000)));
+        Map<String, Object> feb = service.getMonthlyByYear("moonDistanceKm").get(0);
+        assertEquals(380_000.0, feb.get("value"));
+        assertEquals(29, feb.get("daysInMonth"));
+    }
+
     @Test
     void unknownMetricIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> service.getHistory("nope", 10));

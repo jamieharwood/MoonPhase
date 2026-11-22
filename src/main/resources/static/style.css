@@ -909,6 +909,18 @@ html[data-moon-graphic="animated"] .moon-ascii {
   height: 260px;
 }
 
+.history-monthly-wrap {
+  height: 340px;
+}
+
+.history-chart-wrap[hidden] {
+  display: none;
+}
+
+.history-controls {
+  flex-wrap: wrap;
+}
+
 .history-msg {
   text-align: center;
   font-size: 0.8rem;

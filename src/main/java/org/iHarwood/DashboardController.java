@@ -189,6 +189,19 @@ public class DashboardController {
         }
         return ResponseEntity.ok(historyService.get().getHistory(metric, limit));
     }
+    /** One aggregated value per calendar month, for the "monthly by year" chart. */
+    @GetMapping(value = "/api/history/monthly", produces = APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> monthlyHistory(
+            @RequestParam(defaultValue = "daylightHours") String metric) {
+        if (historyService.isEmpty()) {
+            return ResponseEntity.status(503).build();
+        }
+        if (!HistoryService.ALLOWED_METRICS.contains(metric)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(historyService.get().getMonthlyByYear(metric));
+    }
     @GetMapping("/api/history/export")
     @ResponseBody
     public ResponseEntity<String> exportHistory(

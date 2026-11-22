@@ -127,6 +127,7 @@
   }
 
   function updateChartTheme() {
+    if (monthlyChart && monthlyCache) renderMonthly(monthlyCache.metric, monthlyCache.data);
     if (!historyChart) return;
     var line = cssVar('--chart-line', '#00d4ff');
     var fill = cssVar('--chart-fill', 'rgba(0, 212, 255, 0.08)');
@@ -527,7 +528,147 @@
     });
   }
 
+  // ── Graph type: "line" (timeline) or "monthly" (grouped bars per month, one per year) ──
+  var monthlyChart = null;
+  var monthlyCache = null; // { metric, data } — lets a theme change redraw without refetching
+  var historyRequest = 0;  // ignore responses that arrive after the user switched view
+  var MONTHLY_MAX_YEARS = 8;
+  var MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var YEAR_COLORS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#0ca30c', '#9085e9', '#e66767'];
+  // Mirrors HistoryService.SUMMED_METRICS: months are totals for these, averages otherwise.
+  var SUMMED_METRICS = ['daylightHours'];
+  var METRIC_UNITS = { daylightHours: ' h', moonIlluminationPercent: '%', moonDistanceKm: ' km', moonAgeDays: ' d' };
+
+  function currentChartType() {
+    var sel = document.getElementById('chart-type-select');
+    return sel && sel.value === 'monthly' ? 'monthly' : 'line';
+  }
+
+  function showChartType(type) {
+    var lineWrap = document.getElementById('history-line-wrap');
+    var monthlyWrap = document.getElementById('history-monthly-wrap');
+    var range = document.getElementById('range-select');
+    if (lineWrap) lineWrap.hidden = type !== 'line';
+    if (monthlyWrap) monthlyWrap.hidden = type !== 'monthly';
+    if (range) {
+      range.disabled = type === 'monthly';
+      range.title = type === 'monthly' ? 'Monthly by year uses all stored history' : 'Date range';
+    }
+  }
+
   function loadHistory(metric) {
+    var type = currentChartType();
+    showChartType(type);
+    historyRequest++;
+    if (type === 'monthly') loadMonthly(metric, historyRequest);
+    else loadTimeline(metric, historyRequest);
+  }
+
+  function isLeapYear(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+
+  function formatValue(v, metric) {
+    var digits = Math.abs(v) >= 1000 ? 0 : 1;
+    return v.toLocaleString(undefined, { maximumFractionDigits: digits }) + (METRIC_UNITS[metric] || '');
+  }
+
+  function loadMonthly(metric, token) {
+    var msg = document.getElementById('history-msg');
+    fetch('/api/history/monthly?metric=' + encodeURIComponent(metric))
+      .then(function (res) {
+        if (res.status === 503) {
+          if (msg) msg.textContent = 'Historical data unavailable — MongoDB not configured.';
+          return null;
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (!data || token !== historyRequest) return;
+        monthlyCache = { metric: metric, data: data };
+        renderMonthly(metric, data);
+      })
+      .catch(function (err) {
+        if (token === historyRequest && msg) msg.textContent = 'Could not load history: ' + err.message;
+      });
+  }
+
+  function renderMonthly(metric, data) {
+    var msg = document.getElementById('history-msg');
+    var ctx = document.getElementById('history-monthly-chart');
+    if (!ctx || typeof Chart === 'undefined') return;
+    if (monthlyChart) { monthlyChart.destroy(); monthlyChart = null; }
+    if (data.length === 0) {
+      if (msg) msg.textContent = 'No data yet — use Populate Past to backfill earlier years.';
+      return;
+    }
+
+    // year → [12 values or null]; only the newest MONTHLY_MAX_YEARS years get bars.
+    var byYear = {};
+    var complete = [[], [], [], [], [], [], [], [], [], [], [], []];
+    var partial = 0;
+    data.forEach(function (p) {
+      if (!byYear[p.year]) byYear[p.year] = [null, null, null, null, null, null, null, null, null, null, null, null];
+      byYear[p.year][p.month - 1] = p.value;
+      if (p.days >= p.daysInMonth) complete[p.month - 1].push(p.value); else partial++;
+    });
+    var allYears = Object.keys(byYear).map(Number).sort(function (a, b) { return a - b; });
+    var years = allYears.slice(-MONTHLY_MAX_YEARS);
+
+    // Dashed line: per-month average over every year with a complete month (partial months
+    // would drag summed metrics down); falls back to whatever exists for that month.
+    var avg = MONTH_NAMES.map(function (_, i) {
+      var vals = complete[i].length ? complete[i] : allYears.map(function (y) { return byYear[y][i]; }).filter(function (v) { return v !== null; });
+      return vals.length ? vals.reduce(function (a, b) { return a + b; }, 0) / vals.length : null;
+    });
+
+    var tick = cssVar('--chart-tick', '#7aa8cc');
+    var grid = cssVar('--chart-grid', 'rgba(13, 42, 74, 0.8)');
+    var avgColor = cssVar('--text-primary', '#ffffff');
+
+    var datasets = [{
+      type: 'line', label: 'Monthly average', data: avg, order: 0,
+      borderColor: avgColor, backgroundColor: avgColor, borderWidth: 2, borderDash: [6, 4],
+      pointRadius: 4, pointStyle: 'circle', pointBackgroundColor: avgColor, tension: 0.35, spanGaps: true
+    }];
+    years.forEach(function (y) {
+      datasets.push({
+        type: 'bar', label: y + (isLeapYear(y) ? ' (leap)' : ''), data: byYear[y], order: 1,
+        backgroundColor: YEAR_COLORS[y % YEAR_COLORS.length], // keyed on the year so colours don't shift
+        pointStyle: 'rect', borderRadius: { topLeft: 2, topRight: 2 }, borderSkipped: 'bottom',
+        categoryPercentage: 0.82, barPercentage: 0.92
+      });
+    });
+
+    monthlyChart = new Chart(ctx, {
+      data: { labels: MONTH_NAMES, datasets: datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 400 },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { color: tick, usePointStyle: true, boxWidth: 10, boxHeight: 10 } },
+          tooltip: { callbacks: { label: function (c) {
+            return c.parsed.y === null ? null : c.dataset.label + ': ' + formatValue(c.parsed.y, metric);
+          } } }
+        },
+        scales: {
+          x: { ticks: { color: tick, autoSkip: false }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { color: tick, callback: function (v) { return formatValue(v, metric); } }, grid: { color: grid } }
+        }
+      }
+    });
+
+    if (msg) {
+      var how = SUMMED_METRICS.indexOf(metric) >= 0 ? 'Monthly totals' : 'Monthly averages';
+      var span = years.length === allYears.length
+        ? years[0] + '–' + years[years.length - 1]
+        : 'latest ' + years.length + ' of ' + allYears.length + ' years';
+      msg.textContent = how + ', ' + span + (partial ? ' · ' + partial + ' partial month' + (partial !== 1 ? 's' : '') + ' (not in the average)' : '');
+    }
+  }
+
+  function loadTimeline(metric, token) {
     var msg = document.getElementById('history-msg');
     var rangeSelect = document.getElementById('range-select');
     var limit = rangeSelect ? parseInt(rangeSelect.value, 10) : 60;
@@ -541,7 +682,7 @@
         return res.json();
       })
       .then(function (data) {
-        if (!data) return;
+        if (!data || token !== historyRequest) return;
         if (!historyChart) return;
         if (data.length === 0) {
           if (msg) msg.textContent = 'No data yet — history will appear after the next scheduled update.';
@@ -609,8 +750,10 @@
   // ── History metric + date-range pickers (selection remembered per browser) ─
   var METRIC_KEY = 'moonphase-history-metric';
   var RANGE_KEY = 'moonphase-history-range';
+  var CHART_TYPE_KEY = 'moonphase-history-chart-type';
   var metricSelect = document.getElementById('metric-select');
   var rangeSelect = document.getElementById('range-select');
+  var chartTypeSelect = document.getElementById('chart-type-select');
 
   function restoreSelect(select, key) {
     if (!select) return;
@@ -628,12 +771,20 @@
 
   restoreSelect(metricSelect, METRIC_KEY);
   restoreSelect(rangeSelect, RANGE_KEY);
+  restoreSelect(chartTypeSelect, CHART_TYPE_KEY);
   loadHistory(metricSelect ? metricSelect.value : 'daylightHours');
 
   if (metricSelect) {
     metricSelect.addEventListener('change', function () {
       rememberSelect(metricSelect, METRIC_KEY);
       loadHistory(this.value);
+    });
+  }
+
+  if (chartTypeSelect) {
+    chartTypeSelect.addEventListener('change', function () {
+      rememberSelect(chartTypeSelect, CHART_TYPE_KEY);
+      loadHistory(metricSelect ? metricSelect.value : 'daylightHours');
     });
   }
 

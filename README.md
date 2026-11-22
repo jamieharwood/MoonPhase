@@ -137,6 +137,7 @@ A per-spacecraft table of everyone currently in space. The column header shows t
 Requires MongoDB (see Configuration). Controls:
 - **Metric selector** — grouped dropdown covering all graphable metrics (see table below).
 - **Date range** — 7 / 14 / 30 / 90 / 365 days, 2 / 5 years, or all stored points.
+- **Graph type** — *Timeline* (line over time) or *Monthly by year* (one bar per year for each month, newest 8 years, with a dashed average over every complete month). Daylight is shown as monthly totals; other metrics as monthly averages. The chosen type, metric and range are remembered per browser.
 - **↓ CSV** — downloads the currently displayed metric and range as a CSV file.
 
 The chart is a Chart.js line graph, updated automatically via SSE after each calculation cycle. If MongoDB is not configured, the card is hidden.
@@ -217,6 +218,7 @@ SPRING_MAIN_WEB-APPLICATION-TYPE=none
 | `POST` | `/api/refresh` | Triggers an immediate recalculation. Returns `202 Accepted` or `429` if one is already running. |
 | `GET` | `/api/health` | Returns application health: snapshot availability, history status, and whether a refresh is in progress. |
 | `GET` | `/api/history?metric=X&limit=N` | Returns the newest N historical data points for metric X, oldest first (default 60; `limit=0` returns all). |
+| `GET` | `/api/history/monthly?metric=X` | One value per calendar month across all stored history (`year`, `month`, `value`, `days`, `daysInMonth`): totals for daylight, averages otherwise. |
 | `GET` | `/api/history/export?metric=X&limit=N` | Downloads history as a CSV file (default all points; `limit=N` keeps the newest N). |
 | `POST` | `/api/history/populate?days=N` | Backfills one snapshot per day for the past N days (N ≥ 1, trimmed to 1900-01-01). Runs asynchronously; returns 400 for N < 1 and 429 if a populate is already running. |
 | `DELETE` | `/api/history` | Deletes all stored snapshots. |
