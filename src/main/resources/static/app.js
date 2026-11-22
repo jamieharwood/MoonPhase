@@ -605,20 +605,42 @@
   loadInitialData();
   connectSSE();
   initChart();
-  loadHistory('daylightHours');
 
+  // ── History metric + date-range pickers (selection remembered per browser) ─
+  var METRIC_KEY = 'moonphase-history-metric';
+  var RANGE_KEY = 'moonphase-history-range';
   var metricSelect = document.getElementById('metric-select');
+  var rangeSelect = document.getElementById('range-select');
+
+  function restoreSelect(select, key) {
+    if (!select) return;
+    var saved = null;
+    try { saved = localStorage.getItem(key); } catch (e) {}
+    if (saved === null) return;
+    for (var i = 0; i < select.options.length; i++) {
+      if (select.options[i].value === saved) { select.value = saved; return; }
+    }
+  }
+
+  function rememberSelect(select, key) {
+    try { localStorage.setItem(key, select.value); } catch (e) {}
+  }
+
+  restoreSelect(metricSelect, METRIC_KEY);
+  restoreSelect(rangeSelect, RANGE_KEY);
+  loadHistory(metricSelect ? metricSelect.value : 'daylightHours');
+
   if (metricSelect) {
     metricSelect.addEventListener('change', function () {
+      rememberSelect(metricSelect, METRIC_KEY);
       loadHistory(this.value);
     });
   }
 
-  // ── Date-range picker ─────────────────────────────────────────────────────
-  var rangeSelect = document.getElementById('range-select');
   if (rangeSelect) {
     rangeSelect.addEventListener('change', function () {
-      if (metricSelect) loadHistory(metricSelect.value);
+      rememberSelect(rangeSelect, RANGE_KEY);
+      loadHistory(metricSelect ? metricSelect.value : 'daylightHours');
     });
   }
 
