@@ -1,40 +1,28 @@
 package org.iHarwood.MoonPhaseModule;
 
-import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 /**
- * Approximate distance of the New Horizons spacecraft from Earth in AU.
+ * Distance of the New Horizons spacecraft from the Sun and from Earth, in AU.
  *
- * Uses a reference epoch distance (AU) and an approximate radial speed (km/s),
- * then extrapolates heliocentric distance by days elapsed since the epoch.
+ * <p>Propagated from the JPL Horizons state vector at 2026-01-01 00:00 TDB
+ * (heliocentric, J2000 ecliptic). See {@link SpacecraftTrajectory} for the accuracy notes.
  */
 public final class NewHorizonsDistance {
     private NewHorizonsDistance() {}
 
-    private static final double KM_PER_AU = 149_597_870.7;
-    private static final double SECONDS_PER_DAY = 86_400.0;
-
-    private static final ZonedDateTime EPOCH = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-
-    private static final double NH_REF_AU = 58.0;
-    private static final double NH_SPEED_KM_S = 13.8;
-
-    private static double auPerDay(double kmPerSec) {
-        return (kmPerSec * SECONDS_PER_DAY) / KM_PER_AU;
-    }
-
-    private static double daysSinceEpoch(ZonedDateTime zdt) {
-        return Duration.between(EPOCH, zdt.withZoneSameInstant(ZoneOffset.UTC)).toSeconds() / SECONDS_PER_DAY;
-    }
+    /** Horizons target -98, epoch JD 2461041.5 (2026-01-01 TDB). */
+    private static final SpacecraftTrajectory NEW_HORIZONS = new SpacecraftTrajectory(2453754.5, 2461041.5, // launched 2006-01-19
+            20.00963528566975, -60.30445704637835, 2.212929493946444,
+            0.003070495042525652, -0.007229267480329574, 0.0002845557285883782);
 
     public static double heliocentricDistanceAU(ZonedDateTime zdt) {
-        return NH_REF_AU + auPerDay(NH_SPEED_KM_S) * daysSinceEpoch(zdt);
+        return NEW_HORIZONS.heliocentricDistanceAU(zdt);
     }
 
     public static double distanceFromEarthAU(ZonedDateTime zdt) {
-        return Math.max(0.0, Math.abs(heliocentricDistanceAU(zdt) - 1.0));
+        return NEW_HORIZONS.distanceFromEarthAU(zdt);
     }
 
     public static double heliocentricDistanceAUNow() {
@@ -45,7 +33,8 @@ public final class NewHorizonsDistance {
         return distanceFromEarthAU(ZonedDateTime.now(ZoneOffset.UTC));
     }
 
+    /** Heliocentric speed in km/s. */
     public static double speedKmPerSec() {
-        return NH_SPEED_KM_S;
+        return NEW_HORIZONS.speedKmPerSec();
     }
 }

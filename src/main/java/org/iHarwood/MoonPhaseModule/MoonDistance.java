@@ -4,28 +4,25 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 /**
- * Approximate Moon distance from Earth in kilometres.
+ * Earth–Moon distance (centre to centre) in kilometres.
  *
- * The Moon's orbit is elliptical with:
+ * Computed by {@link MoonEphemeris}: the Keplerian lunar orbit plus the evection and
+ * variation terms, which alone move the distance by up to ~6,600 km and are why a
+ * single-cosine model can be thousands of km out.
+ *
  *   Mean distance:  384,400 km
- *   Perigee:       ~356,500 km (closest)
- *   Apogee:        ~406,700 km (farthest)
- *
- * Uses a simplified model based on the Moon's mean anomaly to approximate
- * the distance variation over its ~27.3-day orbital period.
+ *   Perigee range:  ~356,400–370,400 km
+ *   Apogee range:   ~404,000–406,700 km
  */
 public final class MoonDistance {
     private MoonDistance() {}
 
-    private static final double MEAN_DISTANCE_KM = 384_400.0;
-    private static final double DISTANCE_AMPLITUDE_KM = 21_000.0;
-    private static final double M0_MOON_DEG = 134.9634;
-    private static final double N_MOON_DEG_PER_DAY = 13.0649929509;
+    /** Extreme perigee / apogee distances (km), for log bars. */
+    private static final double MIN_DISTANCE_KM = 356_400.0;
+    private static final double MAX_DISTANCE_KM = 406_700.0;
 
     public static double distanceKm(ZonedDateTime zdt) {
-        double d = DateUtils.daysSinceJ2000(zdt);
-        double mDeg = DateUtils.normalizeAngle(M0_MOON_DEG + N_MOON_DEG_PER_DAY * d);
-        return MEAN_DISTANCE_KM - DISTANCE_AMPLITUDE_KM * Math.cos(Math.toRadians(mDeg));
+        return MoonEphemeris.at(DateUtils.julianDate(zdt)).moonDistanceKm();
     }
 
     public static double distanceKmNow() {
@@ -37,14 +34,10 @@ public final class MoonDistance {
     }
 
     /**
-     * Analytical min/max Moon distance from the simplified elliptical model
-     * (mean ± amplitude). Avoids a 30-day sampling loop.
+     * Extreme perigee / apogee distances, used as the range for log bars.
      */
     public static double[] minMaxDistanceKmNow() {
-        return new double[]{
-                MEAN_DISTANCE_KM - DISTANCE_AMPLITUDE_KM,
-                MEAN_DISTANCE_KM + DISTANCE_AMPLITUDE_KM
-        };
+        return new double[]{MIN_DISTANCE_KM, MAX_DISTANCE_KM};
     }
 
     public static String formatDistanceKm(double km) {

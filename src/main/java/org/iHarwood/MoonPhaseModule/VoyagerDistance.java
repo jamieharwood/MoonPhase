@@ -1,56 +1,41 @@
 package org.iHarwood.MoonPhaseModule;
 
-import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 /**
- * Approximate distances of Voyager 1 and 2 from Earth in AU.
+ * Distances of Voyager 1 and 2 from the Sun and from Earth, in AU.
  *
- * Uses a reference epoch distance (AU) and an approximate radial speed (km/s),
- * then extrapolates heliocentric distance by days elapsed since the epoch.
- *
- * Note: This is a rough linear approximation for display/CLI purposes only.
+ * <p>Propagated from JPL Horizons state vectors at 2026-01-01 00:00 TDB
+ * (heliocentric, J2000 ecliptic). See {@link SpacecraftTrajectory} for the accuracy notes.
  */
 public final class VoyagerDistance {
     private VoyagerDistance() {}
 
-    private static final double KM_PER_AU = 149_597_870.7;
-    private static final double SECONDS_PER_DAY = 86_400.0;
+    /** Horizons target -31, epoch JD 2461041.5 (2026-01-01 TDB). */
+    private static final SpacecraftTrajectory VOYAGER_1 = new SpacecraftTrajectory(2443391.5, 2461041.5, // launched 1977-09-05
+            -31.83641491929577, -134.6784911967567, 97.44481075134993,
+            -0.001197151937928288, -0.00786107792125082, 0.005680005843310299);
 
-    // Reference epoch (UTC)
-    private static final ZonedDateTime EPOCH = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-
-    // Voyager 1 reference (approx)
-    private static final double V1_REF_AU = 159.0;
-    private static final double V1_SPEED_KM_S = 17.0;
-
-    // Voyager 2 reference (approx)
-    private static final double V2_REF_AU = 133.0;
-    private static final double V2_SPEED_KM_S = 15.4;
-
-    private static double auPerDay(double kmPerSec) {
-        return (kmPerSec * SECONDS_PER_DAY) / KM_PER_AU;
-    }
-
-    private static double daysSinceEpoch(ZonedDateTime zdt) {
-        return Duration.between(EPOCH, zdt.withZoneSameInstant(ZoneOffset.UTC)).toSeconds() / SECONDS_PER_DAY;
-    }
+    /** Horizons target -32, epoch JD 2461041.5 (2026-01-01 TDB). */
+    private static final SpacecraftTrajectory VOYAGER_2 = new SpacecraftTrajectory(2443375.5, 2461041.5, // launched 1977-08-20
+            39.22753395002931, -103.9915540306074, -87.91866331046981,
+            0.002427683334171075, -0.005395071892829595, -0.006538419567248777);
 
     public static double heliocentricDistanceV1AU(ZonedDateTime zdt) {
-        return V1_REF_AU + auPerDay(V1_SPEED_KM_S) * daysSinceEpoch(zdt);
+        return VOYAGER_1.heliocentricDistanceAU(zdt);
     }
 
     public static double heliocentricDistanceV2AU(ZonedDateTime zdt) {
-        return V2_REF_AU + auPerDay(V2_SPEED_KM_S) * daysSinceEpoch(zdt);
+        return VOYAGER_2.heliocentricDistanceAU(zdt);
     }
 
     public static double distanceFromEarthV1AU(ZonedDateTime zdt) {
-        return Math.max(0.0, Math.abs(heliocentricDistanceV1AU(zdt) - 1.0));
+        return VOYAGER_1.distanceFromEarthAU(zdt);
     }
 
     public static double distanceFromEarthV2AU(ZonedDateTime zdt) {
-        return Math.max(0.0, Math.abs(heliocentricDistanceV2AU(zdt) - 1.0));
+        return VOYAGER_2.distanceFromEarthAU(zdt);
     }
 
     public static double heliocentricDistanceV1AUNow() {

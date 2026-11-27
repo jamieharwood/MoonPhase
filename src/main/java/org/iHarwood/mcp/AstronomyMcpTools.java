@@ -83,7 +83,8 @@ public class AstronomyMcpTools {
             description = """
                     Calculates the astronomical snapshot for a given date (computed at 12:00 UTC) between \
                     1900-01-01 and 2100-12-31, using the same formulas as the live data. Live-only values \
-                    (LEO satellites, aurora Kp, people in space) cannot be reconstructed and are returned as 0 or -1.""",
+                    (LEO satellites, aurora Kp, people in space, JWST distance) cannot be reconstructed and are \
+                    returned as 0 or -1.""",
             annotations = @McpAnnotations(readOnlyHint = true, destructiveHint = false,
                     idempotentHint = true, openWorldHint = false))
     public Map<String, Object> getAstronomicalDataForDate(

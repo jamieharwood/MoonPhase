@@ -91,6 +91,17 @@ public record AstronomicalSnapshot(
         int totalPeopleInSpace,
         Map<String, Integer> craftOccupancy,
 
+        // Sun → planet distances (AU) for the planets whose *DistanceAu fields above are
+        // Earth → planet (kept for history graphs and Awtrix); the dashboard's Sun-relative
+        // table and the light-travel times use these.
+        double marsHelioDistanceAu,
+        double jupiterHelioDistanceAu,
+        double saturnHelioDistanceAu,
+
+        // Next true new / full moon (ISO-8601 UTC instants, e.g. "2026-12-09T00:52:00Z")
+        String nextNewMoon,
+        String nextFullMoon,
+
         // Metadata
         String lastUpdated
 ) {
@@ -155,6 +166,11 @@ public record AstronomicalSnapshot(
         private int issCrew = -1;
         private int totalPeopleInSpace = -1;
         private Map<String, Integer> craftOccupancy = Collections.emptyMap();
+        private double marsHelioDistanceAu;
+        private double jupiterHelioDistanceAu;
+        private double saturnHelioDistanceAu;
+        private String nextNewMoon;
+        private String nextFullMoon;
         private String lastUpdated;
 
         private Builder() {}
@@ -212,6 +228,11 @@ public record AstronomicalSnapshot(
         public Builder issCrew(int v)                   { this.issCrew = v; return this; }
         public Builder totalPeopleInSpace(int v)        { this.totalPeopleInSpace = v; return this; }
         public Builder craftOccupancy(Map<String, Integer> v) { this.craftOccupancy = v != null ? v : Collections.emptyMap(); return this; }
+        public Builder marsHelioDistanceAu(double v)    { this.marsHelioDistanceAu = v; return this; }
+        public Builder jupiterHelioDistanceAu(double v) { this.jupiterHelioDistanceAu = v; return this; }
+        public Builder saturnHelioDistanceAu(double v)  { this.saturnHelioDistanceAu = v; return this; }
+        public Builder nextNewMoon(String v)            { this.nextNewMoon = v; return this; }
+        public Builder nextFullMoon(String v)           { this.nextFullMoon = v; return this; }
         public Builder lastUpdated(String v)             { this.lastUpdated = v; return this; }
 
         public AstronomicalSnapshot build() {
@@ -236,6 +257,8 @@ public record AstronomicalSnapshot(
                      daysUntilPerihelion, daysUntilAphelion,
                      sunriseTime, sunsetTime, auroraKpIndex, issCrew,
                      totalPeopleInSpace, craftOccupancy,
+                     marsHelioDistanceAu, jupiterHelioDistanceAu, saturnHelioDistanceAu,
+                     nextNewMoon, nextFullMoon,
                      lastUpdated
              );
         }

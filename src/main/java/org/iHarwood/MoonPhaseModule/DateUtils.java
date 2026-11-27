@@ -20,6 +20,22 @@ public final class DateUtils {
         return ((deg % 360.0) + 360.0) % 360.0;
     }
 
+    /** Julian Date of the Unix epoch (1970-01-01T00:00Z). */
+    private static final double JD_UNIX_EPOCH = 2440587.5;
+
+    /**
+     * Julian Date (UT) of an instant, independent of the time zone of {@code zdt}.
+     * TT−UT (~69 s) is ignored; it is negligible for the precision used here.
+     */
+    public static double julianDate(ZonedDateTime zdt) {
+        return JD_UNIX_EPOCH + zdt.toInstant().toEpochMilli() / 86_400_000.0;
+    }
+
+    /** Julian centuries since J2000.0 for the given Julian Date. */
+    public static double centuriesSinceJ2000(double jd) {
+        return (jd - 2451545.0) / 36525.0;
+    }
+
     /**
      * Calculate days since J2000.0 (2000-01-01 12:00:00 TT).
      * Uses Fliegel-Van Flandern integer Julian Day Number algorithm.

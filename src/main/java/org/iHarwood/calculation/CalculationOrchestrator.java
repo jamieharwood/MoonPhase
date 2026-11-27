@@ -144,6 +144,9 @@ public class CalculationOrchestrator {
         sb.uranusDistanceAu(uranusHelio);
         sb.neptuneDistanceAu(neptuneHelio);
         sb.plutoDistanceAu(plutoHelio);
+        sb.marsHelioDistanceAu(marsHelio);
+        sb.jupiterHelioDistanceAu(jupiterHelio);
+        sb.saturnHelioDistanceAu(saturnHelio);
         // Daylight
         double[] dayRange = DayLight.minMaxDayLengthHoursNow(latitude);
         double currentDayHours = DayLight.dayLengthHours(now.toLocalDate(), latitude);
@@ -175,7 +178,7 @@ public class CalculationOrchestrator {
         pushes.add(push("newhorizons", String.format("NH:%.0fau", nhAu), APIPost.IconType.NEWHORIZONS.name()));
         double jwstKm = JamesWebbDistance.distanceKmNow();
         sb.jamesWebbDistanceKm(jwstKm);
-        logger.info("James Webb Space Telescope distance from Earth: {} km", String.format("%,.0f", jwstKm));
+        if (jwstKm <= 0) logger.info("James Webb Space Telescope distance unavailable (JPL Horizons)");
         // Equinox / perihelion
         String nextSummer = EquinoxCalculator.nextSummerSolstice().format(SHORT_DATE_FMT);
         String nextWinter = EquinoxCalculator.nextWinterSolstice().format(SHORT_DATE_FMT);
@@ -295,6 +298,9 @@ public class CalculationOrchestrator {
         sb.moonAsciiArt(mp.getAscii());
         sb.moonAgeDays(mp.getAgeDays());
         sb.daysUntilFullMoon(daysUntilFull);
+        sb.nextNewMoon(mp.getNextNewMoon().toInstant().toString());
+        sb.nextFullMoon(mp.getNextFullMoon().toInstant().toString());
+        logger.info("Next new moon: {}  Next full moon: {}", mp.getNextNewMoon(), mp.getNextFullMoon());
         pushes.add(push("moonphase", mp.getPhaseName(), mp.getPhaseIcon()));
         pushes.add(push("moonillumination", mp.getIlluminationPercent() + "%", mp.getPhaseIcon()));
         pushes.add(push("fullmoon", daysUntilFull + "d", "FullMoon"));
@@ -355,6 +361,9 @@ public class CalculationOrchestrator {
         sb.uranusDistanceAu(uranusHelio);
         sb.neptuneDistanceAu(neptuneHelio);
         sb.plutoDistanceAu(plutoHelio);
+        sb.marsHelioDistanceAu(marsHelio);
+        sb.jupiterHelioDistanceAu(jupiterHelio);
+        sb.saturnHelioDistanceAu(saturnHelio);
         // Daylight
         sb.daylightHours(DayLight.dayLengthHours(targetDate, latitude));
         // Deep-space probes
@@ -365,6 +374,7 @@ public class CalculationOrchestrator {
         sb.voyager1HelioDistanceAu(v1Helio);
         sb.voyager2HelioDistanceAu(v2Helio);
         sb.newHorizonsDistanceAu(NewHorizonsDistance.distanceFromEarthAU(target));
+        // JWST — live-only (halo orbit can't be reconstructed offline)
         sb.jamesWebbDistanceKm(JamesWebbDistance.distanceKmAt(target));
         // Upcoming events (relative to target date)
         sb.daysUntilSummerSolstice(EquinoxCalculator.daysUntilSummerSolstice(targetDate));
@@ -397,6 +407,8 @@ public class CalculationOrchestrator {
         sb.moonIlluminationPercent(mp.getIlluminationPercent());
         sb.moonAgeDays(mp.getAgeDays());
         sb.daysUntilFullMoon(mp.getDaysUntilFullMoon());
+        sb.nextNewMoon(mp.getNextNewMoon().toInstant().toString());
+        sb.nextFullMoon(mp.getNextFullMoon().toInstant().toString());
         // LEO — live-only, cannot be reconstructed for historical dates
         sb.issAltitudeKm(0).tiangongAltitudeKm(0).hubbleAltitudeKm(0)
           .starlinkSatelliteCount(0).kuiperSatelliteCount(0).totalSatellitesInOrbit(0)

@@ -1,5 +1,6 @@
 package org.iHarwood.MoonPhaseModule;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -8,11 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 public final class MoonPhase {
-    private static final double SYNODIC_MONTH = 29.530588853;
+    private static final double SYNODIC_MONTH = MoonEphemeris.SYNODIC_MONTH;
     private static final double TWO_PI = 2 * Math.PI;
-    // Mean new moon: 2000-01-06 18:14 UTC (JD 2451550.1).
-    // Phase fraction 0 is new moon. Checked against https://moonphases.co.uk/.
-    private static final double KNOWN_NEW_MOON_JD = 2451550.1;
+    private static final double JD_UNIX_EPOCH = 2440587.5;
 
     // https://moonphases.co.uk/moon-phases
     private static final List<String[]> PHASES = Arrays.asList(
@@ -35,40 +34,43 @@ public final class MoonPhase {
             "New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous"
     };
 
-    private final double phaseFraction; // [0,1)
-    private final double ageDays;
+    private final double phaseFraction;   // [0,1): Moon−Sun longitude / 360°, 0 = new moon
+    private final double ageDays;         // days since the previous true new moon
+    private final double illumination;    // illuminated fraction 0–1
+    private final double jd;              // moment of the calculation (NaN when built from a name)
 
-    private MoonPhase(double phaseFraction, double ageDays) {
+    private MoonPhase(double phaseFraction, double ageDays, double illumination, double jd) {
         this.phaseFraction = phaseFraction;
         this.ageDays = ageDays;
+        this.illumination = illumination;
+        this.jd = jd;
     }
 
+    /** Phase at 12:00 UTC on the given date (the convention used for daily snapshots). */
     public static MoonPhase fromDate(LocalDate date) {
-        // dateToJulianDayNumber is the Julian Date at 12:00 UTC, which matches
-        // the daily phase published by moonphases.co.uk.
-        double jd = DateUtils.dateToJulianDayNumber(date.getDayOfMonth(), date.getMonthValue(), date.getYear());
-        return fromJulianDate(jd);
+        return fromJulianDate(DateUtils.dateToJulianDayNumber(date.getDayOfMonth(), date.getMonthValue(), date.getYear()));
     }
 
+    /** Phase at the given instant. */
     public static MoonPhase at(ZonedDateTime zdt) {
-        ZonedDateTime utc = zdt.withZoneSameInstant(ZoneOffset.UTC);
-        double noonJd = DateUtils.dateToJulianDayNumber(utc.getDayOfMonth(), utc.getMonthValue(), utc.getYear());
-        double frac = (utc.getHour() + utc.getMinute() / 60.0 + utc.getSecond() / 3600.0) / 24.0;
-        return fromJulianDate(noonJd - 0.5 + frac);
-    }
-
-    private static MoonPhase fromJulianDate(double jd) {
-        double phaseFraction = (jd - KNOWN_NEW_MOON_JD) / SYNODIC_MONTH;
-        phaseFraction = phaseFraction - Math.floor(phaseFraction);
-        if (phaseFraction < 0) {
-            phaseFraction += 1.0;
-        }
-        return new MoonPhase(phaseFraction, phaseFraction * SYNODIC_MONTH);
+        return fromJulianDate(DateUtils.julianDate(zdt));
     }
 
     /**
-     * Creates a MoonPhase instance from a phase name string.
-     * Used when Claude AI corrects the calculated phase.
+     * True phase from the geocentric Sun and Moon positions ({@link MoonEphemeris}),
+     * not a mean 29.53-day cycle, so new/full moon land within minutes of the published times.
+     */
+    private static MoonPhase fromJulianDate(double jd) {
+        MoonEphemeris.Position pos = MoonEphemeris.at(jd);
+        double phaseFraction = pos.elongationLongitude() / 360.0;
+        double age = jd - MoonEphemeris.previousPhase(jd, 0.0);
+        return new MoonPhase(phaseFraction, age, pos.illuminatedFraction(), jd);
+    }
+
+    /**
+     * Creates a MoonPhase instance from a phase name string (representative mid-phase values).
+     * Used when Claude AI corrects the calculated phase. Next new/full moon times are not
+     * available on instances built this way.
      *
      * @param phaseName one of the standard phase names (e.g. "Full Moon", "Waning Gibbous")
      * @return an Optional containing the matching MoonPhase, or empty if the name is not recognised
@@ -78,8 +80,8 @@ public final class MoonPhase {
             if (NAMES[i].equalsIgnoreCase(phaseName.trim())) {
                 // NAMES[0] is full moon, which is half a cycle after new moon (phaseFraction 0).
                 double phaseFraction = (i / 8.0 + 0.5) % 1.0;
-                double ageDays = phaseFraction * SYNODIC_MONTH;
-                return Optional.of(new MoonPhase(phaseFraction, ageDays));
+                double illumination = (1 - Math.cos(TWO_PI * phaseFraction)) / 2;
+                return Optional.of(new MoonPhase(phaseFraction, phaseFraction * SYNODIC_MONTH, illumination, Double.NaN));
             }
         }
         return Optional.empty();
@@ -89,15 +91,32 @@ public final class MoonPhase {
      * Returns the percentage of the moon's disc that is illuminated (0-100).
      */
     public int getIlluminationPercent() {
-        return (int) Math.round((1 - Math.cos(TWO_PI * phaseFraction)) / 2 * 100);
+        return (int) Math.round(illumination * 100);
     }
 
     /**
-     * Returns the number of days until the next full moon (0 = today is full moon).
+     * Returns the number of days until the next full moon (0 = full moon within the last
+     * or next half day, i.e. "tonight").
      */
     public int getDaysUntilFullMoon() {
-        double fraction = ((0.5 - phaseFraction + 1.0) % 1.0);
-        return (int) Math.round(fraction * SYNODIC_MONTH);
+        if (Double.isNaN(jd)) {
+            double fraction = ((0.5 - phaseFraction + 1.0) % 1.0);
+            return (int) Math.round(fraction * SYNODIC_MONTH);
+        }
+        if (jd - MoonEphemeris.previousPhase(jd, 180.0) < 0.5) {
+            return 0;
+        }
+        return (int) Math.round(MoonEphemeris.nextPhase(jd, 180.0) - jd);
+    }
+
+    /** Moment of the next new moon after this phase's time (UTC). */
+    public ZonedDateTime getNextNewMoon() {
+        return toUtc(MoonEphemeris.nextPhase(requireTime(), 0.0));
+    }
+
+    /** Moment of the next full moon after this phase's time (UTC). */
+    public ZonedDateTime getNextFullMoon() {
+        return toUtc(MoonEphemeris.nextPhase(requireTime(), 180.0));
     }
 
     public int getAgeDays() {
@@ -114,6 +133,18 @@ public final class MoonPhase {
 
     public String[] getAscii() {
         return PHASES.get(phaseIndex());
+    }
+
+    private double requireTime() {
+        if (Double.isNaN(jd)) {
+            throw new IllegalStateException("Phase built from a name has no time");
+        }
+        return jd;
+    }
+
+    private static ZonedDateTime toUtc(double julianDate) {
+        long millis = Math.round((julianDate - JD_UNIX_EPOCH) * 86_400_000.0);
+        return Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).withNano(0);
     }
 
     /**

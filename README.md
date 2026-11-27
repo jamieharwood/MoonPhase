@@ -20,9 +20,9 @@ The application performs the following calculations on a configurable schedule (
 - **Moon**: Current distance in km with annual min/max comparison.
 
 ### Deep Space Probes
-- **Voyager 1 & 2**: Estimated distance from Earth in AU.
-- **New Horizons**: Estimated distance from Earth in AU.
-- **James Webb Space Telescope**: Current distance from Earth in km.
+- **Voyager 1 & 2**: Distance from Earth in AU, integrated from JPL Horizons state vectors.
+- **New Horizons**: Distance from Earth in AU, integrated from a JPL Horizons state vector.
+- **James Webb Space Telescope**: Current distance from Earth in km, fetched live from JPL Horizons (unavailable for historical dates).
 
 ### Light Travel Times
 - All times measured from the Sun, ordered by distance: Sun→Mercury, Sun→Venus, Sun→Earth, Sun→Mars, Sun→Jupiter, Sun→Saturn, Sun→Uranus, Sun→Neptune, Sun→Pluto, Sun→Voyager 2, Sun→Voyager 1.
@@ -53,6 +53,18 @@ Live data fetched from the [TLE API](https://tle.ivanstanojevic.me/) on every sc
 - Aurora Kp index is pushed on every run; the label is prefixed with `⚡` during a geomagnetic storm (Kp ≥ 5).
 
 ---
+
+## Accuracy
+
+Calculations are checked against [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/) by `EphemerisAccuracyTest`:
+
+| Quantity | Method | Typical error vs Horizons |
+|---|---|---|
+| Planet distances (Sun and Earth) | JPL Keplerian element tables, full 3-D Kepler solution | ≤ 0.03 AU (≤ 0.2 %) |
+| Moon distance | Lunar orbit plus principal perturbations | ≤ ~600 km |
+| Moon illumination / phase | True Sun–Moon elongation | < 0.1 %; new/full moon within minutes |
+| Voyager 1 & 2, New Horizons | Two-body integration from Horizons state vectors (2026) | ≤ 0.02 AU, 2020–2035 |
+| James Webb | Live JPL Horizons query | exact (live only) |
 
 ## Web Dashboard
 
@@ -90,8 +102,8 @@ The hero card: a large moon graphic with the illumination percentage and phase n
 Details:
 - **Illumination** — percentage of the visible surface lit by the Sun, shown large under the graphic.
 - **Lunar cycle** — "Day N of 29.5" with a progress bar, from the moon's age.
-- **Next new moon** — estimated date and days remaining (marked ≈), from the synced phase.
-- **Next full moon** — date and days remaining, from the server's count.
+- **Next new moon** — date and days remaining, from the true Sun–Moon geometry (within minutes of published times).
+- **Next full moon** — date and days remaining, calculated the same way.
 - **Distance** — current Earth–Moon distance in km (or mi when the mi unit is selected).
 
 #### ☀️ Solar System

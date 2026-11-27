@@ -54,6 +54,10 @@
     return fmtKm(km);
   }
 
+  function helio(sunRelative, fallback) {
+    return (typeof sunRelative === 'number' && sunRelative > 0) ? sunRelative : fallback;
+  }
+
   function fmtKmPerSec(val) {
     return (typeof val === 'number') ? val.toFixed(2) + ' km/s' : '—';
   }
@@ -242,9 +246,11 @@
     setText('dist-mercury',  fmtDistFromAu(data.mercuryDistanceAu));
     setText('dist-venus',    fmtDistFromAu(data.venusDistanceAu));
     setText('dist-sun',      fmtDistFromAu(data.sunDistanceAu));
-    setText('dist-mars',     fmtDistFromAu(data.marsDistanceAu));
-    setText('dist-jupiter',  fmtDistFromAu(data.jupiterDistanceAu));
-    setText('dist-saturn',   fmtDistFromAu(data.saturnDistanceAu));
+    // The card is Sun-relative; for Mars/Jupiter/Saturn the plain *DistanceAu fields are
+    // Earth-relative (history/Awtrix), so prefer the heliocentric ones when present.
+    setText('dist-mars',     fmtDistFromAu(helio(data.marsHelioDistanceAu, data.marsDistanceAu)));
+    setText('dist-jupiter',  fmtDistFromAu(helio(data.jupiterHelioDistanceAu, data.jupiterDistanceAu)));
+    setText('dist-saturn',   fmtDistFromAu(helio(data.saturnHelioDistanceAu, data.saturnDistanceAu)));
     setText('dist-uranus',   fmtDistFromAu(data.uranusDistanceAu));
     setText('dist-neptune',  fmtDistFromAu(data.neptuneDistanceAu));
     setText('dist-pluto',    fmtDistFromAu(data.plutoDistanceAu));
@@ -1049,12 +1055,22 @@
     }).join('');
   }
 
-  function fmtMoonDate(days, approx) {
-    if (typeof days !== 'number' || days < 0) return '—';
-    if (days === 0) return 'Tonight';
-    if (days === 1) return 'Tomorrow';
-    var when = new Date(Date.now() + days * 86400000);
-    var date = when.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  /** "24 Dec · 26 days" from an ISO instant (exact, from the server) or a day count (estimate, marked ≈). */
+  function fmtMoonDate(when, approxDays) {
+    var at = null, approx = false;
+    if (typeof when === 'string' && when) {
+      at = new Date(when);
+      if (isNaN(at.getTime())) at = null;
+    }
+    if (!at && typeof approxDays === 'number' && approxDays >= 0) {
+      at = new Date(Date.now() + approxDays * 86400000);
+      approx = true;
+    }
+    if (!at) return '—';
+    var days = Math.round((at.getTime() - Date.now()) / 86400000);
+    var date = at.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    if (days <= 0) return (approx ? '≈ ' : '') + 'Tonight';
+    if (days === 1) return (approx ? '≈ ' : '') + 'Tomorrow · ' + date;
     return (approx ? '≈ ' : '') + date + ' · ' + days + ' days';
   }
 
@@ -1072,9 +1088,9 @@
     var phase = currentMoonPhase(new Date());
     renderPhaseStrip(Math.round((named != null ? named : phase) * 8) % 8);
 
-    // Full moon: the server's count. New moon: estimated from the synced phase.
-    setText('moon-next-full', fmtMoonDate(data.daysUntilFullMoon, false));
-    setText('moon-next-new', fmtMoonDate(Math.round((1 - phase) * SYNODIC_DAYS), true));
+    // Exact times from the server's true-phase ephemeris; estimate only for older servers.
+    setText('moon-next-full', fmtMoonDate(data.nextFullMoon, data.daysUntilFullMoon));
+    setText('moon-next-new', fmtMoonDate(data.nextNewMoon, (1 - phase) * SYNODIC_DAYS));
   }
 
   function applyGraphic(mode) {
