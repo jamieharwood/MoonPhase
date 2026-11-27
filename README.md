@@ -72,7 +72,7 @@ The sticky header contains:
 |---|---|
 | **⇩ Install App** | Appears on supported browsers — installs the PWA to the desktop or home screen. |
 | **🔔 Bell** | Enables browser notifications for aurora storms and full moon events (see [Browser Notifications](#browser-notifications)). |
-| **AU / km / mi** | Unit selector — switches all distance values on the page between Astronomical Units, kilometres, and miles. Preference is saved to `localStorage`. |
+| **AU / km / mi** | Unit selector — switches Solar System and Deep Space distances between Astronomical Units, kilometres, and miles. Near-Earth values (Moon, stations, JWST) stay in km, or switch to miles. Preference is saved to `localStorage`. |
 | **Theme** | Switches look and feel between Classic, Light, SpaceX, NASA, Blue Origin, Rocket Lab, ULA, Arianespace, Relativity, and Firefly. Preference is saved to `localStorage`. |
 | **● SSE dot** | Live connection indicator: green = connected, amber = connecting, red = disconnected. |
 | **☰ Menu** | Hamburger menu containing **↻ Refresh**, **🗑 Reset Data**, and **📅 Populate Past**. |
@@ -82,28 +82,22 @@ The sticky header contains:
 ### Dashboard Cards
 
 #### 🌙 Moon Phase
-Displays the current phase name and a moon graphic, plus four statistics. Use the **ASCII / Animated** switch in the card header to choose the graphic; your choice is remembered in the browser.
+The hero card: a large moon graphic with the illumination percentage and phase name, a lunar-cycle progress bar, a strip of the eight phases with today's highlighted, and the next new and full moon. Use the **ASCII / Animated** switch in the card header to choose the graphic; your choice is remembered in the browser.
 
 - **ASCII** — the server-generated ASCII art rendering of the current phase (default).
 - **Animated** — a canvas-rendered moon with craters and maria, a shadowed terminator matching the live illumination and age, and a twinkling starfield. A moon base sits on the surface while a Starship repeatedly lands beside it, kicking up dust. The phase is synced to each server snapshot and then advances in real time between updates. Star colours adapt to light themes.
 
-Statistics:
-- **Illumination** — percentage of the visible surface lit by the Sun.
-- **Age** — days elapsed since the last new moon.
-- **Full Moon In** — days until the next full moon.
-- **Distance** — current Earth–Moon distance, respecting the active unit selector.
+Details:
+- **Illumination** — percentage of the visible surface lit by the Sun, shown large under the graphic.
+- **Lunar cycle** — "Day N of 29.5" with a progress bar, from the moon's age.
+- **Next new moon** — estimated date and days remaining (marked ≈), from the synced phase.
+- **Next full moon** — date and days remaining, from the server's count.
+- **Distance** — current Earth–Moon distance in km (or mi when the mi unit is selected).
 
 #### ☀️ Solar System
 A table of all nine planets from Mercury to Pluto, each showing:
-- **Distance** from the Sun (heliocentric), respecting the active unit selector.
+- **Distance** from the Sun (heliocentric), respecting the active unit selector (AU to 3 decimals).
 - **Light travel time** from the Sun to that planet.
-
-#### 🚀 Deep Space Probes
-Current distances for:
-- **Hubble** — altitude above Earth (LEO).
-- **James Webb** — distance from Earth (at L2).
-- **Voyager 1 & 2** — distance from Earth.
-- **New Horizons** — distance from Earth.
 
 #### 🌍 Earth
 | Row | Description |
@@ -119,19 +113,18 @@ Current distances for:
 #### 📅 Upcoming Events
 A table of the four next orbital events — Summer Solstice, Winter Solstice, Perihelion, and Aphelion — sorted in ascending order by days remaining.
 
-#### 🌍 LEO (Low Earth Orbit)
-| Row | Description |
-|---|---|
-| ISS Altitude | Altitude derived from live TLE data via Kepler's third law |
-| ISS Crew | Number of people currently aboard the ISS |
-| Tiangong Altitude | Altitude of the Tianhe core module |
-| Hubble Altitude | Hubble Space Telescope altitude |
-| Starlink Satellites | Count of active Starlink TLE entries |
-| Amazon Kuiper | Count of active Kuiper TLE entries |
-| Total in Orbit | Total catalogued objects from the TLE API |
+#### 🛰️ Near Earth
+Everything in Earth orbit, in three sections. Altitudes are always shown in km (or mi), never AU.
 
-#### 👨‍🚀 People in Space
-A per-spacecraft table of everyone currently in space. The column header shows the total count. Spacecraft docked to the ISS are marked with a **★** suffix.
+| Section | Rows |
+|---|---|
+| Stations & telescopes | ISS, Tiangong (Tianhe core) and Hubble altitudes, from live TLE data via Kepler's third law |
+| Constellations | Active Starlink and Amazon Kuiper TLE entries, plus total catalogued objects when the TLE API provides it |
+| People in space | Everyone currently in space, per spacecraft, with the total in the header. Spacecraft docked to the ISS are marked **★**, and a footnote gives the ISS crew count. |
+
+#### 🚀 Deep Space
+- **James Webb** — distance from Earth (at L2), in km (or mi).
+- **Voyager 1 & 2** and **New Horizons** — distance from Earth, respecting the unit selector (AU to 1 decimal).
 
 #### 📊 Historical Data
 Requires MongoDB (see Configuration). Controls:
@@ -142,8 +135,8 @@ Requires MongoDB (see Configuration). Controls:
 
 The chart is a Chart.js line graph, updated automatically via SSE after each calculation cycle. If MongoDB is not configured, the card is hidden.
 
-#### 🐳 Docker Hub
-A QR code linking to [hub.docker.com/r/jamieharwood/moonphase](https://hub.docker.com/r/jamieharwood/moonphase).
+#### Footer
+Shows the refresh schedule, when the data was last updated, and a small QR code linking to [hub.docker.com/r/jamieharwood/moonphase](https://hub.docker.com/r/jamieharwood/moonphase).
 
 ---
 

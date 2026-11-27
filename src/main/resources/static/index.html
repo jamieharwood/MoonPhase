@@ -24,7 +24,7 @@
       } catch (e) {}
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
   <header>
@@ -35,7 +35,7 @@
     <div class="header-right">
       <button id="install-btn" class="install-btn" hidden>&#11015; Install App</button>
       <button id="notify-btn" class="notify-btn" hidden title="Enable event notifications">&#128276;</button>
-      <div class="unit-selector" id="unit-selector">
+      <div class="unit-selector" id="unit-selector" title="Units for Solar System and Deep Space distances (near-Earth values use km or mi)">
         <button class="unit-btn" data-unit="au">AU</button>
         <button class="unit-btn" data-unit="km">km</button>
         <button class="unit-btn" data-unit="mi">mi</button>
@@ -74,7 +74,7 @@
 
   <main class="card-grid">
 
-    <!-- Moon Phase -->
+    <!-- Moon Phase (hero) -->
     <section class="card moon-card" id="card-moon">
       <div class="moon-card-head">
         <h2>&#127769; Moon Phase</h2>
@@ -83,29 +83,33 @@
           <button type="button" class="graphic-btn" data-graphic="animated" aria-pressed="false">Animated</button>
         </div>
       </div>
-      <div class="moon-phase-name" id="moon-phase-name">—</div>
-      <div class="moon-stage">
-        <pre class="moon-ascii" id="moon-ascii"></pre>
-        <canvas id="moon-canvas" class="moon-canvas" aria-label="Animated moon phase"></canvas>
+      <div class="moon-hero">
+        <div class="moon-stage">
+          <pre class="moon-ascii" id="moon-ascii"></pre>
+          <canvas id="moon-canvas" class="moon-canvas" aria-label="Animated moon phase"></canvas>
+        </div>
+        <div class="moon-illumination" id="moon-illumination">—</div>
+        <div class="moon-illumination-label">illuminated</div>
+        <div class="moon-phase-name" id="moon-phase-name">—</div>
       </div>
-      <div class="moon-stats">
-        <div class="stat">
-          <span class="stat-label">Illumination</span>
-          <span class="stat-value" id="moon-illumination">—</span>
+      <div class="moon-cycle">
+        <div class="moon-cycle-head">
+          <span class="stat-label">Lunar cycle</span>
+          <span class="moon-cycle-day" id="moon-cycle-day">—</span>
         </div>
-        <div class="stat">
-          <span class="stat-label">Age</span>
-          <span class="stat-value" id="moon-age">—</span>
+        <div class="moon-cycle-track" role="progressbar" aria-label="Progress through the lunar cycle"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="moon-cycle-track">
+          <div class="moon-cycle-fill" id="moon-cycle-fill"></div>
         </div>
-        <div class="stat">
-          <span class="stat-label">Full Moon In</span>
-          <span class="stat-value" id="moon-full-in">—</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Distance</span>
-          <span class="stat-value" id="moon-distance">—</span>
-        </div>
+        <div class="phase-strip" id="phase-strip" aria-hidden="true"></div>
       </div>
+      <table class="data-table">
+        <tbody>
+          <tr><td>Next new moon</td><td id="moon-next-new" class="val">—</td></tr>
+          <tr><td>Next full moon</td><td id="moon-next-full" class="val">—</td></tr>
+          <tr><td>Distance</td><td id="moon-distance" class="val">—</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <!-- Solar System Distances + Light Travel Times -->
@@ -133,20 +137,6 @@
       </table>
     </section>
 
-    <!-- Deep Space Probes -->
-    <section class="card" id="card-probes">
-      <h2>&#128640; Deep Space Probes</h2>
-      <table class="data-table">
-        <tbody>
-          <tr><td>Hubble</td><td id="probe-hubble" class="val">—</td></tr>
-          <tr><td>James Webb</td><td id="probe-jwst" class="val">—</td></tr>
-          <tr><td>Voyager 1</td><td id="probe-v1" class="val">—</td></tr>
-          <tr><td>Voyager 2</td><td id="probe-v2" class="val">—</td></tr>
-          <tr><td>New Horizons</td><td id="probe-nh" class="val">—</td></tr>
-        </tbody>
-      </table>
-    </section>
-
     <!-- Earth -->
     <section class="card" id="card-earth">
       <h2>&#127759; Earth</h2>
@@ -163,41 +153,50 @@
       </table>
     </section>
 
+    <!-- Near Earth: stations, constellations and people in space -->
+    <section class="card near-card" id="card-near">
+      <h2>&#128752;&#65039; Near Earth</h2>
+      <table class="data-table section-table">
+        <thead><tr><th>Stations &amp; telescopes</th><th class="val">Altitude</th></tr></thead>
+        <tbody>
+          <tr><td>ISS</td><td id="leo-iss" class="val">—</td></tr>
+          <tr><td>Tiangong</td><td id="leo-tiangong" class="val">—</td></tr>
+          <tr><td>Hubble</td><td id="leo-hubble" class="val">—</td></tr>
+        </tbody>
+      </table>
+      <table class="data-table section-table">
+        <thead><tr><th>Constellations</th><th class="val">Satellites</th></tr></thead>
+        <tbody>
+          <tr><td>Starlink</td><td id="leo-starlink" class="val">—</td></tr>
+          <tr><td>Amazon Kuiper</td><td id="leo-kuiper" class="val">—</td></tr>
+          <tr id="leo-total-row" hidden><td>Total in orbit</td><td id="leo-total" class="val">—</td></tr>
+        </tbody>
+      </table>
+      <table class="data-table section-table">
+        <thead><tr><th>People in space</th><th class="val" id="leo-people-total">—</th></tr></thead>
+        <tbody id="craft-tbody"></tbody>
+      </table>
+      <p class="card-note" id="iss-crew-note" hidden></p>
+    </section>
+
+    <!-- Deep Space -->
+    <section class="card" id="card-deep">
+      <h2>&#128640; Deep Space</h2>
+      <table class="data-table">
+        <tbody>
+          <tr><td>James Webb (L2)</td><td id="probe-jwst" class="val">—</td></tr>
+          <tr><td>Voyager 1</td><td id="probe-v1" class="val">—</td></tr>
+          <tr><td>Voyager 2</td><td id="probe-v2" class="val">—</td></tr>
+          <tr><td>New Horizons</td><td id="probe-nh" class="val">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
     <!-- Upcoming Events -->
     <section class="card" id="card-events">
       <h2>&#128197; Upcoming Events</h2>
       <table class="data-table">
         <tbody id="events-tbody"></tbody>
-      </table>
-    </section>
-
-    <!-- LEO -->
-    <section class="card" id="card-leo">
-      <h2>&#127757; LEO (Low Earth Orbit)</h2>
-      <table class="data-table">
-        <tbody>
-          <tr><td>ISS Altitude</td><td id="leo-iss" class="val">—</td></tr>
-          <tr><td>ISS Crew</td><td id="leo-iss-crew" class="val">—</td></tr>
-          <tr><td>Tiangong Altitude</td><td id="leo-tiangong" class="val">—</td></tr>
-          <tr><td>Hubble Altitude</td><td id="leo-hubble" class="val">—</td></tr>
-          <tr><td>Starlink Satellites</td><td id="leo-starlink" class="val">—</td></tr>
-          <tr><td>Amazon Kuiper</td><td id="leo-kuiper" class="val">—</td></tr>
-          <tr><td>Total in Orbit</td><td id="leo-total" class="val">—</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- People in Space -->
-    <section class="card" id="card-people">
-      <h2>&#128104;&#8205;&#128640; People in Space</h2>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Spacecraft</th>
-            <th class="val" id="leo-people-total">—</th>
-          </tr>
-        </thead>
-        <tbody id="craft-tbody"></tbody>
       </table>
     </section>
 
@@ -281,25 +280,26 @@
       <p id="history-msg" class="history-msg"></p>
     </section>
 
-    <!-- Docker Hub -->
-    <section class="card qr-card" id="card-qr">
-      <h2>&#128043; Docker Hub</h2>
-      <a href="https://hub.docker.com/r/jamieharwood/moonphase" target="_blank" rel="noopener" class="qr-link">
-        <img src="dockerhub-qr.svg" alt="QR code — hub.docker.com/r/jamieharwood/moonphase" class="qr-image">
-      </a>
-      <div class="qr-label">jamieharwood/moonphase</div>
-    </section>
 
   </main>
 
   <footer>
-    <span>Data refreshed twice daily at 00:01 and 12:01 UTC &nbsp;&mdash;&nbsp; MoonPhaseAI</span>
-    <span id="last-updated" class="last-updated">Waiting for data...</span>
+    <div class="footer-inner">
+      <span>Data refreshed twice daily at 00:01 and 12:01 UTC &nbsp;&mdash;&nbsp; MoonPhaseAI</span>
+      <span id="last-updated" class="last-updated">Waiting for data...</span>
+      <a href="https://hub.docker.com/r/jamieharwood/moonphase" target="_blank" rel="noopener" class="footer-docker">
+        <img src="dockerhub-qr.svg" alt="QR code — hub.docker.com/r/jamieharwood/moonphase" class="footer-qr" width="44" height="44">
+        <span class="footer-docker-text">
+          <span class="footer-docker-kicker">Docker Hub</span>
+          <span>jamieharwood/moonphase</span>
+        </span>
+      </a>
+    </div>
   </footer>
 
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

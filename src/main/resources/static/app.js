@@ -32,18 +32,24 @@
     return (typeof val === 'number') ? val.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' mi' : '—';
   }
 
-  /** Format a distance stored in AU, respecting the current unit preference. */
-  function fmtDistFromAu(au) {
+  /**
+   * Format a Solar System–scale distance stored in AU, respecting the unit preference.
+   * AU precision defaults to 3 decimals (planets); deep-space probes use 1.
+   */
+  function fmtDistFromAu(au, decimals) {
     if (typeof au !== 'number') return '—';
     if (currentUnit === 'km') return fmtKm(au * KM_PER_AU);
     if (currentUnit === 'mi') return fmtMi(au * MILES_PER_AU);
-    return au.toFixed(6) + ' AU';
+    return au.toFixed(decimals == null ? 3 : decimals) + ' AU';
   }
 
-  /** Format a distance stored in km, respecting the current unit preference. */
-  function fmtDistFromKm(km) {
+  /**
+   * Format a near-Earth distance stored in km (Moon, LEO altitudes, JWST).
+   * These are never shown in AU — 0.000003 AU is meaningless — so the AU
+   * setting falls back to km; only the miles setting converts.
+   */
+  function fmtNearKm(km) {
     if (typeof km !== 'number' || km <= 0) return '—';
-    if (currentUnit === 'au') return (km / KM_PER_AU).toFixed(6) + ' AU';
     if (currentUnit === 'mi') return fmtMi(km * MILES_PER_KM);
     return fmtKm(km);
   }
@@ -223,15 +229,14 @@
     // Moon
     setText('moon-phase-name',  data.moonPhaseName || '—');
     setText('moon-illumination', data.moonIlluminationPercent != null ? data.moonIlluminationPercent + '%' : '—');
-    setText('moon-age',         data.moonAgeDays != null ? data.moonAgeDays + ' days' : '—');
-    setText('moon-full-in',     data.daysUntilFullMoon != null ? data.daysUntilFullMoon + ' days' : '—');
-    setText('moon-distance',    fmtDistFromKm(data.moonDistanceKm));
+    setText('moon-distance',    fmtNearKm(data.moonDistanceKm));
 
     var asciiEl = document.getElementById('moon-ascii');
     if (asciiEl && Array.isArray(data.moonAsciiArt)) {
       asciiEl.textContent = data.moonAsciiArt.join('\n');
     }
     syncMoonPhase(data);
+    renderMoonCycle(data);
 
     // Solar System Distances
     setText('dist-mercury',  fmtDistFromAu(data.mercuryDistanceAu));
@@ -244,12 +249,11 @@
     setText('dist-neptune',  fmtDistFromAu(data.neptuneDistanceAu));
     setText('dist-pluto',    fmtDistFromAu(data.plutoDistanceAu));
 
-    // Probes
-    setText('probe-hubble', data.hubbleAltitudeKm > 0 ? fmtDistFromKm(data.hubbleAltitudeKm) + ' alt' : '—');
-    setText('probe-jwst',   data.jamesWebbDistanceKm > 0 ? fmtDistFromKm(data.jamesWebbDistanceKm) : '—');
-    setText('probe-v1', fmtDistFromAu(data.voyager1DistanceAu));
-    setText('probe-v2', fmtDistFromAu(data.voyager2DistanceAu));
-    setText('probe-nh', fmtDistFromAu(data.newHorizonsDistanceAu));
+    // Deep space
+    setText('probe-jwst', fmtNearKm(data.jamesWebbDistanceKm));
+    setText('probe-v1',   fmtDistFromAu(data.voyager1DistanceAu, 1));
+    setText('probe-v2',   fmtDistFromAu(data.voyager2DistanceAu, 1));
+    setText('probe-nh',   fmtDistFromAu(data.newHorizonsDistanceAu, 1));
 
     // Earth
     setText('earth-speed-s',       fmtSpeedPerSec(data.earthSpeedKmPerSec));
@@ -273,14 +277,20 @@
     setText('light-neptune', data.lightTimeSunToNeptune  || '—');
     setText('light-pluto',   data.lightTimeSunToPluto    || '—');
 
-    // LEO
-    setText('leo-iss',      data.issAltitudeKm      > 0 ? fmtDistFromKm(data.issAltitudeKm)      : '—');
-    setText('leo-iss-crew', data.issCrew            > 0 ? data.issCrew + ' crew' : '—');
-    setText('leo-tiangong', data.tiangongAltitudeKm  > 0 ? fmtDistFromKm(data.tiangongAltitudeKm)  : '—');
-    setText('leo-hubble',   data.hubbleAltitudeKm    > 0 ? fmtDistFromKm(data.hubbleAltitudeKm)    : '—');
+    // Near Earth — altitudes always in km (or mi), never AU
+    setText('leo-iss',      fmtNearKm(data.issAltitudeKm));
+    setText('leo-tiangong', fmtNearKm(data.tiangongAltitudeKm));
+    setText('leo-hubble',   fmtNearKm(data.hubbleAltitudeKm));
     setText('leo-starlink', data.starlinkSatelliteCount > 0 ? data.starlinkSatelliteCount.toLocaleString() : '—');
     setText('leo-kuiper',   data.kuiperSatelliteCount   > 0 ? data.kuiperSatelliteCount.toLocaleString()   : '—');
+    var totalRow = document.getElementById('leo-total-row');
+    if (totalRow) totalRow.hidden = !(data.totalSatellitesInOrbit > 0);
     setText('leo-total',    data.totalSatellitesInOrbit > 0 ? data.totalSatellitesInOrbit.toLocaleString() : '—');
+    var crewNote = document.getElementById('iss-crew-note');
+    if (crewNote) {
+      crewNote.hidden = !(data.issCrew > 0);
+      crewNote.textContent = data.issCrew > 0 ? '★ aboard the ISS · ' + data.issCrew + ' crew' : '';
+    }
 
     // People in space
     var peopleTotal = data.totalPeopleInSpace;
@@ -292,8 +302,15 @@
         craftTbody.innerHTML = Object.entries(occupancy).map(function (entry) {
           var craft = entry[0];
           var count = entry[1];
-          return '<tr><td class="craft-name">' + craft + '</td>'
-               + '<td class="val">' + count + '</td></tr>';
+          var row = document.createElement('tr');
+          var name = document.createElement('td');
+          var value = document.createElement('td');
+          name.textContent = craft;
+          value.className = 'val';
+          value.textContent = count;
+          row.appendChild(name);
+          row.appendChild(value);
+          return row.outerHTML;
         }).join('');
       } else {
         craftTbody.innerHTML = '';
@@ -319,7 +336,7 @@
     setText('last-updated', data.lastUpdated ? 'Updated ' + data.lastUpdated + ' UTC' : '');
 
     // Flash all cards
-    ['card-moon', 'card-solar', 'card-probes', 'card-earth', 'card-events', 'card-leo', 'card-people']
+    ['card-moon', 'card-solar', 'card-earth', 'card-near', 'card-deep', 'card-events']
       .forEach(flashCard);
 
   }
@@ -998,6 +1015,66 @@
 
   function currentMoonPhase(date) {
     return wrapPhase(epochPhase(date) + phaseOffset);
+  }
+
+  // ── Lunar cycle: progress bar, phase strip, next new / full moon ─────────
+  var PHASE_STRIP = [ // [illuminated fraction, waxing?] — New → Full → New
+    [0, true], [0.25, true], [0.5, true], [0.75, true],
+    [1, true], [0.75, false], [0.5, false], [0.25, false]
+  ];
+
+  /** SVG path for the lit part of a disc. Waxing lights the right limb (northern hemisphere). */
+  function litPath(cx, cy, r, f, waxing) {
+    if (f <= 0.001) return '';
+    var top = cx + ' ' + (cy - r), bot = cx + ' ' + (cy + r);
+    if (f >= 0.999) return 'M' + top + 'A' + r + ' ' + r + ' 0 1 1 ' + bot + 'A' + r + ' ' + r + ' 0 1 1 ' + top + 'Z';
+    var rx = Math.max(Math.abs(r * (2 * f - 1)), 0.01);
+    var limb = waxing ? 1 : 0;
+    var term = waxing ? (f >= 0.5 ? 1 : 0) : (f >= 0.5 ? 0 : 1);
+    return 'M' + top + 'A' + r + ' ' + r + ' 0 0 ' + limb + ' ' + bot + 'A' + rx + ' ' + r + ' 0 0 ' + term + ' ' + top + 'Z';
+  }
+
+  var phaseStripIndex = -1;
+  function renderPhaseStrip(current) {
+    var strip = document.getElementById('phase-strip');
+    if (!strip || current === phaseStripIndex) return;
+    phaseStripIndex = current;
+    strip.innerHTML = PHASE_STRIP.map(function (p, i) {
+      var lit = litPath(13, 13, 8, p[0], p[1]);
+      return '<svg class="phase-icon' + (i === current ? ' current' : '') + '" viewBox="0 0 26 26">'
+        + '<circle class="phase-dark" cx="13" cy="13" r="8"/>'
+        + (lit ? '<path class="phase-lit" d="' + lit + '"/>' : '')
+        + (i === current ? '<circle class="phase-ring" cx="13" cy="13" r="11.5"/>' : '')
+        + '</svg>';
+    }).join('');
+  }
+
+  function fmtMoonDate(days, approx) {
+    if (typeof days !== 'number' || days < 0) return '—';
+    if (days === 0) return 'Tonight';
+    if (days === 1) return 'Tomorrow';
+    var when = new Date(Date.now() + days * 86400000);
+    var date = when.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    return (approx ? '≈ ' : '') + date + ' · ' + days + ' days';
+  }
+
+  function renderMoonCycle(data) {
+    var age = typeof data.moonAgeDays === 'number' ? data.moonAgeDays : null;
+    setText('moon-cycle-day', age != null ? 'Day ' + age + ' of ' + SYNODIC_DAYS.toFixed(1) : '—');
+    var pct = age != null ? Math.max(0, Math.min(100, age / SYNODIC_DAYS * 100)) : 0;
+    var fill = document.getElementById('moon-cycle-fill');
+    if (fill) fill.style.width = pct.toFixed(1) + '%';
+    var track = document.getElementById('moon-cycle-track');
+    if (track) track.setAttribute('aria-valuenow', String(Math.round(pct)));
+
+    // Strip index from the server's phase name (authoritative), else from the synced phase.
+    var named = phaseFromName(data.moonPhaseName);
+    var phase = currentMoonPhase(new Date());
+    renderPhaseStrip(Math.round((named != null ? named : phase) * 8) % 8);
+
+    // Full moon: the server's count. New moon: estimated from the synced phase.
+    setText('moon-next-full', fmtMoonDate(data.daysUntilFullMoon, false));
+    setText('moon-next-new', fmtMoonDate(Math.round((1 - phase) * SYNODIC_DAYS), true));
   }
 
   function applyGraphic(mode) {
