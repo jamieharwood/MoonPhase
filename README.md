@@ -1,6 +1,6 @@
-# MoonPhaseAI
+# MoonPhase
 
-MoonPhaseAI is a Java Spring Boot application that calculates astronomical data including moon phases, planetary distances, light travel times, and solstice timings. It runs as a scheduled background task, pushes updates to an [Awtrix](https://awtrixdocs.blueforcer.de/) device, and optionally serves a live web dashboard accessible in any browser.
+MoonPhase is a Java Spring Boot application that calculates astronomical data including moon phases, planetary distances, light travel times, and solstice timings. It runs as a scheduled background task, pushes updates to an [Awtrix](https://awtrixdocs.blueforcer.de/) device, and optionally serves a live web dashboard accessible in any browser.
 
 ## Features
 
@@ -9,7 +9,6 @@ The application performs the following calculations on a configurable schedule (
 ### Moon Phase
 - Calculates the current moon phase, age (days since new moon), and illumination percentage.
 - Displays an ASCII art representation of the moon in the logs.
-- Verifies the calculated phase against the Claude AI API and logs any discrepancy (the deterministic formula result is always used).
 - Sends the moon phase name, illumination %, and days until next full moon to the Awtrix device.
 
 ### Solar System Distances
@@ -68,9 +67,9 @@ Calculations are checked against [JPL Horizons](https://ssd.jpl.nasa.gov/horizon
 
 ## Web Dashboard
 
-MoonPhaseAI includes an optional live web dashboard that displays all computed metrics in a browser, updated in real time via Server-Sent Events (SSE) whenever the scheduled calculation cycle completes.
+MoonPhase includes an optional live web dashboard that displays all computed metrics in a browser, updated in real time via Server-Sent Events (SSE) whenever the scheduled calculation cycle completes.
 
-![MoonPhaseAI Dashboard](dashboard.png)
+![MoonPhase Dashboard](dashboard.png)
 
 The dashboard is **enabled by default** and accessible at `http://localhost:8080/` (or the configured port).
 
@@ -293,8 +292,6 @@ All configuration is via environment variables (or `application.properties`):
 | `LATITUDE` | `51.4769` | Latitude in decimal degrees (positive = North). Invalid values fall back to Greenwich. |
 | `LONGITUDE` | `0.0` | Longitude in decimal degrees (positive = East). Invalid values fall back to 0.0. |
 | `CRON_SCHEDULE` | `0 1 0,12 * * *` | Spring cron expression for the update schedule |
-| `CLAUDE_API_KEY` | _(none)_ | Anthropic API key for moon phase verification (optional) |
-| `CLAUDE_MODEL` | `claude-sonnet-4-6` | Claude model ID to use for moon phase verification |
 | `SERVER_PORT` | `8080` (local) / `8081` (Docker) | Port the web dashboard listens on |
 | `SPRING_MAIN_WEB-APPLICATION-TYPE` | `servlet` | Set to `none` to disable the web dashboard |
 | `APP_HISTORY_ENABLED` | `false` | Set to `true` to enable MongoDB history storage |
@@ -307,13 +304,12 @@ All configuration is via environment variables (or `application.properties`):
 
 ## Running with Docker
 
-The recommended way to run MoonPhaseAI is via Docker. Create an `env` file (do not commit to version control):
+The recommended way to run MoonPhase is via Docker. Create an `env` file (do not commit to version control):
 
 ```
 AWTRIXHOSTNAME=http://your-awtrix-device.local
 LATITUDE=53.4808
 LONGITUDE=-2.2426
-CLAUDE_API_KEY=your-api-key-here
 ```
 
 Then start the container:

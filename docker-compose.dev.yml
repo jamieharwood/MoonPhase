@@ -14,7 +14,6 @@ services:
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=INFO
       - TZ=UTC
       - AWTRIXHOSTNAME=http://awtrix_2e6f60.local
-      - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}  # Claude API key for moon phase verification
       - MCP_API_KEY=${MCP_API_KEY:-}  # Bearer token required on /mcp (MCP server for AI agents); empty = unauthenticated
 
     # Volume mounts for live access to logs

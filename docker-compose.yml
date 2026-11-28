@@ -11,7 +11,6 @@ services:
       - LOGGING_LEVEL_ROOT=INFO
       - TZ=UTC  # Set timezone (change as needed)
       - AWTRIXHOSTNAME=http://moonclock.bluelarma.com # Hostname for Awtrix
-      - CLAUDE_API_KEY=${CLAUDE_API_KEY}  # Claude API key for moon phase verification
       - MCP_API_KEY=${MCP_API_KEY:-}  # Bearer token required on /mcp (MCP server for AI agents); empty = unauthenticated
       - SERVER_PORT=8081
       # MongoDB historical data

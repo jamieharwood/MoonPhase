@@ -38,7 +38,7 @@ public class Main implements ApplicationRunner {
             return;
         }
         try {
-            // Build snapshot first, publish to dashboard/SSE, then deliver Awtrix/Claude.
+            // Build snapshot first, publish to dashboard/SSE, then deliver Awtrix pushes.
             // This keeps the web UI responsive even when the LED device is slow or offline.
             CalculationOrchestrator.LiveComputeResult result = orchestrator.computeCurrentResult();
             dataService.ifPresent(svc -> svc.publishSnapshot(result.snapshot()));

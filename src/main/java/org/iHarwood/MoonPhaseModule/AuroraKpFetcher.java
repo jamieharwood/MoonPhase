@@ -59,7 +59,7 @@ public final class AuroraKpFetcher {
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(KP_URL))
                     .timeout(Duration.ofSeconds(15))
-                    .header("User-Agent", "MoonPhaseAI/1.0")
+                    .header("User-Agent", "MoonPhase/1.0")
                     .GET()
                     .build();
             HttpResponse<String> res = HTTP_CLIENT.send(req, HttpResponse.BodyHandlers.ofString());

@@ -1,8 +1,8 @@
-// MoonPhaseAI Service Worker
+// MoonPhase Service Worker
 // Satisfies Chrome's PWA installability requirement.
 // Uses a network-first strategy so the live SSE data is never stale.
 
-var CACHE = 'moonphaseai-v11';
+var CACHE = 'moonphase-v12';
 var PRECACHE = [
   '/',
   '/index.html',

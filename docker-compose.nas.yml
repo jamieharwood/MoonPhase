@@ -15,7 +15,6 @@ services:
       - AWTRIXHOSTNAME=http://moonclock.bluelarma.com   # your Awtrix device
       # - LATITUDE=51.4769                              # your location (defaults: Greenwich)
       # - LONGITUDE=0.0
-      - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}               # optional moon-phase cross-check
       - MCP_API_KEY=${MCP_API_KEY:-}                     # bearer token for /mcp; empty = open
       - APP_HISTORY_ENABLED=true
       - APP_HISTORY_RETENTION_DAYS=0                     # 0 = keep all history

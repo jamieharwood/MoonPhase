@@ -31,13 +31,13 @@ Tests in the default package (`src/test/java/*.java`) are mixed: `DayLightTest`,
 
 ## Architecture
 
-**MoonPhaseAI** is a Spring Boot 4.1 / Java 25 application that computes astronomical data on a cron schedule, pushes it to an [Awtrix](https://awtrixdocs.blueforcer.de/) LED matrix device, and serves it through a web dashboard with SSE-based live updates.
+**MoonPhase** is a Spring Boot 4.1 / Java 25 application that computes astronomical data on a cron schedule, pushes it to an [Awtrix](https://awtrixdocs.blueforcer.de/) LED matrix device, and serves it through a web dashboard with SSE-based live updates.
 
 ### Core data flow
 
 1. `Main.java` — implements `ApplicationRunner` (first update runs once the full context is ready) and holds the `@Scheduled(cron = "${app.cron}")` update. A `ReentrantLock` with `tryLock()` makes overlapping triggers (cron vs. manual refresh) skip rather than queue. It contains no compute logic — it calls the orchestrator in two phases: `computeCurrentResult()` → publish snapshot to the dashboard/SSE → `deliverSideEffects()`. This ordering keeps the web UI responsive when the Awtrix device is slow or offline.
 
-2. `CalculationOrchestrator` (`calculation/`) — the single place where `AstronomicalSnapshot`s are built. `computeCurrentResult()` builds the live snapshot plus the list of pending Awtrix pushes (`LiveComputeResult`) without side effects; `deliverSideEffects()` pushes to Awtrix and fires the async Claude verification; `computeCurrent()` does both (used by tests); `computeForDate()` builds historical snapshots for backfill (no Awtrix, no live fetches). Unit-tested in `CalculationOrchestratorTest` with a mocked `AwtrixPusher`.
+2. `CalculationOrchestrator` (`calculation/`) — the single place where `AstronomicalSnapshot`s are built. `computeCurrentResult()` builds the live snapshot plus the list of pending Awtrix pushes (`LiveComputeResult`) without side effects; `deliverSideEffects()` pushes to Awtrix; `computeCurrent()` does both (used by tests); `computeForDate()` builds historical snapshots for backfill (no Awtrix, no live fetches). Unit-tested in `CalculationOrchestratorTest` with a mocked `AwtrixPusher`.
 
 3. `AstronomicalSnapshot` — an immutable record (builder pattern) holding all computed values for a single point in time. Serialized to JSON for both SSE broadcast and the REST API.
 
@@ -57,11 +57,10 @@ Each module is a pure-static utility class with two method styles:
 - `*Now()` — reads current `ZonedDateTime` internally (used by the live compute path)
 - `*(ZonedDateTime)` or `*(LocalDate)` — accepts a specific time (used by `computeForDate()` for historical backfill)
 
-Key modules: `MoonPhase`, `MoonEphemeris`, `MoonDistance`, `SunDistance`, `SunriseSunset`, `PlanetDistance` (interface), `Planets` (enum), `VoyagerDistance`, `NewHorizonsDistance` (via `SpacecraftTrajectory`), `JamesWebbDistance` (live, JPL Horizons), `LeoDataFetcher` (live TLE data from `tle.ivanstanojevic.me`, people-in-space from corquaid's ISS API), `AuroraKpFetcher` (live Kp index from NOAA), `LightTravelTime`, `DayLight`, `EarthSpeed`, `EarthAxialTilt`, `EquinoxCalculator`, `PerihelionAphelion`, `DateUtils`, `ClaudeMoonPhaseVerifier`.
+Key modules: `MoonPhase`, `MoonEphemeris`, `MoonDistance`, `SunDistance`, `SunriseSunset`, `PlanetDistance` (interface), `Planets` (enum), `VoyagerDistance`, `NewHorizonsDistance` (via `SpacecraftTrajectory`), `JamesWebbDistance` (live, JPL Horizons), `LeoDataFetcher` (live TLE data from `tle.ivanstanojevic.me`, people-in-space from corquaid's ISS API), `AuroraKpFetcher` (live Kp index from NOAA), `LightTravelTime`, `DayLight`, `EarthSpeed`, `EarthAxialTilt`, `EquinoxCalculator`, `PerihelionAphelion`, `DateUtils`.
 
 ### Important design constraints
 
-- **`ClaudeMoonPhaseVerifier` is log-only.** It calls the Claude API to cross-check the deterministic moon phase calculation, but the result is **never used to override** the formula-based answer. If Claude disagrees, it logs a warning — do not change this behavior. It runs async via `CompletableFuture` and must never block the update cycle. It reads `CLAUDE_API_KEY`/`CLAUDE_MODEL`/`CLAUDE_API_URL` directly via `System.getenv`, not Spring properties.
 - **LEO data and JWST are live-only.** `LeoDataFetcher` fetches real-time data (TLE API + people-in-space JSON) and `JamesWebbDistance` fetches JWST's range from JPL Horizons (its L2 halo orbit can't be modelled offline). Historical snapshots (`computeForDate`) set LEO fields to `0` and JWST to `-1`.
 - **Ephemeris accuracy is tested against JPL Horizons.** Planets use JPL's Keplerian element tables (`Planets`/`PlanetDistance`, 3-D Kepler solution), the Moon uses `MoonEphemeris` (lunar perturbation terms; phase from the true Sun–Moon elongation), and Voyager/New Horizons integrate two-body motion from Horizons state vectors (`SpacecraftTrajectory`). `EphemerisAccuracyTest` holds Horizons reference values — keep it passing when touching these. For Mars/Jupiter/Saturn, `*DistanceAu` is Earth→planet (history/Awtrix) and `*HelioDistanceAu` is Sun→planet (dashboard, light times).
 - **MongoDB is gated by `app.history.enabled`.** Boot 4 Mongo auto-configurations are always excluded (`MongoAutoConfiguration`, `DataMongoAutoConfiguration`, `DataMongoRepositoriesAutoConfiguration`); `MongoConfig` and `HistoryService` are `@ConditionalOnProperty(app.history.enabled=true)` and create the Mongo beans manually. Defaults to `false`; `docker-compose.yml` enables it alongside its bundled MongoDB. Code that touches history must handle `Optional<HistoryService>`.
@@ -76,8 +75,6 @@ All config can be set via environment variables. Key ones:
 | `AWTRIXHOSTNAME` | `http://moonclock.local` | Awtrix device base URL |
 | `LATITUDE` / `LONGITUDE` | `51.4769` / `0.0` | Decimal degrees for daylight/sunrise calculations |
 | `CRON_SCHEDULE` | `0 1 0,12 * * *` | Spring cron (runs at 00:01 and 12:01 UTC) |
-| `CLAUDE_API_KEY` | _(none)_ | Required for moon phase verification |
-| `CLAUDE_MODEL` | `claude-sonnet-4-6` | Model for verification (`CLAUDE_API_URL` overrides the endpoint) |
 | `SERVER_PORT` | `8080` (local) / `8081` (Docker) | Dashboard port |
 | `APP_HISTORY_ENABLED` | `false` | Set `true` + provide MongoDB URI |
 | `APP_HISTORY_RETENTION_DAYS` | `0` | Days of history to keep (0 = unlimited); purges nightly at 03:00 UTC |

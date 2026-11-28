@@ -6,7 +6,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public final class MoonPhase {
     private static final double SYNODIC_MONTH = MoonEphemeris.SYNODIC_MONTH;
@@ -65,26 +64,6 @@ public final class MoonPhase {
         double phaseFraction = pos.elongationLongitude() / 360.0;
         double age = jd - MoonEphemeris.previousPhase(jd, 0.0);
         return new MoonPhase(phaseFraction, age, pos.illuminatedFraction(), jd);
-    }
-
-    /**
-     * Creates a MoonPhase instance from a phase name string (representative mid-phase values).
-     * Used when Claude AI corrects the calculated phase. Next new/full moon times are not
-     * available on instances built this way.
-     *
-     * @param phaseName one of the standard phase names (e.g. "Full Moon", "Waning Gibbous")
-     * @return an Optional containing the matching MoonPhase, or empty if the name is not recognised
-     */
-    public static Optional<MoonPhase> fromPhaseName(String phaseName) {
-        for (int i = 0; i < NAMES.length; i++) {
-            if (NAMES[i].equalsIgnoreCase(phaseName.trim())) {
-                // NAMES[0] is full moon, which is half a cycle after new moon (phaseFraction 0).
-                double phaseFraction = (i / 8.0 + 0.5) % 1.0;
-                double illumination = (1 - Math.cos(TWO_PI * phaseFraction)) / 2;
-                return Optional.of(new MoonPhase(phaseFraction, phaseFraction * SYNODIC_MONTH, illumination, Double.NaN));
-            }
-        }
-        return Optional.empty();
     }
 
     /**

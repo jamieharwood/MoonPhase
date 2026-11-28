@@ -15,8 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.IntStream;
 /**
  * Central orchestrator for all astronomical calculations.
@@ -42,30 +40,15 @@ public class CalculationOrchestrator {
     private static final double DEFAULT_LATITUDE  = 51.4769;
     private static final double DEFAULT_LONGITUDE = 0.0;
     private final AwtrixPusher awtrixPusher;
-    private final ExecutorService applicationTaskExecutor;
     private final double latitude;
     private final double longitude;
     @Autowired
-    public CalculationOrchestrator(
-            AwtrixPusher awtrixPusher,
-            ExecutorService applicationTaskExecutor,
-            AppProperties appProperties) {
-        this.awtrixPusher = awtrixPusher;
-        this.applicationTaskExecutor = applicationTaskExecutor;
-        this.latitude  = validateLatitude(appProperties.getLatitude());
-        this.longitude = validateLongitude(appProperties.getLongitude());
+    public CalculationOrchestrator(AwtrixPusher awtrixPusher, AppProperties appProperties) {
+        this(awtrixPusher, appProperties.getLatitude(), appProperties.getLongitude());
     }
     /** Test / manual construction without Spring. */
     CalculationOrchestrator(AwtrixPusher awtrixPusher, double latitude, double longitude) {
-        this(awtrixPusher, java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor(), latitude, longitude);
-    }
-    private CalculationOrchestrator(
-            AwtrixPusher awtrixPusher,
-            ExecutorService applicationTaskExecutor,
-            double latitude,
-            double longitude) {
         this.awtrixPusher = awtrixPusher;
-        this.applicationTaskExecutor = applicationTaskExecutor;
         this.latitude  = validateLatitude(latitude);
         this.longitude = validateLongitude(longitude);
     }
@@ -94,9 +77,7 @@ public class CalculationOrchestrator {
      */
     public record LiveComputeResult(
             AstronomicalSnapshot snapshot,
-            List<AwtrixPusher.PushRequest> awtrixPushes,
-            LocalDate moonPhaseDate,
-            String moonPhaseName) {}
+            List<AwtrixPusher.PushRequest> awtrixPushes) {}
     /**
      * Performs a full live calculation cycle (no network side effects except LEO/Aurora fetches).
      * Call {@link #deliverSideEffects(LiveComputeResult)} after publishing the snapshot.
@@ -285,7 +266,7 @@ public class CalculationOrchestrator {
             String label = kp >= 5 ? String.format("⚡Kp%.1f", kp) : String.format("Kp%.1f", kp);
             pushes.add(push("auroraKp", label, APIPost.IconType.AURORA.name()));
         }
-        // Moon phase (deterministic); Claude verification is async in deliverSideEffects
+        // Moon phase
         MoonPhase mp = MoonPhase.at(now);
         logger.info("Current moon phase is {} ({} days, {}% illuminated).",
                 mp.getPhaseName(), mp.getAgeDays(), mp.getIlluminationPercent());
@@ -306,21 +287,17 @@ public class CalculationOrchestrator {
         pushes.add(push("fullmoon", daysUntilFull + "d", "FullMoon"));
         sb.lastUpdated(now.format(ISO_FMT));
         AstronomicalSnapshot snapshot = sb.build();
-        logger.info("=== Snapshot built (Awtrix/Claude deferred) ===");
-        return new LiveComputeResult(snapshot, List.copyOf(pushes), now.toLocalDate(), mp.getPhaseName());
+        logger.info("=== Snapshot built (Awtrix deferred) ===");
+        return new LiveComputeResult(snapshot, List.copyOf(pushes));
     }
     /**
-     * Pushes Awtrix apps in parallel and kicks off async Claude moon-phase verification.
+     * Pushes Awtrix apps in parallel.
      * Safe to call after the dashboard snapshot has already been published.
      */
     public void deliverSideEffects(LiveComputeResult result) {
         if (result == null) {
             return;
         }
-        // Claude is log-only and must never block the update cycle.
-        LocalDate date = result.moonPhaseDate();
-        String phase = result.moonPhaseName();
-        CompletableFuture.runAsync(() -> verifyMoonPhaseAsync(date, phase), applicationTaskExecutor);
         awtrixPusher.pushAll(result.awtrixPushes());
         var stats = awtrixPusher.getStats();
         logger.info("Awtrix update summary: {} succeeded, {} failed", stats.success(), stats.failure());
@@ -426,23 +403,6 @@ public class CalculationOrchestrator {
     // ─────────────────────────────────────────────────────────────────────────
     private static AwtrixPusher.PushRequest push(String app, String text, String icon) {
         return new AwtrixPusher.PushRequest(app, text, icon);
-    }
-    private void verifyMoonPhaseAsync(LocalDate date, String calculatedPhase) {
-        try {
-            ClaudeMoonPhaseVerifier.VerificationResult verification =
-                    ClaudeMoonPhaseVerifier.verify(date, calculatedPhase);
-            if ("N/A".equals(verification.claudePhase())) {
-                logger.info("Claude verification skipped (API key not set)");
-            } else if (verification.matches()) {
-                logger.info("Claude AI confirms moon phase: {}", verification.claudePhase());
-            } else {
-                logger.warn("Claude AI disagrees! Calculated: {} | Claude says: {} ({}). "
-                                + "Keeping deterministic result - investigate algorithm if this persists.",
-                        verification.calculatedPhase(), verification.claudePhase(), verification.details());
-            }
-        } catch (Exception e) {
-            logger.warn("Claude verification failed: {}", e.getMessage());
-        }
     }
     private void logPlanetDistance(String name, double currentAu, PlanetDistance planet) {
         double[] range = planet.minMaxDistanceAUNow();

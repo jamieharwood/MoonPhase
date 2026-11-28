@@ -1,6 +1,6 @@
 {
-  "name": "MoonPhaseAI",
-  "short_name": "MoonPhaseAI",
+  "name": "MoonPhase",
+  "short_name": "MoonPhase",
   "description": "Live astronomical dashboard — moon phases, planetary distances, and more",
   "start_url": "/",
   "display": "standalone",

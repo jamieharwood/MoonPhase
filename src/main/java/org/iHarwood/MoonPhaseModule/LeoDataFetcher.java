@@ -232,7 +232,7 @@ public final class LeoDataFetcher {
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .timeout(Duration.ofSeconds(timeoutSeconds))
-                    .header("User-Agent", "MoonPhaseAI/1.0")
+                    .header("User-Agent", "MoonPhase/1.0")
                     .header("Accept", "application/json")
                     .GET()
                     .build();

@@ -20,7 +20,7 @@ public class AppConfig {
 
     /**
      * Application-wide virtual-thread executor for fire-and-forget work
-     * (manual refresh, history populate, Claude verification, Awtrix batching).
+     * (manual refresh, history populate, Awtrix batching).
      * Lifecycle is managed by Spring — shut down on context close.
      */
     @Bean(destroyMethod = "close")
